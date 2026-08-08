@@ -54,33 +54,5 @@
     "score1": 21,
     "score2": 16,
     "id": "c8f3b721-cb60-4bb8-a454-51c6577d0077"
-  },
-  {
-    "date": "2026-08-08",
-    "team1": [
-      "Suresh Padaga",
-      "Pradeep Raghav"
-    ],
-    "team2": [
-      "Sanjeev Kumar",
-      "Nayeem Abdhullah"
-    ],
-    "score1": 21,
-    "score2": 19,
-    "id": "cc2f3b45-a441-4a5a-84c7-1124662e05c3"
-  },
-  {
-    "date": "2026-08-08",
-    "team1": [
-      "Sanjeev Kumar",
-      "Narendra"
-    ],
-    "team2": [
-      "Srinivas Padaga",
-      "Suresh Padaga"
-    ],
-    "score1": 21,
-    "score2": 19,
-    "id": "90042efc-74d3-452e-9b7f-4b064d7eb896"
   }
 ]

@@ -6,9 +6,15 @@ live:
 
 - **Local dev/preview**: `server/apiPlugin.js`, a Vite middleware plugin.
   Real JSON files in this project folder, no database.
-- **Vercel (production)**: `api/[...path].js`, a Vercel serverless function.
-  Same routes, backed by Vercel Blob storage (Vercel's static hosting has no
-  writable disk, so the local file version can't run there).
+- **Vercel (production)**: `api/handler.js`, a Vercel serverless function,
+  reached via a `vercel.json` rewrite (`/api/:path* -> /api/handler`). Same
+  routes, backed by Vercel Blob storage (Vercel's static hosting has no
+  writable disk, so the local file version can't run there). All state
+  (players/matches/videos/photo index) lives in ONE blob (`state/data.json`)
+  so a read or write is a single Blob round trip, not one per resource.
+  Note: the bracket catch-all filename convention (`[...path].js`) only
+  matched single-segment paths on this non-Next project — that's why the
+  explicit rewrite exists instead of relying on filesystem routing alone.
 
 ## Run locally
 
@@ -49,9 +55,13 @@ without it, every `/api/*` call 500s.
 3. Visit the site — first load seeds the default player list into Blob,
    same as local dev does into `data/players.json`.
 
-Vercel Blob data (`state/*.json`, `photos/*`) is separate from the local
+Vercel Blob data (`state/data.json`, `photos/*`) is separate from the local
 `data/` and `public/photos/` files — the two backends don't sync with each
 other. Use Export/Import JSON to move a snapshot between them.
+
+(A version before this one stored players/matches/videos/photos as four
+separate blobs. `api/handler.js` migrates that automatically on first read
+if `state/data.json` doesn't exist yet — no manual action needed.)
 
 ## Ranking
 
@@ -65,10 +75,14 @@ other. Use Export/Import JSON to move a snapshot between them.
 ## Structure (SmashStats branding: orange #ea580c + slate-900, `lucide-react` icons)
 
 - `src/App.jsx` — page router (`dashboard` / `log` / `players`, plain
-  `useState`) + loads state once via `api.getState()`, holds it, and hands
-  down a bundled `actions` object (`addPlayer`, `deleteMatch`, etc. — each
-  calls the API then patches local state from the response).
-- `src/components/Header.jsx` — logo + nav pills.
+  `useState`) + loads state once via `api.getState()` (spinner shown until
+  it resolves), holds it, and hands down a bundled `actions` object
+  (`addPlayer`, `deleteMatch`, etc.). Every action goes through
+  `withFeedback()`, which shows a "Saving…" badge while in flight and a
+  success/error toast when it settles — this is the one place that wires
+  up spinner/toast behavior for every CRUD op, not per-component.
+- `src/components/Header.jsx` — logo (`public/logo.jpeg`, falls back to an
+  icon if the file's missing) + wordmark + "Gentlemen Play Here" caption + nav pills.
 - `src/pages/Dashboard.jsx` — FilterBar, StatCards, TopSeeds, Leaderboard,
   MatchList, VideoSection, PhotoGallery.
 - `src/pages/LogMatch.jsx` — wraps `MatchForm.jsx`, returns to Dashboard on save.

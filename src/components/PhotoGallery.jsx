@@ -12,7 +12,7 @@ export default function PhotoGallery({ photos, onAdd, onDelete }) {
     const files = [...e.target.files].slice(0, MAX_PHOTOS - photos.length)
     for (const file of files) {
       const reader = new FileReader()
-      reader.onload = () => onAdd(reader.result).catch((err) => alert(err.message))
+      reader.onload = () => onAdd(reader.result).catch(() => {})
       reader.readAsDataURL(file)
     }
     e.target.value = ''
