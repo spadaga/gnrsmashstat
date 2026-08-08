@@ -75,9 +75,10 @@ async function savePhotoBlob(dataUrl) {
 }
 
 export default async function handler(req, res) {
-  const parts = (Array.isArray(req.query.path) ? req.query.path : [req.query.path]).filter(Boolean)
-  const resource = parts[0]
-  const param = parts[1] !== undefined ? decodeURIComponent(parts[1]) : undefined
+  const { pathname } = new URL(req.url, 'http://localhost')
+  const parts = pathname.split('/').filter(Boolean) // ['api', 'state'] or ['api', 'players', 'Name']
+  const resource = parts[1]
+  const param = parts[2] !== undefined ? decodeURIComponent(parts[2]) : undefined
 
   try {
     if (resource === 'state' && req.method === 'GET') {
