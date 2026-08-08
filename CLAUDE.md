@@ -1,18 +1,24 @@
 # Badminton Results Tracker
 
-React + Vite + Tailwind v4 frontend, backed by a tiny local JSON-file
-"backend" — a Vite middleware plugin (`server/apiPlugin.js`), no separate
-process, no database. Everything lives on disk in this project folder.
+React + Vite + Tailwind v4 frontend. Two interchangeable backends behind the
+same `/api/*` contract — `src/lib/api.js` doesn't know or care which one is
+live:
 
-## Run
+- **Local dev/preview**: `server/apiPlugin.js`, a Vite middleware plugin.
+  Real JSON files in this project folder, no database.
+- **Vercel (production)**: `api/[...path].js`, a Vercel serverless function.
+  Same routes, backed by Vercel Blob storage (Vercel's static hosting has no
+  writable disk, so the local file version can't run there).
+
+## Run locally
 
 ```
 npm install
-npm run dev      # http://localhost:5173
-npm run build && npm run preview   # production build, still local-file backed
+npm run dev      # http://localhost:5173, backed by server/apiPlugin.js + local files
+npm run build && npm run preview   # same, against the production build
 ```
 
-## Where data is stored (on disk, in this project folder)
+## Local dev storage (on disk, in this project folder)
 
 - `data/players.json` — array of player name strings. Seeded with:
   Sanjeev Kumar, Nayeem Abdhullah, Srinivas Padaga, Suresh Padaga,
@@ -24,17 +30,28 @@ npm run build && npm run preview   # production build, still local-file backed
 - `public/photos/<uuid>.<ext>` — the actual uploaded photo files (up to 50).
   Served at `/photos/<filename>` for free via Vite's static `public/` dir.
 
-`server/apiPlugin.js` is the only code that touches these files — it's
-mounted as Vite middleware (`configureServer` + `configurePreviewServer`),
-so both `npm run dev` and `npm run preview` are backed by it. Routes:
-`GET /api/state`, `POST/DELETE /api/players[/:name]`,
-`POST/DELETE /api/matches[/:id]`, `POST/DELETE /api/videos[/:index]`
-(max 20), `POST/DELETE /api/photos[/:id]` (max 50),
-`GET /api/export` (downloads full JSON incl. base64 photos),
-`POST /api/import` (restores a snapshot, replacing photo files on disk).
+Routes (identical on both backends): `GET /api/state`,
+`POST/DELETE /api/players[/:name]`, `POST/DELETE /api/matches[/:id]`,
+`POST/DELETE /api/videos[/:index]` (max 20), `POST/DELETE /api/photos[/:id]`
+(max 50), `GET /api/export` (downloads full JSON snapshot),
+`POST /api/import` (restores a snapshot).
 
-`src/lib/api.js` is the only client code that calls these routes — read/write
-through it, don't `fetch('/api/...')` elsewhere.
+## Vercel setup (one-time, required before the deployed site works)
+
+The serverless function needs a Blob store connected to the project —
+without it, every `/api/*` call 500s.
+
+1. Vercel dashboard -> this project -> **Storage** tab -> **Create Database**
+   -> **Blob** -> connect it to this project. This auto-injects a
+   `BLOB_READ_WRITE_TOKEN` env var.
+2. Redeploy (env vars only take effect on a new deployment — trigger one
+   from the dashboard, or push any commit).
+3. Visit the site — first load seeds the default player list into Blob,
+   same as local dev does into `data/players.json`.
+
+Vercel Blob data (`state/*.json`, `photos/*`) is separate from the local
+`data/` and `public/photos/` files — the two backends don't sync with each
+other. Use Export/Import JSON to move a snapshot between them.
 
 ## Ranking
 
@@ -59,28 +76,25 @@ through it, don't `fetch('/api/...')` elsewhere.
 - `src/components/MatchForm.jsx` — result entry, player name `<datalist>`
   autocomplete sourced from the players list, auto-adds any new name typed.
 - `src/components/{TopSeeds,Leaderboard,MatchList}.jsx` — ranking displays.
+  `MatchList` has its own date range control (Last 30 Days / All Matches /
+  Custom Range), independent of the Dashboard-wide period filter.
 - `src/components/{VideoSection,PhotoGallery}.jsx` — auto-sliding
   `Carousel.jsx` in the default view; a "Manage" toggle switches to an
   editable list/grid with add/delete controls. Both enforce their max
   (20 videos, 50 photos) client- and server-side.
 
-## Known limits (accepted for a personal/local tool — revisit if this grows)
+## Known limits
 
-- **This is a local dev tool, not a deployable multi-user app.** The file
-  API only runs inside Vite's own dev/preview server process. Deploying to
-  Vercel (or any static host) serves the built `dist/` with no server behind
-  it — `/api/*` calls will 404, since there's no Vite middleware running
-  in production and serverless functions can't durably write to disk anyway.
-  If you want this hosted and working, it needs an actual backend (e.g. a
-  small Node/Express API + real database, or Vercel Postgres/Blob) — ask
-  before building that, it's a different architecture from what's here.
-- Single-machine only: `data/` and `public/photos/` are local files, not
-  synced anywhere. Use Export/Import JSON to move a snapshot between
-  machines.
-- No auth — anyone with access to this machine/browser can edit everything.
+- Vercel Blob access is `public` — anyone with a blob's URL can view it (no
+  auth). Fine for non-sensitive badminton scores/photos; don't put anything
+  sensitive in there.
+- No login/auth anywhere — anyone with the site URL or this machine can
+  edit everything.
+- The two backends' data doesn't sync — local file changes don't appear on
+  the Vercel deployment and vice versa. Export/Import JSON to move a
+  snapshot between them.
 
 ## Deploy
 
-Not currently deployable as-is (see limits above) — this version is scoped
-to local use with real file storage, per explicit request. Say the word if
-you want a hosted version and we'll pick a real backend for it.
+Push to `main` — Vercel auto-deploys via the connected GitHub repo. Do the
+one-time Blob store setup above first, or every request 500s.
