@@ -35,12 +35,17 @@ npm run build && npm run preview   # same, against the production build
 - `data/photos.json` — index only: `[{ id, filename }]`.
 - `public/photos/<uuid>.<ext>` — the actual uploaded photo files (up to 50).
   Served at `/photos/<filename>` for free via Vite's static `public/` dir.
+- `data/slots.json` — court booking / membership rows: `[{ id, name, time, endDate }]`.
+  Seeded from real data given at setup. `endDate` is `YYYY-MM-DD`; "Days"
+  remaining is never stored — always computed client-side from today's date
+  (`daysLeft()` in `Slots.jsx`), so it's correct on whatever day you load it.
 
 Routes (identical on both backends): `GET /api/state`,
-`POST/DELETE /api/players[/:name]`, `POST/DELETE /api/matches[/:id]`,
-`POST/DELETE /api/videos[/:index]` (max 20), `POST/DELETE /api/photos[/:id]`
-(max 50), `GET /api/export` (downloads full JSON snapshot),
-`POST /api/import` (restores a snapshot).
+`POST/DELETE /api/players[/:name]`, `POST/DELETE /api/matches[/:id]`
+(matches take an optional `comment` string), `POST/DELETE /api/videos[/:index]`
+(max 20), `POST/DELETE /api/photos[/:id]` (max 50),
+`POST/PUT/DELETE /api/slots[/:id]`, `GET /api/export` (downloads full JSON
+snapshot), `POST /api/import` (restores a snapshot).
 
 ## Vercel setup (one-time, required before the deployed site works)
 
@@ -82,13 +87,19 @@ if `state/data.json` doesn't exist yet — no manual action needed.)
   success/error toast when it settles — this is the one place that wires
   up spinner/toast behavior for every CRUD op, not per-component.
 - `src/components/Header.jsx` — logo (`public/logo.jpeg`, falls back to an
-  icon if the file's missing) + wordmark + "Gentlemen Play Here" caption + nav pills.
+  icon if the file's missing; hover shows a larger preview via a pure-CSS
+  group-hover popover, no JS) + wordmark + "Gentlemen Play Here" caption +
+  nav pills + Bhavani's contact number (`tel:` link).
 - `src/pages/Dashboard.jsx` — FilterBar, StatCards, TopSeeds, Leaderboard,
   MatchList, VideoSection, PhotoGallery.
 - `src/pages/LogMatch.jsx` — wraps `MatchForm.jsx`, returns to Dashboard on save.
 - `src/pages/Players.jsx` — add/remove master player list.
+- `src/pages/Slots.jsx` — editable court-slot table (name/time/end date).
+  Inline `<input>`s commit on blur via `actions.updateSlot`; rows within 10
+  days of `endDate` (including already-expired) render red.
 - `src/components/MatchForm.jsx` — result entry, player name `<datalist>`
-  autocomplete sourced from the players list, auto-adds any new name typed.
+  autocomplete sourced from the players list, auto-adds any new name typed,
+  optional comment textarea (shown under the match in `MatchList` if set).
 - `src/components/{TopSeeds,Leaderboard,MatchList}.jsx` — ranking displays.
   `MatchList` has its own date range control (Last 30 Days / All Matches /
   Custom Range), independent of the Dashboard-wide period filter.

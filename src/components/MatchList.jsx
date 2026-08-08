@@ -89,6 +89,7 @@ export default function MatchList({ matches, onDelete, onLogMatch }) {
                     {!team1Won && <Trophy size={12} className="inline mb-0.5 ml-1 text-orange-500" />}
                   </div>
                 </div>
+                {m.comment && <p className="text-xs text-slate-400 italic mt-1">"{m.comment}"</p>}
               </div>
               <button onClick={() => onDelete(m.id)} className="text-slate-300 hover:text-red-500 shrink-0">
                 <Trash2 size={15} />

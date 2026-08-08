@@ -26,7 +26,20 @@ const DEFAULT_PLAYERS = [
   'Narendra',
   'Manikyam',
 ]
-const DEFAULT_STATE = { players: DEFAULT_PLAYERS, matches: [], videos: [], photos: [] }
+const DEFAULT_SLOTS = [
+  { name: 'Abdhulla', time: '6 to 7', endDate: '2026-08-12' },
+  { name: 'HR', time: '6 to 7', endDate: '2026-09-01' },
+  { name: 'MURALI', time: '6 to 7', endDate: '2026-09-01' },
+  { name: 'Srinivas Padaga', time: '6 to 7', endDate: '2026-09-01' },
+  { name: 'CHAKRI', time: '6 to 7', endDate: '2026-10-03' },
+  { name: 'Manikyam', time: '6 to 7', endDate: '2026-10-07' },
+  { name: 'SANJEEV', time: '6 to 7', endDate: '2026-10-18' },
+  { name: 'Jittu', time: '6 to 7', endDate: '2026-10-19' },
+  { name: 'NARENDAR REDDY T', time: '6 to 7', endDate: '2026-10-22' },
+  { name: 'NARASIHA REDDY', time: '6 to 7', endDate: '2026-10-26' },
+  { name: 'Suresh Padaga', time: '6 to 7', endDate: '2026-11-01' },
+  { name: 'Vamsi', time: '6 to 7', endDate: '2026-09-05' },
+].map((s) => ({ ...s, id: crypto.randomUUID() }))
 
 async function fetchBlobJSON(pathname, fallback) {
   try {
@@ -47,14 +60,20 @@ async function migrateLegacyState() {
     fetchBlobJSON('state/videos.json', []),
     fetchBlobJSON('state/photos.json', []),
   ])
-  return { players: players || DEFAULT_PLAYERS, matches, videos, photos }
+  return { players: players || DEFAULT_PLAYERS, matches, videos, photos, slots: DEFAULT_SLOTS }
 }
 
 async function readState() {
   try {
     const meta = await head(STATE_PATH)
     const res = await fetch(meta.url, { cache: 'no-store' })
-    return await res.json()
+    const state = await res.json()
+    // Backfill fields added after this blob was first written (e.g. slots).
+    if (!state.slots) {
+      state.slots = DEFAULT_SLOTS
+      await writeState(state)
+    }
+    return state
   } catch {
     const migrated = await migrateLegacyState()
     await writeState(migrated)
@@ -112,6 +131,7 @@ export default async function handler(req, res) {
       if (Array.isArray(body.players)) next.players = body.players
       if (Array.isArray(body.matches)) next.matches = body.matches
       if (Array.isArray(body.videos)) next.videos = body.videos.slice(0, MAX_VIDEOS)
+      if (Array.isArray(body.slots)) next.slots = body.slots
       if (Array.isArray(body.photos)) {
         await Promise.all(state.photos.map((p) => del(p.dataUrl).catch(() => {})))
         const index = []
@@ -164,6 +184,26 @@ export default async function handler(req, res) {
         state.videos.splice(Number(param), 1)
         await writeState(state)
         return res.status(200).json(state.videos)
+      }
+    }
+
+    if (resource === 'slots') {
+      if (req.method === 'POST') {
+        const slot = req.body || {}
+        state.slots.push({ ...slot, id: crypto.randomUUID() })
+        await writeState(state)
+        return res.status(200).json(state.slots)
+      }
+      if (req.method === 'PUT') {
+        const updates = req.body || {}
+        state.slots = state.slots.map((s) => (s.id === param ? { ...s, ...updates, id: s.id } : s))
+        await writeState(state)
+        return res.status(200).json(state.slots)
+      }
+      if (req.method === 'DELETE') {
+        state.slots = state.slots.filter((s) => s.id !== param)
+        await writeState(state)
+        return res.status(200).json(state.slots)
       }
     }
 

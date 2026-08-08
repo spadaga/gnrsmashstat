@@ -24,6 +24,10 @@ export const deleteVideo = (index) => req(`/videos/${index}`, { method: 'DELETE'
 export const addPhoto = (dataUrl) => req('/photos', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ dataUrl }) })
 export const deletePhoto = (id) => req(`/photos/${id}`, { method: 'DELETE' })
 
+export const addSlot = (slot) => req('/slots', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(slot) })
+export const updateSlot = (id, updates) => req(`/slots/${id}`, { method: 'PUT', headers: JSON_HEADERS, body: JSON.stringify(updates) })
+export const deleteSlot = (id) => req(`/slots/${id}`, { method: 'DELETE' })
+
 export const exportAll = () => {
   window.location.href = `${BASE}/export`
 }

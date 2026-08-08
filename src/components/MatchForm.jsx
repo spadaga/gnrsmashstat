@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const empty = { date: new Date().toISOString().slice(0, 10), p1: '', p2: '', p3: '', p4: '', score1: '', score2: '' }
+const empty = { date: new Date().toISOString().slice(0, 10), p1: '', p2: '', p3: '', p4: '', score1: '', score2: '', comment: '' }
 
 export default function MatchForm({ players, onAddPlayer, onAddMatch }) {
   const [form, setForm] = useState(empty)
@@ -12,7 +12,7 @@ export default function MatchForm({ players, onAddPlayer, onAddMatch }) {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    const { date, p1, p2, p3, p4, score1, score2 } = form
+    const { date, p1, p2, p3, p4, score1, score2, comment } = form
     const names = [p1, p2, p3, p4].map((n) => n.trim())
     if (names.some((n) => !n)) return setError('All four player names are required.')
     const s1 = Number(score1)
@@ -23,7 +23,14 @@ export default function MatchForm({ players, onAddPlayer, onAddMatch }) {
     if (s1 === s2) return setError('Scores cannot be tied.')
 
     await Promise.all(names.map(onAddPlayer))
-    await onAddMatch({ date, team1: [names[0], names[1]], team2: [names[2], names[3]], score1: s1, score2: s2 })
+    await onAddMatch({
+      date,
+      team1: [names[0], names[1]],
+      team2: [names[2], names[3]],
+      score1: s1,
+      score2: s2,
+      comment: comment.trim(),
+    })
     setForm(empty)
     setError('')
   }
@@ -75,6 +82,17 @@ export default function MatchForm({ players, onAddPlayer, onAddMatch }) {
             required
           />
         </fieldset>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-600 mb-1">Comment <span className="text-slate-400 font-normal">(optional)</span></label>
+        <textarea
+          value={form.comment}
+          onChange={(e) => set('comment', e.target.value)}
+          placeholder="Any notes about this match..."
+          rows={2}
+          className="w-full border rounded-lg px-3 py-2 text-sm"
+        />
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}

@@ -54,6 +54,7 @@ function getState() {
     matches: readJSON('matches.json', []),
     videos: readJSON('videos.json', []),
     photos: readJSON('photos.json', []).map(toPhotoUrl),
+    slots: readJSON('slots.json', []),
   }
 }
 
@@ -127,6 +128,7 @@ async function handleApi(req, res) {
       if (Array.isArray(body.players)) writeJSON('players.json', body.players)
       if (Array.isArray(body.matches)) writeJSON('matches.json', body.matches)
       if (Array.isArray(body.videos)) writeJSON('videos.json', body.videos.slice(0, MAX_VIDEOS))
+      if (Array.isArray(body.slots)) writeJSON('slots.json', body.slots)
 
       if (Array.isArray(body.photos)) {
         for (const p of readJSON('photos.json', [])) fs.rmSync(path.join(PHOTOS_DIR, p.filename), { force: true })
@@ -182,6 +184,27 @@ async function handleApi(req, res) {
         videos.splice(Number(param), 1)
         writeJSON('videos.json', videos)
         return sendJSON(res, 200, videos)
+      }
+    }
+
+    if (resource === 'slots') {
+      if (req.method === 'POST') {
+        const slot = await readBody(req)
+        const slots = readJSON('slots.json', [])
+        slots.push({ ...slot, id: crypto.randomUUID() })
+        writeJSON('slots.json', slots)
+        return sendJSON(res, 200, slots)
+      }
+      if (req.method === 'PUT') {
+        const updates = await readBody(req)
+        const slots = readJSON('slots.json', []).map((s) => (s.id === param ? { ...s, ...updates, id: s.id } : s))
+        writeJSON('slots.json', slots)
+        return sendJSON(res, 200, slots)
+      }
+      if (req.method === 'DELETE') {
+        const slots = readJSON('slots.json', []).filter((s) => s.id !== param)
+        writeJSON('slots.json', slots)
+        return sendJSON(res, 200, slots)
       }
     }
 

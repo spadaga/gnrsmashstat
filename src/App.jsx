@@ -5,6 +5,7 @@ import Header from './components/Header'
 import Dashboard from './pages/Dashboard'
 import LogMatch from './pages/LogMatch'
 import Players from './pages/Players'
+import Slots from './pages/Slots'
 
 export default function App() {
   const [page, setPage] = useState('dashboard')
@@ -65,6 +66,9 @@ export default function App() {
     deleteVideo: (index) => withFeedback(api.deleteVideo(index).then((videos) => setData((d) => ({ ...d, videos }))), 'Video removed'),
     addPhoto: (dataUrl) => withFeedback(api.addPhoto(dataUrl).then((photos) => setData((d) => ({ ...d, photos }))), 'Photo uploaded'),
     deletePhoto: (id) => withFeedback(api.deletePhoto(id).then((photos) => setData((d) => ({ ...d, photos }))), 'Photo deleted'),
+    addSlot: (slot) => withFeedback(api.addSlot(slot).then((slots) => setData((d) => ({ ...d, slots }))), 'Slot added'),
+    updateSlot: (id, updates) => withFeedback(api.updateSlot(id, updates).then((slots) => setData((d) => ({ ...d, slots }))), 'Slot updated'),
+    deleteSlot: (id) => withFeedback(api.deleteSlot(id).then((slots) => setData((d) => ({ ...d, slots }))), 'Slot deleted'),
   }
 
   return (
@@ -94,6 +98,8 @@ export default function App() {
         {page === 'log' && <LogMatch players={data.players} actions={actions} onNavigate={setPage} />}
 
         {page === 'players' && <Players players={data.players} actions={actions} />}
+
+        {page === 'slots' && <Slots slots={data.slots} actions={actions} />}
       </main>
     </div>
   )
