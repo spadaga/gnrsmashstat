@@ -1,168 +1,257 @@
-# Badminton Results Tracker
+# GNR SmashStats — Badminton Results Tracker
 
 React + Vite + Tailwind v4 frontend. Two interchangeable backends behind the
-same `/api/*` contract — `src/lib/api.js` doesn't know or care which one is
-live:
+same `/api/*` contract — `src/lib/api.js` works against either without changes:
 
-- **Local dev/preview**: `server/apiPlugin.js`, a Vite middleware plugin.
-  Real JSON files in this project folder, no database.
-- **Vercel (production)**: `api/handler.js`, a Vercel serverless function,
-  reached via a `vercel.json` rewrite (`/api/:path* -> /api/handler`). Same
-  routes, backed by Vercel Blob storage (Vercel's static hosting has no
-  writable disk, so the local file version can't run there). All state
-  (players/matches/videos/photos/slots) lives in ONE blob (`state/data.json`)
-  so a read or write is a single Blob round trip, not one per resource.
-  Note: the bracket catch-all filename convention (`[...path].js`) only
-  matched single-segment paths on this non-Next project — that's why the
-  explicit rewrite exists instead of relying on filesystem routing alone.
+- **Local dev/preview**: `server/apiPlugin.js` — Vite middleware, reads/writes
+  plain JSON files in `data/` and images in `public/photos/`.
+- **Vercel (production)**: `api/handler.js` — serverless function reached via
+  `vercel.json` rewrite (`/api/:path* → /api/handler`). All state lives in one
+  Vercel Blob (`state/data.json`) so every read/write is a single round-trip.
 
 ## Run locally
 
 ```
 npm install
-npm run dev      # http://localhost:5173, backed by server/apiPlugin.js + local files
-npm run build && npm run preview   # same, against the production build
+npm run dev      # http://localhost:5173
+npm run build && npm run preview
 npm run lint     # oxlint
 ```
 
-## Local dev storage (on disk, in this project folder)
+## Players schema (NEW — `{ name, pin? }` objects)
 
-- `data/players.json` — array of player name strings. Seeded with:
-  Sanjeev Kumar, Nayeem Abdhullah, Srinivas Padaga, Suresh Padaga,
-  Pradeep Raghav, Narendra, Manikyam.
-- `data/matches.json` — array of `{ id, date, team1: [a,b], team2: [c,d], score1, score2, comment? }`.
-  Doubles only. Score validated 0–21, no ties, in `MatchForm.jsx`.
-  `comment` is optional; shown italicised under the match row in `MatchList`.
-- `data/videos.json` — array of up to 20 YouTube URL strings.
-- `data/photos.json` — index only: `[{ id, filename }]`.
-- `public/photos/<uuid>.<ext>` — the actual uploaded photo files (up to 50).
-  Served at `/photos/<filename>` via Vite's static `public/` dir.
-  `server/apiPlugin.js` converts the index to `[{ id, dataUrl: '/photos/<filename>' }]`
-  before sending to the client; `PhotoGallery` just uses `p.dataUrl` directly.
-- `data/slots.json` — court booking / membership rows: `[{ id, name, time, endDate }]`.
-  `endDate` is `YYYY-MM-DD`; "Days" remaining is never stored — always
-  computed client-side from today's date (`daysLeft()` in `Slots.jsx`), so
-  it's correct on whatever day you load it.
+`data/players.json` is now an array of **objects**, not plain strings:
 
-Routes (identical on both backends): `GET /api/state`,
-`POST/DELETE /api/players[/:name]`, `POST/DELETE /api/matches[/:id]`
-(matches take an optional `comment` string), `POST/DELETE /api/videos[/:index]`
-(max 20), `POST/DELETE /api/photos[/:id]` (max 50),
-`POST/PUT/DELETE /api/slots[/:id]`, `GET /api/export` (downloads full JSON
-snapshot), `POST /api/import` (restores a snapshot).
+```json
+[
+  { "name": "Sanjeev Kumar",    "pin": "2682" },
+  { "name": "Nayeem Abdhullah", "pin": "0492" },
+  { "name": "Srinivas Padaga",  "pin": "0556" },
+  { "name": "Suresh Padaga",    "pin": "2669" },
+  { "name": "Pradeep Raghav",   "pin": "8220" },
+  { "name": "Narendra",         "pin": "1484" },
+  { "name": "Manikyam",         "pin": "7158" },
+  { "name": "Diwakar",          "pin": "8610" }
+]
+```
 
-## Vercel setup (one-time, required before the deployed site works)
+- Players **with** a `pin` are **admins** (can add/edit/delete everything).
+- Players **without** a `pin` are regular members (read-only access).
+- PIN = last 4 digits of that person's mobile number.
+- Both backends auto-migrate old string-array format to this object format on
+  first read — no manual action needed.
 
-The serverless function needs a Blob store connected to the project —
-without it, every `/api/*` call 500s.
+## Admin auth (PIN-first login)
 
-1. Vercel dashboard -> this project -> **Storage** tab -> **Create Database**
-   -> **Blob** -> connect it to this project. This auto-injects a
-   `BLOB_READ_WRITE_TOKEN` env var.
-2. Redeploy (env vars only take effect on a new deployment — trigger one
-   from the dashboard, or push any commit).
-3. Visit the site — first load seeds the default player list and default
-   slots into Blob (same defaults as `DEFAULT_PLAYERS` / `DEFAULT_SLOTS` in
-   `api/handler.js`).
+The site is **read-only by default** for all visitors.
 
-Vercel Blob data (`state/data.json`, `photos/*`) is separate from the local
-`data/` and `public/photos/` files — the two backends don't sync with each
-other. Use Export/Import JSON to move a snapshot between them.
+To get admin access:
+1. Click **Admin Login** in the top-right nav.
+2. Type your **4-digit PIN** (last 4 digits of your mobile number).
+3. The system matches the PIN against `players` — your name appears and you are
+   logged in automatically after 700 ms.
+4. Click **Logout** (or refresh) to go back to read-only mode.
 
-(A version before this one stored players/matches/videos/photos as four
-separate blobs. `api/handler.js` migrates that automatically on first read
-if `state/data.json` doesn't exist yet — no manual action needed. It also
-backfills the `slots` field if it's missing from an older blob.)
+What admins can do that guests cannot:
+- Log a new match
+- Edit a match score (pencil icon per row)
+- Delete a match / player / slot / video / photo
+- Add a player, slot, video, or photo
+- Import / Export the full JSON snapshot
+- Restore a previous version
 
-### Vercel photo storage
+`src/lib/admins.js` helpers:
+- `getAdmins(players)` — returns only players with a `pin`
+- `findAdminByPin(players, pin)` — finds admin by PIN (used by login)
+- `verifyPin(players, name, pin)` — verifies a specific name+pin pair
+- `playerNames(players)` — extracts name strings for forms/ranking
 
-On Vercel, photos are stored as individual Blob objects under `photos/<uuid>.<ext>`
-with public access. The state blob holds `[{ id, dataUrl: <blob-cdn-url> }]` —
-the `dataUrl` field is a full Blob CDN URL, not a base64 string. `PhotoGallery`
-renders it identically to local (`p.dataUrl`), so the component is backend-agnostic.
+## Version history
+
+Every write to the data automatically saves a **snapshot** (up to 5 kept):
+- **Local**: snapshots saved as `data/history/<timestamp>.json`; oldest pruned
+  automatically when count exceeds 5.
+- **Vercel**: snapshots saved as Blob objects under `state/history/<ISO>.json`;
+  same pruning logic.
+
+**How to view and restore versions:**
+- `GET /api/versions` — returns a JSON array of up to 5 snapshots, newest first:
+  ```json
+  [{ "ts": "2026-08-10T17-30-00-000Z", "matchCount": 42, "playerCount": 8 }, ...]
+  ```
+- `POST /api/restore/:ts` — restores the snapshot with that timestamp as the
+  current state (does NOT snapshot the current state first, so do this carefully).
+- The `VersionsModal` component (admin-only) provides a UI for this — it lists
+  all snapshots with timestamps, match/player counts, and a Restore button per row.
+  Wire it in `Dashboard.jsx` when you want to expose it in the UI.
+
+**To view versions from the browser console (quick check):**
+```js
+fetch('/api/versions').then(r => r.json()).then(console.log)
+```
+
+## Local dev storage
+
+- `data/players.json` — `[{ name, pin? }]` — see Players schema above.
+- `data/matches.json` — `[{ id, date, team1:[a,b], team2:[c,d], score1, score2, comment? }]`.
+  Doubles only. Scores 0–21, no ties. `comment` is optional; shown italicised.
+- `data/videos.json` — up to 20 YouTube URL strings.
+- `data/photos.json` — index `[{ id, filename }]`.
+- `public/photos/<uuid>.<ext>` — actual photo files (up to 50), served via Vite static.
+  Backend converts index to `[{ id, dataUrl: '/photos/<filename>' }]` before sending.
+- `data/slots.json` — `[{ id, name, time, endDate }]`. `endDate` is `YYYY-MM-DD`.
+  Days-remaining always computed client-side in `Slots.jsx`.
+- `data/history/` — version snapshots (up to 5 newest JSON files).
+
+## API routes
+
+All routes identical on both backends:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/state` | Full app state |
+| POST | `/api/players` | Add player `{ name, pin? }` |
+| DELETE | `/api/players/:name` | Remove player |
+| POST | `/api/matches` | Add match |
+| PUT | `/api/matches/:id` | Update match score/comment (admin) |
+| DELETE | `/api/matches/:id` | Delete match |
+| POST | `/api/videos` | Add YouTube URL (max 20) |
+| DELETE | `/api/videos/:index` | Remove video |
+| POST | `/api/photos` | Upload photo as base64 dataUrl (max 50) |
+| DELETE | `/api/photos/:id` | Delete photo |
+| POST | `/api/slots` | Add court slot |
+| PUT | `/api/slots/:id` | Update slot (name/time/endDate) |
+| DELETE | `/api/slots/:id` | Delete slot |
+| GET | `/api/export` | Download full JSON snapshot (attachment) |
+| POST | `/api/import` | Restore full snapshot |
+| GET | `/api/versions` | List up to 5 version snapshots |
+| POST | `/api/restore/:ts` | Restore a specific snapshot |
+
+## Vercel setup (one-time)
+
+1. Vercel dashboard → project → **Storage** → **Create Database** → **Blob** →
+   connect to this project → auto-injects `BLOB_READ_WRITE_TOKEN`.
+2. Redeploy (env vars require a new deploy).
+3. First page load seeds `DEFAULT_PLAYERS` + `DEFAULT_SLOTS` from `api/handler.js`.
+
+On Vercel: photos are stored as individual Blobs under `photos/<uuid>.<ext>`.
+State blob holds `[{ id, dataUrl: <blob-cdn-url> }]` — `PhotoGallery` uses
+`p.dataUrl` the same way on both backends.
+
+Auto-migrations in `api/handler.js`:
+- If `state/data.json` missing → migrates four separate legacy blobs.
+- If `slots` field missing → backfills `DEFAULT_SLOTS`.
+- If `players` are strings → converts to `{ name }` objects, merging any
+  matching admin PINs from `DEFAULT_PLAYERS`.
 
 ## Ranking
 
 `src/lib/ranking.js`:
-- `computeStats(matches, players)` — wins, losses, point diff, win rate per
-  player, summed across every doubles match they appeared in. Players not yet
-  in the master list are auto-created in the stats map. Sorted by wins then
-  point diff — this ordering drives Top Seeds and the Leaderboard.
-- `filterByPeriod(matches, 'all' | 'month' | 'week')` — the All Time / This
-  Month / This Week filter on the Dashboard (week = Sunday-start).
+- `computeStats(matches, players)` — wins / losses / point diff / win rate per
+  player (accepts both string and `{ name, pin? }` objects). Sorted by wins
+  then point diff.
+- `filterByPeriod(matches, period)` — period values:
+  - `'all'` — All Time
+  - `'year'` — This Year
+  - `'month'` — This Month (same calendar month + year)
+  - `'week'` — This Week (Sunday-start)
 
-## Structure (SmashStats branding: orange #ea580c + slate-900, `lucide-react` icons)
+## Structure
 
-- `src/App.jsx` — page router (`dashboard` / `log` / `players` / `slots`,
-  plain `useState`) + loads state once via `api.getState()` (spinner shown
-  until it resolves), holds it, and hands down a bundled `actions` object
-  (`addPlayer`, `deletePlayer`, `addMatch`, `deleteMatch`, `addVideo`,
-  `deleteVideo`, `addPhoto`, `deletePhoto`, `addSlot`, `updateSlot`,
-  `deleteSlot`). Every action goes through `withFeedback()`, which shows a
-  "Saving…" badge while in flight and a success/error toast when it settles —
-  this is the one place that wires up spinner/toast behavior for every CRUD
-  op, not per-component. `handleImport` reads a JSON file chosen by the user
-  and calls `api.importAll`.
-- `src/components/Header.jsx` — logo (`public/logo.jpeg`, falls back to an
-  Activity icon if the file is missing; hover shows a larger 192×192 preview
-  via a pure-CSS group-hover popover, no JS) + wordmark "GNR SMASHSTATS" +
-  "Gentlemen Play Here" caption + nav pills (Dashboard / Log Match / Players /
-  Court Slots) + Bhavani's contact number (`tel:7569475439` link).
-- `src/pages/Dashboard.jsx` — FilterBar, StatCards, TopSeeds, then a 2-column
-  grid: Leaderboard (left) + MatchList (right), followed by a second 2-column
-  grid: VideoSection (left) + PhotoGallery (right).
-- `src/pages/LogMatch.jsx` — wraps `MatchForm.jsx`, navigates back to
-  Dashboard on successful save.
-- `src/pages/Players.jsx` — add/remove master player list. Form at the top
-  for adding a new name; list below with a trash button per row.
-- `src/pages/Slots.jsx` — editable court-slot table (name / time / end date).
-  Inline `<input>`s commit on blur via `actions.updateSlot`; rows within 10
-  days of `endDate` (including already-expired) highlight red with bold text.
-  Sorted by `endDate` ascending. Add form at the top.
-- `src/components/MatchForm.jsx` — result entry form. `<datalist>` autocomplete
-  for all four player inputs sourced from the players list; any new name typed
-  is silently auto-added via `onAddPlayer` before the match is saved. Optional
-  comment textarea. Scores validated: whole numbers 0–21, no ties.
-- `src/components/StatCards.jsx` — two summary cards: Total Matches (orange bg)
-  + Active Players (slate-900 bg). Responds to the Dashboard period filter.
-- `src/components/TopSeeds.jsx` — top 3 players by win count/point diff.
-  Seed #1 card uses orange bg; seeds #2–3 use white/border. Hidden if no data.
-- `src/components/Leaderboard.jsx` — all players ranked, with rank number,
-  W-L record, and win rate. Rank #1 badge is orange; others are slate-100.
-- `src/components/MatchList.jsx` — independent date range control (Last 30 Days /
-  All Matches / Custom Range), sorted newest-first. Winner team bolded with a
-  Trophy icon. Latest match gets an orange border. Comment shown italicised.
-- `src/components/VideoSection.jsx` — "Manage" toggle switches between carousel
-  view and an editable list. `toEmbedUrl()` converts YouTube watch URLs to
-  embed URLs. Max 20 videos enforced client- and server-side.
-- `src/components/PhotoGallery.jsx` — "Manage" toggle switches between carousel
-  and a grid with X-delete buttons. Accepts multiple file uploads at once via
-  `<input multiple>`. Max 50 photos enforced client- and server-side.
-- `src/components/Carousel.jsx` — generic auto-advancing carousel (default
-  4 s interval). Resets to slide 0 when item count changes. Dot indicators
-  shown when more than one item; active dot is orange.
-- `src/components/FilterBar.jsx` — All Time / This Month / This Week pill
-  buttons + Export (triggers `window.location.href` download) + Import
-  (hidden file input that triggers `onImport`).
-- `src/lib/api.js` — thin fetch client. All mutation functions return the
-  updated resource array (players/matches/videos/photos/slots). `exportAll`
-  triggers a browser download via `window.location.href`. `importAll` POSTs
-  the full snapshot and returns the new full state.
+### `src/App.jsx`
+Router (`dashboard / log / players / slots`). Loads state once on mount.
+Holds `adminName` (null = read-only). Opens `LoginModal` when Admin Login clicked.
+All 12 actions (`addPlayer`, `deletePlayer`, `addMatch`, `updateMatch`,
+`deleteMatch`, `addVideo`, `deleteVideo`, `addPhoto`, `deletePhoto`,
+`addSlot`, `updateSlot`, `deleteSlot`) go through `withFeedback()` which:
+- Shows full-screen transparent loading overlay (white card + orange spinner)
+- Shows success/error toast on settle
+
+### `src/components/Header.jsx`
+Logo + wordmark + nav pills. "Log Match" nav tab hidden for guests.
+Shows **Admin Login** button when logged out; admin name badge + **Logout** when in.
+
+### `src/components/LoginModal.jsx`
+PIN-first: user types 4 digits → `findAdminByPin()` → name appears with ✅ →
+auto-login after 700 ms. No name-pick step.
+
+### `src/components/ConfirmDialog.jsx`
+Modern modal confirmation replacing all `window.confirm` calls.
+Backdrop + icon (Trash for danger, AlertTriangle for warn) + Cancel + Confirm.
+Closes on Escape or backdrop click. Focusses Confirm button on open.
+
+### `src/components/VersionsModal.jsx`
+Admin-only modal listing the last 5 snapshots. Each row shows timestamp,
+match count, player count, a "Latest" badge on row 0, and a Restore button.
+Restore triggers a `ConfirmDialog` then calls `POST /api/restore/:ts`.
+
+### `src/pages/Dashboard.jsx`
+FilterBar → StatCards → TopSeeds → [Leaderboard | MatchList] → [VideoSection | PhotoGallery].
+Passes `isAdmin` to every child component.
+
+### `src/pages/LogMatch.jsx`
+Wraps `MatchForm.jsx`, navigates back to Dashboard on save (admin only).
+
+### `src/pages/Players.jsx`
+Add/remove players (admin only for write). Shows **Admin** badge for players
+with a PIN. Read-only view lists all players for guests.
+
+### `src/pages/Slots.jsx`
+Court-slot table. Admin: inline editable cells (commit on blur), Add form,
+Delete button. Guest: read-only display. Rows within 10 days of `endDate`
+(including expired) highlight red. Sorted by `endDate` ascending.
+
+### `src/components/MatchForm.jsx`
+Match entry form (admin only). `<datalist>` autocomplete from players list.
+New names typed are silently auto-added. Optional comment textarea.
+Scores validated 0–21, no ties.
+
+### `src/components/MatchList.jsx`
+- Independent date-range filter (Last 30 Days / All Matches / Custom Range).
+- Matches **grouped by date** with sticky date headers (newest first).
+- **Edit score** (✏️, admin only) opens inline `EditScoreForm` — validates and
+  calls `PUT /api/matches/:id`.
+- **Delete** (🗑️, admin only) shows `ConfirmDialog` then a local transparent
+  overlay with "Deleting…" spinner while the request is in flight.
+
+### `src/components/StatCards.jsx`
+Total Matches (orange) + Active Players (slate-900). Responds to period filter.
+
+### `src/components/TopSeeds.jsx`
+Top 3 players. Seed #1 = orange card. Hidden if no data.
+
+### `src/components/Leaderboard.jsx`
+All players ranked by win count. Rank #1 badge is orange.
+
+### `src/components/VideoSection.jsx`
+Carousel (default) ↔ Manage toggle (admin only). YouTube watch URLs converted
+to embed. Max 20.
+
+### `src/components/PhotoGallery.jsx`
+Carousel ↔ Manage grid (admin only). Multi-file upload. Max 50.
+
+### `src/components/Carousel.jsx`
+Auto-advances every 4 s. Resets on item count change. Orange dot = active.
+
+### `src/components/FilterBar.jsx`
+Period pills: **All Time / This Year / This Month / This Week**.
+Import + Export buttons visible to admins only.
+
+### `src/lib/api.js`
+Thin fetch wrapper. All mutations return the updated resource array.
+`exportAll()` → browser download. `importAll()` → returns full state.
+`getVersions()` / `restoreVersion(ts)` for version history.
 
 ## Known limits
 
-- Vercel Blob access is `public` — anyone with a blob's URL can view it (no
-  auth). Fine for non-sensitive badminton scores/photos; don't put anything
-  sensitive in there.
-- No login/auth anywhere — anyone with the site URL or this machine can
-  edit everything.
-- The two backends' data doesn't sync — local file changes don't appear on
-  the Vercel deployment and vice versa. Export/Import JSON to move a
-  snapshot between them.
-- Scores are capped at 0–21. No deuce/advantage logic — whatever score is
-  entered is accepted as long as it's not a tie.
+- Vercel Blob is `public` — blob URLs are accessible to anyone who knows them.
+- No server-side auth — PIN check is client-side only. Do not store sensitive data.
+- Local and Vercel data are independent — use Export/Import to move snapshots.
+- Scores capped 0–21, no deuce logic.
+- `VersionsModal` is built but not yet wired into the Dashboard UI — call
+  `GET /api/versions` directly or import and mount it to expose it.
 
 ## Deploy
 
-Push to `main` — Vercel auto-deploys via the connected GitHub repo. Do the
-one-time Blob store setup above first, or every request 500s.
+Push to `main` — Vercel auto-deploys. Complete the one-time Blob store setup
+above first, otherwise every `/api/*` call returns 500.
