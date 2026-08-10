@@ -6,6 +6,7 @@ import Leaderboard from '../components/Leaderboard'
 import MatchList from '../components/MatchList'
 import VideoSection from '../components/VideoSection'
 import PhotoGallery from '../components/PhotoGallery'
+import SlotsTicker from '../components/SlotsTicker'
 import { computeStats, filterByPeriod } from '../lib/ranking'
 import { exportAll } from '../lib/api'
 
@@ -16,15 +17,14 @@ export default function Dashboard({ data, actions, onNavigate, onImport, isAdmin
 
   return (
     <div className="space-y-4">
+      <SlotsTicker slots={data.slots} />
       <FilterBar period={period} onPeriod={setPeriod} onExport={exportAll} onImport={onImport} isAdmin={isAdmin} />
       <StatCards matches={filtered} players={data.players} />
       <TopSeeds stats={stats} />
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Leaderboard stats={stats} />
         <MatchList matches={data.matches} onDelete={actions.deleteMatch} onUpdate={actions.updateMatch} onLogMatch={() => onNavigate('log')} isAdmin={isAdmin} />
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <VideoSection videos={data.videos} onAdd={actions.addVideo} onDelete={actions.deleteVideo} isAdmin={isAdmin} />
         <PhotoGallery photos={data.photos} onAdd={actions.addPhoto} onDelete={actions.deletePhoto} isAdmin={isAdmin} />

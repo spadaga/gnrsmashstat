@@ -5,7 +5,6 @@ export default function LogMatch({ players, actions, onNavigate }) {
     <div className="max-w-2xl mx-auto">
       <MatchForm
         players={players}
-        onAddPlayer={actions.addPlayer}
         onAddMatch={async (match) => {
           await actions.addMatch(match)
           onNavigate('dashboard')

@@ -1,0 +1,204 @@
+{
+  "players": [
+    {
+      "name": "Sanjeev Kumar",
+      "pin": "2682"
+    },
+    {
+      "name": "Nayeem Abdhullah",
+      "pin": "0492"
+    },
+    {
+      "name": "Srinivas Padaga",
+      "pin": "0556"
+    },
+    {
+      "name": "Suresh Padaga",
+      "pin": "2669"
+    },
+    {
+      "name": "Pradeep Raghav",
+      "pin": "8220"
+    },
+    {
+      "name": "Narendra",
+      "pin": "1484"
+    },
+    {
+      "name": "Manikyam",
+      "pin": "7158"
+    },
+    {
+      "name": "Diwakar",
+      "pin": "8610"
+    }
+  ],
+  "matches": [
+    {
+      "date": "2026-08-08",
+      "team1": [
+        "Sanjeev Kumar",
+        "Nayeem Abdhullah"
+      ],
+      "team2": [
+        "Srinivas Padaga",
+        "Suresh Padaga"
+      ],
+      "score1": 12,
+      "score2": 21,
+      "id": "fd091e58-5e16-4ba7-91fc-73ee104244ae"
+    },
+    {
+      "date": "2026-08-08",
+      "team1": [
+        "Sanjeev Kumar",
+        "Nayeem Abdhullah"
+      ],
+      "team2": [
+        "Srinivas Padaga",
+        "Pradeep Raghav"
+      ],
+      "score1": 19,
+      "score2": 21,
+      "id": "3087cf9a-5064-4adf-8d47-f645f2100a8f"
+    },
+    {
+      "date": "2026-08-08",
+      "team1": [
+        "Sanjeev Kumar",
+        "Narendra"
+      ],
+      "team2": [
+        "Srinivas Padaga",
+        "Suresh Padaga"
+      ],
+      "score1": 21,
+      "score2": 16,
+      "id": "8edbbe28-f3b5-4858-ad62-00465b5cfefe"
+    },
+    {
+      "date": "2026-08-08",
+      "team1": [
+        "Nayeem Abdhullah",
+        "Suresh Padaga"
+      ],
+      "team2": [
+        "Pradeep Raghav",
+        "Narendra"
+      ],
+      "score1": 21,
+      "score2": 16,
+      "id": "c8f3b721-cb60-4bb8-a454-51c6577d0077"
+    }
+  ],
+  "videos": [
+    "https://www.youtube.com/watch?v=yMZr4YIDi1M",
+    "https://www.youtube.com/watch?v=OD2-LFied7A",
+    "https://www.youtube.com/watch?v=j1M2yUrF0_Q",
+    "https://www.youtube.com/watch?v=oESIYysF42w"
+  ],
+  "photos": [
+    {
+      "id": "326af70e-3759-48db-a03d-c200b53610de",
+      "dataUrl": "/photos/326af70e-3759-48db-a03d-c200b53610de.jpg"
+    },
+    {
+      "id": "10e5040f-a68c-4f53-bd8b-2d500b724385",
+      "dataUrl": "/photos/10e5040f-a68c-4f53-bd8b-2d500b724385.jpg"
+    },
+    {
+      "id": "6dae02dc-f371-4558-8c72-cba009fd9ace",
+      "dataUrl": "/photos/6dae02dc-f371-4558-8c72-cba009fd9ace.jpg"
+    },
+    {
+      "id": "5b956dc6-4eaa-461c-9ec2-04780d603250",
+      "dataUrl": "/photos/5b956dc6-4eaa-461c-9ec2-04780d603250.jpg"
+    },
+    {
+      "id": "568608be-ecf6-4410-a89f-0658e359d401",
+      "dataUrl": "/photos/568608be-ecf6-4410-a89f-0658e359d401.jpg"
+    },
+    {
+      "id": "45ab372f-ac01-4285-8ae4-977dc4fd95fc",
+      "dataUrl": "/photos/45ab372f-ac01-4285-8ae4-977dc4fd95fc.jpg"
+    },
+    {
+      "id": "98ad5d81-c430-4000-81f6-f07f8dff0a3a",
+      "dataUrl": "/photos/98ad5d81-c430-4000-81f6-f07f8dff0a3a.jpg"
+    }
+  ],
+  "slots": [
+    {
+      "id": "b1a1a111-0000-4000-8000-000000000001",
+      "name": "Abdhulla",
+      "time": "6 to 7",
+      "endDate": "2026-08-12"
+    },
+    {
+      "id": "b1a1a111-0000-4000-8000-000000000002",
+      "name": "HR",
+      "time": "6 to 7",
+      "endDate": "2026-09-01"
+    },
+    {
+      "id": "b1a1a111-0000-4000-8000-000000000003",
+      "name": "MURALI",
+      "time": "6 to 7",
+      "endDate": "2026-09-01"
+    },
+    {
+      "id": "b1a1a111-0000-4000-8000-000000000004",
+      "name": "Srinivas Padaga",
+      "time": "6 to 7",
+      "endDate": "2026-09-01"
+    },
+    {
+      "id": "b1a1a111-0000-4000-8000-000000000005",
+      "name": "CHAKRI",
+      "time": "6 to 7",
+      "endDate": "2026-10-03"
+    },
+    {
+      "id": "b1a1a111-0000-4000-8000-000000000006",
+      "name": "Manikyam",
+      "time": "6 to 7",
+      "endDate": "2026-10-07"
+    },
+    {
+      "id": "b1a1a111-0000-4000-8000-000000000007",
+      "name": "SANJEEV",
+      "time": "6 to 7",
+      "endDate": "2026-10-18"
+    },
+    {
+      "id": "b1a1a111-0000-4000-8000-000000000008",
+      "name": "Jittu",
+      "time": "6 to 7",
+      "endDate": "2026-10-19"
+    },
+    {
+      "id": "b1a1a111-0000-4000-8000-000000000009",
+      "name": "NARENDAR REDDY T",
+      "time": "6 to 7",
+      "endDate": "2026-10-22"
+    },
+    {
+      "id": "b1a1a111-0000-4000-8000-000000000010",
+      "name": "NARASIHA REDDY",
+      "time": "6 to 7",
+      "endDate": "2026-10-26"
+    },
+    {
+      "id": "b1a1a111-0000-4000-8000-000000000011",
+      "name": "Suresh Padaga",
+      "time": "6 to 7",
+      "endDate": "2026-11-01"
+    },
+    {
+      "id": "b1a1a111-0000-4000-8000-000000000012",
+      "name": "Vamsi",
+      "time": "6 to 7",
+      "endDate": "2026-09-05"
+    }
+  ]
+}
