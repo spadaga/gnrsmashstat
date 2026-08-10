@@ -1,8 +1,10 @@
 // Ranking: count wins/losses and total point difference per player across
 // all doubles matches they played in. Sort by wins, then point diff.
+// players may be an array of { name, pin? } objects or plain strings.
 export function computeStats(matches, players) {
+  const names = players.map((p) => (typeof p === 'string' ? p : p.name))
   const stats = Object.fromEntries(
-    players.map((name) => [name, { name, played: 0, wins: 0, losses: 0, pointDiff: 0 }])
+    names.map((name) => [name, { name, played: 0, wins: 0, losses: 0, pointDiff: 0 }])
   )
 
   for (const m of matches) {

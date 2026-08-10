@@ -9,25 +9,25 @@ import PhotoGallery from '../components/PhotoGallery'
 import { computeStats, filterByPeriod } from '../lib/ranking'
 import { exportAll } from '../lib/api'
 
-export default function Dashboard({ data, actions, onNavigate, onImport }) {
+export default function Dashboard({ data, actions, onNavigate, onImport, isAdmin }) {
   const [period, setPeriod] = useState('all')
   const filtered = filterByPeriod(data.matches, period)
   const stats = computeStats(filtered, data.players)
 
   return (
     <div className="space-y-4">
-      <FilterBar period={period} onPeriod={setPeriod} onExport={exportAll} onImport={onImport} />
+      <FilterBar period={period} onPeriod={setPeriod} onExport={exportAll} onImport={onImport} isAdmin={isAdmin} />
       <StatCards matches={filtered} players={data.players} />
       <TopSeeds stats={stats} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Leaderboard stats={stats} />
-        <MatchList matches={data.matches} onDelete={actions.deleteMatch} onLogMatch={() => onNavigate('log')} />
+        <MatchList matches={data.matches} onDelete={actions.deleteMatch} onLogMatch={() => onNavigate('log')} isAdmin={isAdmin} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <VideoSection videos={data.videos} onAdd={actions.addVideo} onDelete={actions.deleteVideo} />
-        <PhotoGallery photos={data.photos} onAdd={actions.addPhoto} onDelete={actions.deletePhoto} />
+        <VideoSection videos={data.videos} onAdd={actions.addVideo} onDelete={actions.deleteVideo} isAdmin={isAdmin} />
+        <PhotoGallery photos={data.photos} onAdd={actions.addPhoto} onDelete={actions.deletePhoto} isAdmin={isAdmin} />
       </div>
     </div>
   )

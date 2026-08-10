@@ -33,3 +33,6 @@ export const exportAll = () => {
 }
 
 export const importAll = (data) => req('/import', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(data) })
+
+export const getVersions = () => req('/versions')
+export const restoreVersion = (ts) => req(`/restore/${encodeURIComponent(ts)}`, { method: 'POST' })

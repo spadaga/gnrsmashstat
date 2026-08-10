@@ -6,21 +6,27 @@ import path from 'node:path'
 import crypto from 'node:crypto'
 
 const DATA_DIR = path.resolve(process.cwd(), 'data')
+const HISTORY_DIR = path.resolve(process.cwd(), 'data/history')
 const PHOTOS_DIR = path.resolve(process.cwd(), 'public/photos')
 const MAX_PHOTOS = 50
 const MAX_VIDEOS = 20
+const MAX_VERSIONS = 5
 
+// Players are stored as { name, pin? } objects.
+// Those with a pin are admins; others are read-only.
 const DEFAULT_PLAYERS = [
-  'Sanjeev Kumar',
-  'Nayeem Abdhullah',
-  'Srinivas Padaga',
-  'Suresh Padaga',
-  'Pradeep Raghav',
-  'Narendra',
-  'Manikyam',
+  { name: 'Sanjeev Kumar',   pin: '2682' },
+  { name: 'Nayeem Abdhullah', pin: '0492' },
+  { name: 'Srinivas Padaga', pin: '0556' },
+  { name: 'Suresh Padaga',   pin: '2669' },
+  { name: 'Pradeep Raghav',  pin: '8220' },
+  { name: 'Narendra',        pin: '1484' },
+  { name: 'Manikyam',        pin: '7158' },
+  { name: 'Diwakar',         pin: '8610' },
 ]
 
 fs.mkdirSync(DATA_DIR, { recursive: true })
+fs.mkdirSync(HISTORY_DIR, { recursive: true })
 fs.mkdirSync(PHOTOS_DIR, { recursive: true })
 
 function readJSON(name, fallback) {
@@ -33,13 +39,32 @@ function readJSON(name, fallback) {
   }
 }
 
+function snapshotState() {
+  const state = getState()
+  const ts = new Date().toISOString().replace(/[:.]/g, '-')
+  fs.writeFileSync(path.join(HISTORY_DIR, `${ts}.json`), JSON.stringify(state, null, 2))
+  // Prune to MAX_VERSIONS
+  const files = fs.readdirSync(HISTORY_DIR).filter((f) => f.endsWith('.json')).sort()
+  files.slice(0, Math.max(0, files.length - MAX_VERSIONS)).forEach((f) =>
+    fs.rmSync(path.join(HISTORY_DIR, f), { force: true })
+  )
+}
+
 function writeJSON(name, value) {
   fs.writeFileSync(path.join(DATA_DIR, name), JSON.stringify(value, null, 2))
 }
 
 function getPlayers() {
   const players = readJSON('players.json', null)
-  if (players) return players
+  if (players) {
+    // Migrate old string-array format to object array on first read
+    if (players.length > 0 && typeof players[0] === 'string') {
+      const migrated = players.map((name) => ({ name }))
+      writeJSON('players.json', migrated)
+      return migrated
+    }
+    return players
+  }
   writeJSON('players.json', DEFAULT_PLAYERS)
   return DEFAULT_PLAYERS
 }
@@ -111,6 +136,32 @@ async function handleApi(req, res) {
       return sendJSON(res, 200, getState())
     }
 
+    if (resource === 'versions' && req.method === 'GET') {
+      const files = fs.existsSync(HISTORY_DIR)
+        ? fs.readdirSync(HISTORY_DIR).filter((f) => f.endsWith('.json')).sort().reverse().slice(0, MAX_VERSIONS)
+        : []
+      const versions = files.map((f) => {
+        const ts = f.replace('.json', '')
+        try {
+          const s = JSON.parse(fs.readFileSync(path.join(HISTORY_DIR, f), 'utf-8'))
+          return { ts, matchCount: s.matches?.length ?? 0, playerCount: s.players?.length ?? 0 }
+        } catch { return { ts, matchCount: null, playerCount: null } }
+      })
+      return sendJSON(res, 200, versions)
+    }
+
+    if (resource === 'restore' && req.method === 'POST') {
+      const ts = param
+      const file = path.join(HISTORY_DIR, `${ts}.json`)
+      if (!fs.existsSync(file)) return sendJSON(res, 404, { error: 'Version not found' })
+      const restored = JSON.parse(fs.readFileSync(file, 'utf-8'))
+      if (Array.isArray(restored.players)) writeJSON('players.json', restored.players)
+      if (Array.isArray(restored.matches)) writeJSON('matches.json', restored.matches)
+      if (Array.isArray(restored.videos)) writeJSON('videos.json', restored.videos)
+      if (Array.isArray(restored.slots)) writeJSON('slots.json', restored.slots)
+      return sendJSON(res, 200, getState())
+    }
+
     if (resource === 'export' && req.method === 'GET') {
       const state = getState()
       const photosIndex = readJSON('photos.json', [])
@@ -125,6 +176,7 @@ async function handleApi(req, res) {
 
     if (resource === 'import' && req.method === 'POST') {
       const body = await readBody(req)
+      snapshotState()
       if (Array.isArray(body.players)) writeJSON('players.json', body.players)
       if (Array.isArray(body.matches)) writeJSON('matches.json', body.matches)
       if (Array.isArray(body.videos)) writeJSON('videos.json', body.videos.slice(0, MAX_VIDEOS))
@@ -140,16 +192,19 @@ async function handleApi(req, res) {
 
     if (resource === 'players') {
       if (req.method === 'POST') {
-        const { name } = await readBody(req)
+        const body = await readBody(req)
+        const { name, pin } = body
         const players = getPlayers()
-        if (name && !players.includes(name)) {
-          players.push(name)
+        if (name && !players.find((p) => p.name === name)) {
+          snapshotState()
+          players.push(pin ? { name, pin } : { name })
           writeJSON('players.json', players)
         }
         return sendJSON(res, 200, players)
       }
       if (req.method === 'DELETE') {
-        const players = getPlayers().filter((p) => p !== param)
+        snapshotState()
+        const players = getPlayers().filter((p) => p.name !== param)
         writeJSON('players.json', players)
         return sendJSON(res, 200, players)
       }
@@ -158,12 +213,14 @@ async function handleApi(req, res) {
     if (resource === 'matches') {
       if (req.method === 'POST') {
         const match = await readBody(req)
+        snapshotState()
         const matches = readJSON('matches.json', [])
         matches.push({ ...match, id: crypto.randomUUID() })
         writeJSON('matches.json', matches)
         return sendJSON(res, 200, matches)
       }
       if (req.method === 'DELETE') {
+        snapshotState()
         const matches = readJSON('matches.json', []).filter((m) => m.id !== param)
         writeJSON('matches.json', matches)
         return sendJSON(res, 200, matches)
@@ -175,11 +232,13 @@ async function handleApi(req, res) {
         const { url } = await readBody(req)
         const videos = readJSON('videos.json', [])
         if (videos.length >= MAX_VIDEOS) return sendJSON(res, 400, { error: `Max ${MAX_VIDEOS} videos reached` })
+        snapshotState()
         videos.push(url)
         writeJSON('videos.json', videos)
         return sendJSON(res, 200, videos)
       }
       if (req.method === 'DELETE') {
+        snapshotState()
         const videos = readJSON('videos.json', [])
         videos.splice(Number(param), 1)
         writeJSON('videos.json', videos)
@@ -190,6 +249,7 @@ async function handleApi(req, res) {
     if (resource === 'slots') {
       if (req.method === 'POST') {
         const slot = await readBody(req)
+        snapshotState()
         const slots = readJSON('slots.json', [])
         slots.push({ ...slot, id: crypto.randomUUID() })
         writeJSON('slots.json', slots)
@@ -202,6 +262,7 @@ async function handleApi(req, res) {
         return sendJSON(res, 200, slots)
       }
       if (req.method === 'DELETE') {
+        snapshotState()
         const slots = readJSON('slots.json', []).filter((s) => s.id !== param)
         writeJSON('slots.json', slots)
         return sendJSON(res, 200, slots)
@@ -213,11 +274,13 @@ async function handleApi(req, res) {
         const { dataUrl } = await readBody(req)
         const photos = readJSON('photos.json', [])
         if (photos.length >= MAX_PHOTOS) return sendJSON(res, 400, { error: `Max ${MAX_PHOTOS} photos reached` })
+        snapshotState()
         photos.push(savePhotoFile(dataUrl))
         writeJSON('photos.json', photos)
         return sendJSON(res, 200, photos.map(toPhotoUrl))
       }
       if (req.method === 'DELETE') {
+        snapshotState()
         deletePhotoFile(param)
         return sendJSON(res, 200, readJSON('photos.json', []).map(toPhotoUrl))
       }

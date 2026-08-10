@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Activity, CalendarClock, Phone, Plus, Users } from 'lucide-react'
+import { Activity, CalendarClock, LogIn, LogOut, Phone, Plus, ShieldCheck, Users } from 'lucide-react'
 
 const NAV = [
   { key: 'dashboard', label: 'Dashboard' },
-  { key: 'log', label: 'Log Match', icon: Plus },
+  { key: 'log', label: 'Log Match', icon: Plus, adminOnly: true },
   { key: 'players', label: 'Players', icon: Users },
   { key: 'slots', label: 'Court Slots', icon: CalendarClock },
 ]
@@ -29,7 +29,7 @@ function Logo() {
   )
 }
 
-export default function Header({ page, onNavigate }) {
+export default function Header({ page, onNavigate, isAdmin, adminName, onLoginClick, onLogout }) {
   return (
     <header className="bg-white border-b sticky top-0 z-10">
       <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
@@ -46,7 +46,7 @@ export default function Header({ page, onNavigate }) {
         </button>
 
         <nav className="flex items-center gap-1 flex-wrap">
-          {NAV.map(({ key, label, icon: Icon }) => (
+          {NAV.filter(({ adminOnly }) => !adminOnly || isAdmin).map(({ key, label, icon: Icon }) => (
             <button
               key={key}
               onClick={() => onNavigate(key)}
@@ -64,6 +64,28 @@ export default function Header({ page, onNavigate }) {
           >
             <Phone size={13} /> Bhavani: 7569475439
           </a>
+
+          {isAdmin ? (
+            <div className="flex items-center gap-2 ml-1">
+              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 border border-orange-200 text-xs font-semibold text-orange-700">
+                <ShieldCheck size={13} /> {adminName}
+              </span>
+              <button
+                onClick={onLogout}
+                title="Logout"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-slate-500 hover:bg-slate-100 transition"
+              >
+                <LogOut size={13} /> Logout
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={onLoginClick}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-orange-600 border border-orange-200 hover:bg-orange-50 transition ml-1"
+            >
+              <LogIn size={13} /> Admin Login
+            </button>
+          )}
         </nav>
       </div>
     </header>

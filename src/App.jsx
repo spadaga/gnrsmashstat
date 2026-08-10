@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import * as api from './lib/api'
+import { playerNames } from './lib/admins'
 import Header from './components/Header'
 import Dashboard from './pages/Dashboard'
 import LogMatch from './pages/LogMatch'
 import Players from './pages/Players'
 import Slots from './pages/Slots'
+import LoginModal from './components/LoginModal'
 
 export default function App() {
   const [page, setPage] = useState('dashboard')
   const [data, setData] = useState(null)
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState(null)
+  const [adminName, setAdminName] = useState(null)   // null = read-only
+  const [loginOpen, setLoginOpen] = useState(false)
 
   useEffect(() => {
     api.getState().then(setData)
@@ -49,6 +53,17 @@ export default function App() {
     e.target.value = ''
   }
 
+  function handleLogin(name) {
+    setAdminName(name)
+    setLoginOpen(false)
+    setToast({ type: 'success', message: `Welcome, ${name}!` })
+  }
+
+  function handleLogout() {
+    setAdminName(null)
+    setToast({ type: 'success', message: 'Logged out' })
+  }
+
   if (!data) {
     return (
       <div className="min-h-screen flex items-center justify-center gap-2 text-slate-400">
@@ -56,6 +71,10 @@ export default function App() {
       </div>
     )
   }
+
+  const isAdmin = !!adminName
+  // Player names list (strings) for forms and ranking
+  const names = playerNames(data.players)
 
   const actions = {
     addPlayer: (name) => withFeedback(api.addPlayer(name).then((players) => setData((d) => ({ ...d, players }))), 'Player added'),
@@ -73,7 +92,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Header page={page} onNavigate={setPage} />
+      <Header
+        page={page}
+        onNavigate={setPage}
+        isAdmin={isAdmin}
+        adminName={adminName}
+        onLoginClick={() => setLoginOpen(true)}
+        onLogout={handleLogout}
+      />
 
       {busy && (
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-slate-900 text-white text-sm px-3 py-1.5 rounded-full shadow-lg">
@@ -92,15 +118,25 @@ export default function App() {
 
       <main className="max-w-6xl mx-auto px-4 py-4">
         {page === 'dashboard' && (
-          <Dashboard data={data} actions={actions} onNavigate={setPage} onImport={handleImport} />
+          <Dashboard data={{ ...data, players: names }} actions={actions} onNavigate={setPage} onImport={handleImport} isAdmin={isAdmin} />
         )}
-
-        {page === 'log' && <LogMatch players={data.players} actions={actions} onNavigate={setPage} />}
-
-        {page === 'players' && <Players players={data.players} actions={actions} />}
-
-        {page === 'slots' && <Slots slots={data.slots} actions={actions} />}
+        {page === 'log' && isAdmin && (
+          <LogMatch players={names} actions={actions} onNavigate={setPage} />
+        )}
+        {page === 'players' && (
+          <Players players={data.players} actions={actions} isAdmin={isAdmin} />
+        )}
+        {page === 'slots' && (
+          <Slots slots={data.slots} actions={actions} isAdmin={isAdmin} />
+        )}
       </main>
+
+      <LoginModal
+        open={loginOpen}
+        players={data.players}
+        onLogin={handleLogin}
+        onClose={() => setLoginOpen(false)}
+      />
     </div>
   )
 }

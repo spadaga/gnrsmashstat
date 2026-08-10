@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CalendarClock, Plus, Trash2 } from 'lucide-react'
+import ConfirmDialog from '../components/ConfirmDialog'
 
 function daysLeft(endDate) {
   const end = new Date(`${endDate}T00:00:00`)
@@ -10,8 +11,9 @@ function daysLeft(endDate) {
 
 const emptyForm = { name: '', time: '6 to 7', endDate: '' }
 
-export default function Slots({ slots, actions }) {
+export default function Slots({ slots, actions, isAdmin }) {
   const [form, setForm] = useState(emptyForm)
+  const [confirm, setConfirm] = useState(null)
 
   function handleAdd(e) {
     e.preventDefault()
@@ -29,30 +31,32 @@ export default function Slots({ slots, actions }) {
 
   return (
     <div className="max-w-3xl mx-auto space-y-4">
-      <form onSubmit={handleAdd} className="bg-white rounded-2xl border p-4 flex flex-wrap gap-2">
-        <input
-          value={form.name}
-          onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-          placeholder="Name"
-          className="flex-1 min-w-[10rem] border rounded-lg px-3 py-2 text-sm"
-        />
-        <input
-          value={form.time}
-          onChange={(e) => setForm((f) => ({ ...f, time: e.target.value }))}
-          placeholder="Time"
-          className="w-28 border rounded-lg px-3 py-2 text-sm"
-        />
-        <input
-          type="date"
-          value={form.endDate}
-          onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))}
-          className="border rounded-lg px-3 py-2 text-sm"
-          required
-        />
-        <button className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-orange-600 text-white text-sm font-medium hover:bg-orange-700">
-          <Plus size={15} /> Add
-        </button>
-      </form>
+      {isAdmin && (
+        <form onSubmit={handleAdd} className="bg-white rounded-2xl border p-4 flex flex-wrap gap-2">
+          <input
+            value={form.name}
+            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            placeholder="Name"
+            className="flex-1 min-w-[10rem] border rounded-lg px-3 py-2 text-sm"
+          />
+          <input
+            value={form.time}
+            onChange={(e) => setForm((f) => ({ ...f, time: e.target.value }))}
+            placeholder="Time"
+            className="w-28 border rounded-lg px-3 py-2 text-sm"
+          />
+          <input
+            type="date"
+            value={form.endDate}
+            onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))}
+            className="border rounded-lg px-3 py-2 text-sm"
+            required
+          />
+          <button className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-orange-600 text-white text-sm font-medium hover:bg-orange-700">
+            <Plus size={15} /> Add
+          </button>
+        </form>
+      )}
 
       <div className="bg-white rounded-2xl border p-4">
         <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-700 mb-3">
@@ -67,7 +71,7 @@ export default function Slots({ slots, actions }) {
                 <th className="py-2 pr-2">Time</th>
                 <th className="py-2 pr-2">End Date</th>
                 <th className="py-2 pr-2">Days</th>
-                <th className="py-2 pr-2" />
+                {isAdmin && <th className="py-2 pr-2" />}
               </tr>
             </thead>
             <tbody>
@@ -77,53 +81,76 @@ export default function Slots({ slots, actions }) {
                 return (
                   <tr key={s.id} className={expiring ? 'bg-red-50' : ''}>
                     <td className="py-1 pr-2">
-                      <input
-                        defaultValue={s.name}
-                        onBlur={(e) => commit(s, 'name', e.target.value)}
-                        className={`w-full border-0 bg-transparent px-2 py-1 rounded focus:bg-white focus:ring-1 focus:ring-orange-300 ${
-                          expiring ? 'text-red-700 font-semibold' : 'text-slate-800'
-                        }`}
-                      />
+                      {isAdmin ? (
+                        <input
+                          defaultValue={s.name}
+                          onBlur={(e) => commit(s, 'name', e.target.value)}
+                          className={`w-full border-0 bg-transparent px-2 py-1 rounded focus:bg-white focus:ring-1 focus:ring-orange-300 ${
+                            expiring ? 'text-red-700 font-semibold' : 'text-slate-800'
+                          }`}
+                        />
+                      ) : (
+                        <span className={`px-2 py-1 ${expiring ? 'text-red-700 font-semibold' : 'text-slate-800'}`}>{s.name}</span>
+                      )}
                     </td>
                     <td className="py-1 pr-2">
-                      <input
-                        defaultValue={s.time}
-                        onBlur={(e) => commit(s, 'time', e.target.value)}
-                        className={`w-24 border-0 bg-transparent px-2 py-1 rounded focus:bg-white focus:ring-1 focus:ring-orange-300 ${
-                          expiring ? 'text-red-700' : 'text-slate-600'
-                        }`}
-                      />
+                      {isAdmin ? (
+                        <input
+                          defaultValue={s.time}
+                          onBlur={(e) => commit(s, 'time', e.target.value)}
+                          className={`w-24 border-0 bg-transparent px-2 py-1 rounded focus:bg-white focus:ring-1 focus:ring-orange-300 ${
+                            expiring ? 'text-red-700' : 'text-slate-600'
+                          }`}
+                        />
+                      ) : (
+                        <span className={`px-2 ${expiring ? 'text-red-700' : 'text-slate-600'}`}>{s.time}</span>
+                      )}
                     </td>
                     <td className="py-1 pr-2">
-                      <input
-                        type="date"
-                        defaultValue={s.endDate}
-                        onBlur={(e) => commit(s, 'endDate', e.target.value)}
-                        className={`border-0 bg-transparent px-2 py-1 rounded focus:bg-white focus:ring-1 focus:ring-orange-300 ${
-                          expiring ? 'text-red-700' : 'text-slate-600'
-                        }`}
-                      />
+                      {isAdmin ? (
+                        <input
+                          type="date"
+                          defaultValue={s.endDate}
+                          onBlur={(e) => commit(s, 'endDate', e.target.value)}
+                          className={`border-0 bg-transparent px-2 py-1 rounded focus:bg-white focus:ring-1 focus:ring-orange-300 ${
+                            expiring ? 'text-red-700' : 'text-slate-600'
+                          }`}
+                        />
+                      ) : (
+                        <span className={`px-2 ${expiring ? 'text-red-700' : 'text-slate-600'}`}>{s.endDate}</span>
+                      )}
                     </td>
                     <td className={`py-1 pr-2 font-semibold ${expiring ? 'text-red-700' : 'text-slate-800'}`}>
                       {days < 0 ? `Expired ${-days}d ago` : `${days}d`}
                     </td>
-                    <td className="py-1 pr-2">
-                      <button onClick={() => { if (window.confirm(`Delete slot for "${s.name}"?`)) actions.deleteSlot(s.id) }} className="text-slate-300 hover:text-red-500">
-                        <Trash2 size={15} />
-                      </button>
-                    </td>
+                    {isAdmin && (
+                      <td className="py-1 pr-2">
+                        <button onClick={() => setConfirm(s)} className="text-slate-300 hover:text-red-500">
+                          <Trash2 size={15} />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 )
               })}
               {sorted.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-4 text-center text-slate-400">No slots yet.</td>
+                  <td colSpan={isAdmin ? 5 : 4} className="py-4 text-center text-slate-400">No slots yet.</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={!!confirm}
+        title="Delete this slot?"
+        message={confirm ? `Slot for "${confirm.name}" will be removed.` : ''}
+        confirmLabel="Delete"
+        onConfirm={() => { actions.deleteSlot(confirm.id); setConfirm(null) }}
+        onCancel={() => setConfirm(null)}
+      />
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Trophy, Trash2 } from 'lucide-react'
+import ConfirmDialog from './ConfirmDialog'
 
 const RANGES = [
   { key: '30d', label: 'Last 30 Days' },
@@ -17,10 +18,11 @@ function daysAgo(n) {
   return d.toISOString().slice(0, 10)
 }
 
-export default function MatchList({ matches, onDelete, onLogMatch }) {
+export default function MatchList({ matches, onDelete, onLogMatch, isAdmin }) {
   const [range, setRange] = useState('30d')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
+  const [confirm, setConfirm] = useState(null)
 
   const visible = matches.filter((m) => {
     if (range === '30d') return m.date >= daysAgo(30)
@@ -33,7 +35,7 @@ export default function MatchList({ matches, onDelete, onLogMatch }) {
     <div className="bg-white rounded-2xl border p-4">
       <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
         <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700">Recent Matches</h2>
-        {onLogMatch && (
+        {onLogMatch && isAdmin && (
           <button onClick={onLogMatch} className="text-xs font-bold uppercase tracking-wide text-orange-600 hover:text-orange-700">
             Log Match →
           </button>
@@ -91,14 +93,25 @@ export default function MatchList({ matches, onDelete, onLogMatch }) {
                 </div>
                 {m.comment && <p className="text-xs text-slate-400 italic mt-1">"{m.comment}"</p>}
               </div>
-              <button onClick={() => { if (window.confirm('Delete this match?')) onDelete(m.id) }} className="text-slate-300 hover:text-red-500 shrink-0">
-                <Trash2 size={15} />
-              </button>
+              {isAdmin && (
+                <button onClick={() => setConfirm(m.id)} className="text-slate-300 hover:text-red-500 shrink-0">
+                  <Trash2 size={15} />
+                </button>
+              )}
             </div>
           )
         })}
         {sorted.length === 0 && <p className="text-slate-400 text-center py-4 text-sm">No matches in this range.</p>}
       </div>
+
+      <ConfirmDialog
+        open={!!confirm}
+        title="Delete this match?"
+        message="This match record will be permanently removed."
+        confirmLabel="Delete"
+        onConfirm={() => { onDelete(confirm); setConfirm(null) }}
+        onCancel={() => setConfirm(null)}
+      />
     </div>
   )
 }

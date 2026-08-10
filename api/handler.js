@@ -10,21 +10,24 @@
 // All app state (players/matches/videos/photos index) lives in ONE blob
 // (state/data.json) so a page load or CRUD op is a single head+fetch and a
 // single put, instead of one round trip per resource.
-import { put, del, head } from '@vercel/blob'
+import { put, del, head, list } from '@vercel/blob'
 import crypto from 'node:crypto'
 
 const MAX_PHOTOS = 50
 const MAX_VIDEOS = 20
 const STATE_PATH = 'state/data.json'
 
+// Players are stored as { name, pin? } objects.
+// Those with a pin are admins; others are read-only.
 const DEFAULT_PLAYERS = [
-  'Sanjeev Kumar',
-  'Nayeem Abdhullah',
-  'Srinivas Padaga',
-  'Suresh Padaga',
-  'Pradeep Raghav',
-  'Narendra',
-  'Manikyam',
+  { name: 'Sanjeev Kumar',    pin: '2682' },
+  { name: 'Nayeem Abdhullah', pin: '0492' },
+  { name: 'Srinivas Padaga',  pin: '0556' },
+  { name: 'Suresh Padaga',    pin: '2669' },
+  { name: 'Pradeep Raghav',   pin: '8220' },
+  { name: 'Narendra',         pin: '1484' },
+  { name: 'Manikyam',         pin: '7158' },
+  { name: 'Diwakar',          pin: '8610' },
 ]
 const DEFAULT_SLOTS = [
   { name: 'Abdhulla', time: '6 to 7', endDate: '2026-08-12' },
@@ -68,11 +71,18 @@ async function readState() {
     const meta = await head(STATE_PATH)
     const res = await fetch(meta.url, { cache: 'no-store' })
     const state = await res.json()
-    // Backfill fields added after this blob was first written (e.g. slots).
-    if (!state.slots) {
-      state.slots = DEFAULT_SLOTS
-      await writeState(state)
+    let dirty = false
+    // Backfill slots field added after initial deploy
+    if (!state.slots) { state.slots = DEFAULT_SLOTS; dirty = true }
+    // Migrate old string-array players to object array
+    if (state.players?.length > 0 && typeof state.players[0] === 'string') {
+      state.players = state.players.map((name) => {
+        const def = DEFAULT_PLAYERS.find((d) => d.name === name)
+        return def || { name }
+      })
+      dirty = true
     }
+    if (dirty) await writeState(state)
     return state
   } catch {
     const migrated = await migrateLegacyState()
@@ -81,7 +91,25 @@ async function readState() {
   }
 }
 
+const MAX_VERSIONS = 5
+const HISTORY_PREFIX = 'state/history/'
+
+async function snapshotState(state) {
+  const ts = new Date().toISOString()
+  await put(`${HISTORY_PREFIX}${ts}.json`, JSON.stringify(state), {
+    access: 'public',
+    contentType: 'application/json',
+    addRandomSuffix: false,
+  })
+  // Prune to keep only the last MAX_VERSIONS snapshots
+  const { blobs } = await list({ prefix: HISTORY_PREFIX })
+  const sorted = blobs.sort((a, b) => a.uploadedAt - b.uploadedAt)
+  const toDelete = sorted.slice(0, Math.max(0, sorted.length - MAX_VERSIONS))
+  await Promise.all(toDelete.map((b) => del(b.url).catch(() => {})))
+}
+
 async function writeState(state) {
+  await snapshotState(state)
   await put(STATE_PATH, JSON.stringify(state), {
     access: 'public',
     contentType: 'application/json',
@@ -116,6 +144,46 @@ export default async function handler(req, res) {
   try {
     const state = await readState()
 
+    if (resource === 'versions' && req.method === 'GET') {
+      const { blobs } = await list({ prefix: HISTORY_PREFIX })
+      const sorted = blobs
+        .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt))
+        .slice(0, MAX_VERSIONS)
+      const versions = await Promise.all(
+        sorted.map(async (b) => {
+          try {
+            const r = await fetch(b.url, { cache: 'no-store' })
+            const s = await r.json()
+            return {
+              ts: b.pathname.replace(HISTORY_PREFIX, '').replace('.json', ''),
+              matchCount: s.matches?.length ?? 0,
+              playerCount: s.players?.length ?? 0,
+            }
+          } catch {
+            return { ts: b.pathname.replace(HISTORY_PREFIX, '').replace('.json', ''), matchCount: null, playerCount: null }
+          }
+        })
+      )
+      return res.status(200).json(versions)
+    }
+
+    if (resource === 'restore' && req.method === 'POST') {
+      const ts = param
+      const { blobs } = await list({ prefix: HISTORY_PREFIX })
+      const blob = blobs.find((b) => b.pathname === `${HISTORY_PREFIX}${ts}.json`)
+      if (!blob) return res.status(404).json({ error: 'Version not found' })
+      const r = await fetch(blob.url, { cache: 'no-store' })
+      const restored = await r.json()
+      // Write directly (skip snapshotting to avoid overwriting history with itself)
+      await put(STATE_PATH, JSON.stringify(restored), {
+        access: 'public',
+        contentType: 'application/json',
+        addRandomSuffix: false,
+        allowOverwrite: true,
+      })
+      return res.status(200).json(restored)
+    }
+
     if (resource === 'state' && req.method === 'GET') {
       return res.status(200).json(state)
     }
@@ -144,15 +212,15 @@ export default async function handler(req, res) {
 
     if (resource === 'players') {
       if (req.method === 'POST') {
-        const { name } = req.body || {}
-        if (name && !state.players.includes(name)) {
-          state.players.push(name)
+        const { name, pin } = req.body || {}
+        if (name && !state.players.find((p) => p.name === name)) {
+          state.players.push(pin ? { name, pin } : { name })
           await writeState(state)
         }
         return res.status(200).json(state.players)
       }
       if (req.method === 'DELETE') {
-        state.players = state.players.filter((p) => p !== param)
+        state.players = state.players.filter((p) => p.name !== param)
         await writeState(state)
         return res.status(200).json(state.players)
       }
