@@ -56,7 +56,7 @@ export default function PhotoGallery({ photos, onAdd, onDelete }) {
             <div key={p.id} className="relative aspect-square rounded-lg overflow-hidden bg-slate-100">
               <img src={p.dataUrl} alt="" className="w-full h-full object-cover" />
               <button
-                onClick={() => onDelete(p.id)}
+                onClick={() => { if (window.confirm('Delete this photo?')) onDelete(p.id) }}
                 className="absolute top-1 right-1 bg-black/60 text-white rounded p-1 hover:bg-red-600"
               >
                 <X size={12} />

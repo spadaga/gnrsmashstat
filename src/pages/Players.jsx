@@ -31,7 +31,7 @@ export default function Players({ players, actions }) {
           {players.map((p) => (
             <div key={p} className="flex items-center justify-between px-2 py-2 rounded-lg hover:bg-slate-50">
               <span className="text-sm font-medium text-slate-800">{p}</span>
-              <button onClick={() => actions.deletePlayer(p)} className="text-slate-300 hover:text-red-500">
+              <button onClick={() => { if (window.confirm(`Remove "${p}" from the player list?`)) actions.deletePlayer(p) }} className="text-slate-300 hover:text-red-500">
                 <Trash2 size={15} />
               </button>
             </div>

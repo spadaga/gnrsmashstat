@@ -108,7 +108,7 @@ export default function Slots({ slots, actions }) {
                       {days < 0 ? `Expired ${-days}d ago` : `${days}d`}
                     </td>
                     <td className="py-1 pr-2">
-                      <button onClick={() => actions.deleteSlot(s.id)} className="text-slate-300 hover:text-red-500">
+                      <button onClick={() => { if (window.confirm(`Delete slot for "${s.name}"?`)) actions.deleteSlot(s.id) }} className="text-slate-300 hover:text-red-500">
                         <Trash2 size={15} />
                       </button>
                     </td>

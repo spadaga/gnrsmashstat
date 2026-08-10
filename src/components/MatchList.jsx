@@ -91,7 +91,7 @@ export default function MatchList({ matches, onDelete, onLogMatch }) {
                 </div>
                 {m.comment && <p className="text-xs text-slate-400 italic mt-1">"{m.comment}"</p>}
               </div>
-              <button onClick={() => onDelete(m.id)} className="text-slate-300 hover:text-red-500 shrink-0">
+              <button onClick={() => { if (window.confirm('Delete this match?')) onDelete(m.id) }} className="text-slate-300 hover:text-red-500 shrink-0">
                 <Trash2 size={15} />
               </button>
             </div>

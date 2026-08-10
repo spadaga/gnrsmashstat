@@ -64,7 +64,7 @@ export default function VideoSection({ videos, onAdd, onDelete }) {
             {videos.map((v, i) => (
               <div key={i} className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-slate-50 text-sm">
                 <span className="truncate flex-1 text-slate-600">{v}</span>
-                <button onClick={() => onDelete(i)} className="text-slate-300 hover:text-red-500 shrink-0 ml-2">
+                <button onClick={() => { if (window.confirm('Remove this video?')) onDelete(i) }} className="text-slate-300 hover:text-red-500 shrink-0 ml-2">
                   <Trash2 size={14} />
                 </button>
               </div>
