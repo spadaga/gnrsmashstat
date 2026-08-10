@@ -17,6 +17,7 @@ export const deletePlayer = (name) => req(`/players/${encodeURIComponent(name)}`
 
 export const addMatch = (match) => req('/matches', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(match) })
 export const deleteMatch = (id) => req(`/matches/${id}`, { method: 'DELETE' })
+export const updateMatch = (id, updates) => req(`/matches/${id}`, { method: 'PUT', headers: JSON_HEADERS, body: JSON.stringify(updates) })
 
 export const addVideo = (url) => req('/videos', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ url }) })
 export const deleteVideo = (index) => req(`/videos/${index}`, { method: 'DELETE' })

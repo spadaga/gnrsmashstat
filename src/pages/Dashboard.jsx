@@ -22,7 +22,7 @@ export default function Dashboard({ data, actions, onNavigate, onImport, isAdmin
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Leaderboard stats={stats} />
-        <MatchList matches={data.matches} onDelete={actions.deleteMatch} onLogMatch={() => onNavigate('log')} isAdmin={isAdmin} />
+        <MatchList matches={data.matches} onDelete={actions.deleteMatch} onUpdate={actions.updateMatch} onLogMatch={() => onNavigate('log')} isAdmin={isAdmin} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

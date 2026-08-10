@@ -233,6 +233,13 @@ export default async function handler(req, res) {
         await writeState(state)
         return res.status(200).json(state.matches)
       }
+      if (req.method === 'PUT') {
+        state.matches = state.matches.map((m) =>
+          m.id === param ? { ...m, ...(req.body || {}), id: m.id } : m
+        )
+        await writeState(state)
+        return res.status(200).json(state.matches)
+      }
       if (req.method === 'DELETE') {
         state.matches = state.matches.filter((m) => m.id !== param)
         await writeState(state)

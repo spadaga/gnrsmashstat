@@ -81,6 +81,7 @@ export default function App() {
     deletePlayer: (name) => withFeedback(api.deletePlayer(name).then((players) => setData((d) => ({ ...d, players }))), 'Player removed'),
     addMatch: (match) => withFeedback(api.addMatch(match).then((matches) => setData((d) => ({ ...d, matches }))), 'Match logged'),
     deleteMatch: (id) => withFeedback(api.deleteMatch(id).then((matches) => setData((d) => ({ ...d, matches }))), 'Match deleted'),
+    updateMatch: (id, updates) => withFeedback(api.updateMatch(id, updates).then((matches) => setData((d) => ({ ...d, matches }))), 'Match updated'),
     addVideo: (url) => withFeedback(api.addVideo(url).then((videos) => setData((d) => ({ ...d, videos }))), 'Video added'),
     deleteVideo: (index) => withFeedback(api.deleteVideo(index).then((videos) => setData((d) => ({ ...d, videos }))), 'Video removed'),
     addPhoto: (dataUrl) => withFeedback(api.addPhoto(dataUrl).then((photos) => setData((d) => ({ ...d, photos }))), 'Photo uploaded'),
@@ -102,8 +103,11 @@ export default function App() {
       />
 
       {busy && (
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-slate-900 text-white text-sm px-3 py-1.5 rounded-full shadow-lg">
-          <Loader2 size={14} className="animate-spin" /> Saving…
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
+          <div className="flex items-center gap-3 bg-white rounded-2xl shadow-2xl px-6 py-4">
+            <Loader2 size={22} className="animate-spin text-orange-600" />
+            <span className="text-sm font-semibold text-slate-700">Saving…</span>
+          </div>
         </div>
       )}
       {toast && (

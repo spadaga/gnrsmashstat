@@ -1,9 +1,10 @@
 import { Download, Upload } from 'lucide-react'
 
 const PERIODS = [
-  { key: 'all', label: 'All Time' },
+  { key: 'all',   label: 'All Time' },
+  { key: 'year',  label: 'This Year' },
   { key: 'month', label: 'This Month' },
-  { key: 'week', label: 'This Week' },
+  { key: 'week',  label: 'This Week' },
 ]
 
 export default function FilterBar({ period, onPeriod, onExport, onImport, isAdmin }) {

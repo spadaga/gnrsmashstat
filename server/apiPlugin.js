@@ -219,6 +219,14 @@ async function handleApi(req, res) {
         writeJSON('matches.json', matches)
         return sendJSON(res, 200, matches)
       }
+      if (req.method === 'PUT') {
+        const updates = await readBody(req)
+        const matches = readJSON('matches.json', []).map((m) =>
+          m.id === param ? { ...m, ...updates, id: m.id } : m
+        )
+        writeJSON('matches.json', matches)
+        return sendJSON(res, 200, matches)
+      }
       if (req.method === 'DELETE') {
         snapshotState()
         const matches = readJSON('matches.json', []).filter((m) => m.id !== param)

@@ -34,6 +34,7 @@ export function filterByPeriod(matches, period) {
   const now = new Date()
   return matches.filter((m) => {
     const d = new Date(m.date)
+    if (period === 'year')  return d.getFullYear() === now.getFullYear()
     if (period === 'month') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
     if (period === 'week') {
       const weekStart = new Date(now)
