@@ -99,7 +99,7 @@ export default function MatchList({ matches, onDelete, onUpdate, onLogMatch, isA
   }
 
   return (
-    <div className="bg-white rounded-2xl border p-4">
+    <div className="relative bg-white rounded-2xl border p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
         <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700">Recent Matches</h2>
