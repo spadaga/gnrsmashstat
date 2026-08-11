@@ -155,6 +155,7 @@ Latest badge, Restore button. Restore triggers ConfirmDialog then `POST /api/res
 Horizontal auto-scrolling ticker strip on the Dashboard showing court slot names
 and days remaining. Items duplicate for seamless loop (`animate-ticker` CSS keyframes).
 Red badge if < 10 days. Pauses on hover. Hidden if no slots.
+Compact sizing: `py-1` strip height, `text-xs` slot name, `text-[10px]` days badge.
 
 ### `src/components/Footer.jsx`
 Sticky footer: `© {year} GNR SmashStats. All rights reserved. | 🏸 GNR Team · {today}`.
@@ -228,7 +229,8 @@ All mutations return updated resource array. `updateMatch(id, updates)` → `PUT
 - Scores: 0–30, no deuce logic.
 - `VersionsModal` is wired into Header — accessible via History button (desktop) or hamburger menu (mobile).
 - Snapshots are taken **once per day** (pre-mutation), labeled Today / Yesterday / Day Before Yesterday.
-- `matches[].loggedAt` ISO timestamp added on creation — `MatchList` sorts newest-first within each day.
+- `matches[].loggedAt` ISO timestamp added on creation — `MatchList` sorts newest-first within each day,
+  falling back to original array position (later = more recent) for legacy matches without `loggedAt`.
 - `computePairStats(matches)` in ranking.js computes wins/losses per 2-player pair combination.
 - `TopSeeds` shows top 2 pairs (not individuals), with "View All →" modal for all combinations.
 - `PUT /api/players/:name` endpoint added for editing player name/pin (both backends).

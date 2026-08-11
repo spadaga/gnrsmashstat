@@ -26,14 +26,14 @@ function daysAgo(n) {
 
 function groupByDate(matches) {
   const map = {}
-  for (const m of matches) { if (!map[m.date]) map[m.date] = []; map[m.date].push(m) }
-  return Object.entries(map).sort(([a], [b]) => (a < b ? 1 : -1)).map(([date, items]) => ({
+  matches.forEach((m, i) => { (map[m.date] ||= []).push({ m, i }) })
+  return Object.entries(map).sort(([a], [b]) => (a < b ? 1 : -1)).map(([date, entries]) => ({
     date,
-    // Sort newest-first within each day using loggedAt if available
-    items: items.sort((a, b) => {
-      if (a.loggedAt && b.loggedAt) return a.loggedAt < b.loggedAt ? 1 : -1
-      return 0
-    })
+    // Newest-first: by loggedAt when both have it, else by original array position (later = more recent)
+    items: entries.slice().sort((a, b) => {
+      if (a.m.loggedAt && b.m.loggedAt) return a.m.loggedAt < b.m.loggedAt ? 1 : -1
+      return b.i - a.i
+    }).map((e) => e.m),
   }))
 }
 

@@ -13,15 +13,15 @@ export default function SlotsTicker({ slots }) {
   const items = [...sorted, ...sorted]
 
   return (
-    <div className="overflow-hidden bg-slate-900 dark:bg-slate-950 rounded-xl py-2 px-0 relative">
+    <div className="overflow-hidden bg-slate-900 dark:bg-slate-950 rounded-xl py-1 px-0 relative">
       <div className="flex animate-ticker whitespace-nowrap" style={{ width: 'max-content' }}>
         {items.map((s, i) => {
           const days = daysLeft(s.endDate)
           const expiring = days < 10
           return (
-            <span key={i} className="inline-flex items-center gap-2 px-5 text-sm">
+            <span key={i} className="inline-flex items-center gap-1.5 px-4 text-xs">
               <span className="font-semibold text-white">{s.name}</span>
-              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
                 expiring
                   ? 'bg-red-500 text-white'
                   : 'bg-orange-600 text-white'
