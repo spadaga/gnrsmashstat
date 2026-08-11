@@ -65,17 +65,22 @@ npm run lint     # oxlint
 
 ## Version history
 
-Every write auto-saves a snapshot (last 5 kept):
-- **Local**: `data/history/<timestamp>.json`
-- **Vercel**: Blob `state/history/<ISO>.json`
+Every write auto-saves a snapshot (last **3** kept, **one per calendar day**):
+- **Local**: `data/history/<YYYY-MM-DD>.json`
+- **Vercel**: Blob `state/history/<YYYY-MM-DD>.json`
+
+The snapshot captures the **pre-mutation state** on the **first write of each day** only.
+Subsequent writes that day skip snapshotting (start-of-day state is preserved for recovery).
 
 How to check versions:
 ```js
 // In browser console:
 fetch('/api/versions').then(r => r.json()).then(console.log)
 ```
-To restore: `POST /api/restore/:ts`
-The `VersionsModal` component provides a UI for this (admin-only, mount in Dashboard when needed).
+To restore: `POST /api/restore/:date` (date is `YYYY-MM-DD`)
+The `VersionsModal` is wired into Header (desktop: History button; mobile: hamburger menu). Labels: Today / Yesterday / Day Before Yesterday.
+
+**Delete bug fix**: Vercel handler now snapshots the pre-mutation state before each write, so deleting a match correctly preserves the pre-delete state in history.
 
 ## Local dev storage
 
@@ -94,6 +99,7 @@ The `VersionsModal` component provides a UI for this (admin-only, mount in Dashb
 |--------|------|-------------|
 | GET | `/api/state` | Full app state |
 | POST | `/api/players` | Add player `{ name, pin? }` |
+| PUT | `/api/players/:name` | Update player name/pin |
 | DELETE | `/api/players/:name` | Remove player |
 | POST | `/api/matches` | Add match |
 | PUT | `/api/matches/:id` | Update match score/comment |
@@ -220,8 +226,12 @@ All mutations return updated resource array. `updateMatch(id, updates)` → `PUT
 - Vercel Blob is `public` — blob URLs are accessible to anyone.
 - Local and Vercel data are independent — use Export/Import to sync.
 - Scores: 0–30, no deuce logic.
-- `VersionsModal` is built but not yet wired into the Dashboard UI —
-  import and mount `<VersionsModal>` to expose it.
+- `VersionsModal` is wired into Header — accessible via History button (desktop) or hamburger menu (mobile).
+- Snapshots are taken **once per day** (pre-mutation), labeled Today / Yesterday / Day Before Yesterday.
+- `matches[].loggedAt` ISO timestamp added on creation — `MatchList` sorts newest-first within each day.
+- `computePairStats(matches)` in ranking.js computes wins/losses per 2-player pair combination.
+- `TopSeeds` shows top 2 pairs (not individuals), with "View All →" modal for all combinations.
+- `PUT /api/players/:name` endpoint added for editing player name/pin (both backends).
 
 ## Deploy
 

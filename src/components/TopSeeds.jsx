@@ -1,31 +1,79 @@
-import { Trophy } from 'lucide-react'
+import { useState } from 'react'
+import { Trophy, X } from 'lucide-react'
+import { computePairStats } from '../lib/ranking'
 
-export default function TopSeeds({ stats }) {
-  const top3 = stats.slice(0, 3)
-  if (top3.length === 0) return null
+function PairAllModal({ matches, onClose }) {
+  const pairs = computePairStats(matches)
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg mt-8 p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300 flex items-center gap-2">
+            <Trophy size={15} className="text-orange-600" /> All Pair Combinations
+          </h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"><X size={18} /></button>
+        </div>
+        {pairs.length === 0 ? (
+          <p className="text-slate-400 text-sm text-center py-6">No matches yet.</p>
+        ) : (
+          <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
+            {pairs.map((p, i) => (
+              <div key={p.players.join('&')} className="flex items-center justify-between px-3 py-2 rounded-xl border dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-800 transition">
+                <div className="flex items-center gap-2.5">
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${i === 0 ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>{i + 1}</span>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{p.players.join(' & ')}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500">{p.wins}W – {p.losses}L · {p.played} played</p>
+                  </div>
+                </div>
+                <span className={`text-sm font-bold ${i === 0 ? 'text-orange-600' : 'text-slate-700 dark:text-slate-300'}`}>{p.winRate}%</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default function TopSeeds({ matches }) {
+  const [showAll, setShowAll] = useState(false)
+  const pairs = computePairStats(matches)
+  const top2 = pairs.slice(0, 2)
+  if (top2.length === 0) return null
+
   return (
     <div>
-      <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300 mb-3">
-        <Trophy size={16} className="text-orange-600" /> Top Seeds
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {top3.map((s, i) => (
-          <div key={s.name} className={`rounded-2xl p-4 relative overflow-hidden ${i === 0 ? 'bg-orange-600 text-white' : 'bg-white dark:bg-slate-800 border dark:border-slate-700'}`}>
-            <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">
+          <Trophy size={16} className="text-orange-600" /> Top Seeds
+        </h2>
+        {pairs.length > 2 && (
+          <button onClick={() => setShowAll(true)} className="text-xs font-bold uppercase tracking-wide text-orange-600 hover:text-orange-700 transition">
+            View All →
+          </button>
+        )}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {top2.map((p, i) => (
+          <div key={p.players.join('&')} className={`rounded-2xl p-3 relative overflow-hidden ${i === 0 ? 'bg-orange-600 text-white' : 'bg-white dark:bg-slate-800 border dark:border-slate-700'}`}>
+            <div className="flex items-center justify-between mb-2">
               <span className={`text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${i === 0 ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'}`}>
-                Seed #{i + 1}
+                Top Seed #{i + 1}
               </span>
               <span className="text-right">
-                <span className="text-xl font-extrabold block">{s.winRate}%</span>
+                <span className="text-lg font-extrabold block">{p.winRate}%</span>
                 <span className={`text-[10px] uppercase tracking-wide ${i === 0 ? 'text-orange-100' : 'text-slate-400 dark:text-slate-500'}`}>Win Rate</span>
               </span>
             </div>
-            <Trophy size={64} className={`absolute -bottom-3 -right-3 ${i === 0 ? 'text-white/10' : 'text-slate-100 dark:text-slate-700'}`} />
-            <p className={`font-bold text-lg relative ${i !== 0 ? 'text-slate-900 dark:text-white' : ''}`}>{s.name}</p>
-            <p className={`text-sm relative ${i === 0 ? 'text-orange-100' : 'text-slate-500 dark:text-slate-400'}`}>{s.wins}W - {s.losses}L</p>
+            <Trophy size={56} className={`absolute -bottom-2 -right-2 ${i === 0 ? 'text-white/10' : 'text-slate-100 dark:text-slate-700'}`} />
+            <p className={`font-bold text-sm relative leading-tight ${i !== 0 ? 'text-slate-900 dark:text-white' : ''}`}>{p.players.join(' & ')}</p>
+            <p className={`text-xs relative mt-0.5 ${i === 0 ? 'text-orange-100' : 'text-slate-500 dark:text-slate-400'}`}>{p.wins}W – {p.losses}L</p>
           </div>
         ))}
       </div>
+      {showAll && <PairAllModal matches={matches} onClose={() => setShowAll(false)} />}
     </div>
   )
 }

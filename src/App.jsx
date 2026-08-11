@@ -8,6 +8,7 @@ import LogMatch from './pages/LogMatch'
 import Players from './pages/Players'
 import Slots from './pages/Slots'
 import LoginModal from './components/LoginModal'
+import VersionsModal from './components/VersionsModal'
 import Footer from './components/Footer'
 
 // Initialise dark mode from localStorage before first paint
@@ -22,6 +23,7 @@ export default function App() {
   const [toast, setToast] = useState(null)
   const [adminName, setAdminName] = useState(() => localStorage.getItem('adminName') || null)
   const [loginOpen, setLoginOpen] = useState(false)
+  const [versionsOpen, setVersionsOpen] = useState(false)
   const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
 
   useEffect(() => { api.getState().then(setData) }, [])
@@ -87,18 +89,19 @@ export default function App() {
   const names = playerNames(data.players)
 
   const actions = {
-    addPlayer:   (name)          => withFeedback(api.addPlayer(name).then((players) => setData((d) => ({ ...d, players }))), 'Player added'),
-    deletePlayer:(name)          => withFeedback(api.deletePlayer(name).then((players) => setData((d) => ({ ...d, players }))), 'Player removed'),
-    addMatch:    (match)         => withFeedback(api.addMatch(match).then((matches) => setData((d) => ({ ...d, matches }))), 'Match logged'),
-    deleteMatch: (id)            => withFeedback(api.deleteMatch(id).then((matches) => setData((d) => ({ ...d, matches }))), 'Match deleted'),
-    updateMatch: (id, updates)   => withFeedback(api.updateMatch(id, updates).then((matches) => setData((d) => ({ ...d, matches }))), 'Match updated'),
-    addVideo:    (url)           => withFeedback(api.addVideo(url).then((videos) => setData((d) => ({ ...d, videos }))), 'Video added'),
-    deleteVideo: (index)         => withFeedback(api.deleteVideo(index).then((videos) => setData((d) => ({ ...d, videos }))), 'Video removed'),
-    addPhoto:    (dataUrl)       => withFeedback(api.addPhoto(dataUrl).then((photos) => setData((d) => ({ ...d, photos }))), 'Photo uploaded'),
-    deletePhoto: (id)            => withFeedback(api.deletePhoto(id).then((photos) => setData((d) => ({ ...d, photos }))), 'Photo deleted'),
-    addSlot:     (slot)          => withFeedback(api.addSlot(slot).then((slots) => setData((d) => ({ ...d, slots }))), 'Slot added'),
-    updateSlot:  (id, updates)   => withFeedback(api.updateSlot(id, updates).then((slots) => setData((d) => ({ ...d, slots }))), 'Slot updated'),
-    deleteSlot:  (id)            => withFeedback(api.deleteSlot(id).then((slots) => setData((d) => ({ ...d, slots }))), 'Slot deleted'),
+    addPlayer:    (name)          => withFeedback(api.addPlayer(name).then((players) => setData((d) => ({ ...d, players }))), 'Player added'),
+    deletePlayer: (name)          => withFeedback(api.deletePlayer(name).then((players) => setData((d) => ({ ...d, players }))), 'Player removed'),
+    updatePlayer: (name, updates) => withFeedback(api.updatePlayer(name, updates).then((players) => setData((d) => ({ ...d, players }))), 'Player updated'),
+    addMatch:     (match)         => withFeedback(api.addMatch(match).then((matches) => setData((d) => ({ ...d, matches }))), 'Match logged'),
+    deleteMatch:  (id)            => withFeedback(api.deleteMatch(id).then((matches) => setData((d) => ({ ...d, matches }))), 'Match deleted'),
+    updateMatch:  (id, updates)   => withFeedback(api.updateMatch(id, updates).then((matches) => setData((d) => ({ ...d, matches }))), 'Match updated'),
+    addVideo:     (url)           => withFeedback(api.addVideo(url).then((videos) => setData((d) => ({ ...d, videos }))), 'Video added'),
+    deleteVideo:  (index)         => withFeedback(api.deleteVideo(index).then((videos) => setData((d) => ({ ...d, videos }))), 'Video removed'),
+    addPhoto:     (dataUrl)       => withFeedback(api.addPhoto(dataUrl).then((photos) => setData((d) => ({ ...d, photos }))), 'Photo uploaded'),
+    deletePhoto:  (id)            => withFeedback(api.deletePhoto(id).then((photos) => setData((d) => ({ ...d, photos }))), 'Photo deleted'),
+    addSlot:      (slot)          => withFeedback(api.addSlot(slot).then((slots) => setData((d) => ({ ...d, slots }))), 'Slot added'),
+    updateSlot:   (id, updates)   => withFeedback(api.updateSlot(id, updates).then((slots) => setData((d) => ({ ...d, slots }))), 'Slot updated'),
+    deleteSlot:   (id)            => withFeedback(api.deleteSlot(id).then((slots) => setData((d) => ({ ...d, slots }))), 'Slot deleted'),
   }
 
   return (
@@ -108,6 +111,7 @@ export default function App() {
         isAdmin={isAdmin} adminName={adminName}
         onLoginClick={() => setLoginOpen(true)} onLogout={handleLogout}
         dark={dark} onToggleDark={toggleDark}
+        onVersionsClick={() => setVersionsOpen(true)}
       />
 
       {busy && (
@@ -126,7 +130,7 @@ export default function App() {
         </div>
       )}
 
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-4">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-3 py-3">
         {page === 'dashboard' && (
           <Dashboard data={{ ...data, players: names }} actions={actions} onNavigate={setPage} onImport={handleImport} isAdmin={isAdmin} />
         )}
@@ -144,6 +148,7 @@ export default function App() {
       <Footer />
 
       <LoginModal open={loginOpen} players={data.players} onLogin={handleLogin} onClose={() => setLoginOpen(false)} />
+      <VersionsModal open={versionsOpen} onClose={() => setVersionsOpen(false)} onRestored={(state) => { setData(state); setVersionsOpen(false) }} />
     </div>
   )
 }

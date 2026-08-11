@@ -20,10 +20,10 @@ export default function Dashboard({ data, actions, onNavigate, onImport, isAdmin
       <SlotsTicker slots={data.slots} />
       <FilterBar period={period} onPeriod={setPeriod} onExport={exportAll} onImport={onImport} isAdmin={isAdmin} />
       <StatCards matches={filtered} players={data.players} />
-      <TopSeeds stats={stats} />
+      <TopSeeds matches={filtered} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Leaderboard stats={stats} />
         <MatchList matches={data.matches} onDelete={actions.deleteMatch} onUpdate={actions.updateMatch} onLogMatch={() => onNavigate('log')} isAdmin={isAdmin} />
+        <Leaderboard stats={stats} />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <VideoSection videos={data.videos} onAdd={actions.addVideo} onDelete={actions.deleteVideo} isAdmin={isAdmin} />

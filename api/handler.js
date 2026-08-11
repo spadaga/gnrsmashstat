@@ -91,25 +91,30 @@ async function readState() {
   }
 }
 
-const MAX_VERSIONS = 5
+const MAX_VERSIONS = 3
 const HISTORY_PREFIX = 'state/history/'
 
+// Snapshot the pre-mutation state once per calendar day. Skips if today's snapshot already exists.
 async function snapshotState(state) {
-  const ts = new Date().toISOString()
-  await put(`${HISTORY_PREFIX}${ts}.json`, JSON.stringify(state), {
-    access: 'public',
-    contentType: 'application/json',
-    addRandomSuffix: false,
-  })
-  // Prune to keep only the last MAX_VERSIONS snapshots
-  const { blobs } = await list({ prefix: HISTORY_PREFIX })
-  const sorted = blobs.sort((a, b) => a.uploadedAt - b.uploadedAt)
-  const toDelete = sorted.slice(0, Math.max(0, sorted.length - MAX_VERSIONS))
-  await Promise.all(toDelete.map((b) => del(b.url).catch(() => {})))
+  const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
+  const histPath = `${HISTORY_PREFIX}${today}.json`
+  try {
+    await head(histPath)
+    // Today's snapshot exists — skip to preserve start-of-day state
+  } catch {
+    await put(histPath, JSON.stringify(state), {
+      access: 'public', contentType: 'application/json', addRandomSuffix: false,
+    })
+    // Prune to MAX_VERSIONS daily snapshots
+    const { blobs } = await list({ prefix: HISTORY_PREFIX })
+    const sorted = blobs.sort((a, b) => a.pathname.localeCompare(b.pathname))
+    const toDelete = sorted.slice(0, Math.max(0, sorted.length - MAX_VERSIONS))
+    await Promise.all(toDelete.map((b) => del(b.url).catch(() => {})))
+  }
 }
 
+// Write state without snapshotting (snapshot must be called separately before mutation)
 async function writeState(state) {
-  await snapshotState(state)
   await put(STATE_PATH, JSON.stringify(state), {
     access: 'public',
     contentType: 'application/json',
@@ -147,8 +152,9 @@ export default async function handler(req, res) {
     if (resource === 'versions' && req.method === 'GET') {
       const { blobs } = await list({ prefix: HISTORY_PREFIX })
       const sorted = blobs
-        .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt))
-        .slice(0, MAX_VERSIONS)
+        .sort((a, b) => a.pathname.localeCompare(b.pathname))
+        .slice(-MAX_VERSIONS)
+        .reverse()
       const versions = await Promise.all(
         sorted.map(async (b) => {
           try {
@@ -158,6 +164,7 @@ export default async function handler(req, res) {
               ts: b.pathname.replace(HISTORY_PREFIX, '').replace('.json', ''),
               matchCount: s.matches?.length ?? 0,
               playerCount: s.players?.length ?? 0,
+              slotCount: s.slots?.length ?? 0,
             }
           } catch {
             return { ts: b.pathname.replace(HISTORY_PREFIX, '').replace('.json', ''), matchCount: null, playerCount: null }
@@ -195,6 +202,7 @@ export default async function handler(req, res) {
 
     if (resource === 'import' && req.method === 'POST') {
       const body = req.body || {}
+      await snapshotState(state)
       const next = { ...state }
       if (Array.isArray(body.players)) next.players = body.players
       if (Array.isArray(body.matches)) next.matches = body.matches
@@ -214,13 +222,28 @@ export default async function handler(req, res) {
       if (req.method === 'POST') {
         const { name, pin } = req.body || {}
         if (name && !state.players.find((p) => p.name === name)) {
+          await snapshotState(state)
           state.players.push(pin ? { name, pin } : { name })
           await writeState(state)
         }
         return res.status(200).json(state.players)
       }
       if (req.method === 'DELETE') {
+        await snapshotState(state)
         state.players = state.players.filter((p) => p.name !== param)
+        await writeState(state)
+        return res.status(200).json(state.players)
+      }
+      if (req.method === 'PUT') {
+        const { name: newName, pin } = req.body || {}
+        const idx = state.players.findIndex((p) => p.name === param)
+        if (idx === -1) return res.status(404).json({ error: 'Player not found' })
+        await snapshotState(state)
+        const existing = state.players[idx]
+        const updated = { name: newName || param }
+        if (pin !== undefined) { if (pin) updated.pin = pin }
+        else if (existing.pin) updated.pin = existing.pin
+        state.players[idx] = updated
         await writeState(state)
         return res.status(200).json(state.players)
       }
@@ -229,7 +252,8 @@ export default async function handler(req, res) {
     if (resource === 'matches') {
       if (req.method === 'POST') {
         const match = req.body || {}
-        state.matches.push({ ...match, id: crypto.randomUUID() })
+        await snapshotState(state)
+        state.matches.push({ ...match, id: crypto.randomUUID(), loggedAt: new Date().toISOString() })
         await writeState(state)
         return res.status(200).json(state.matches)
       }
@@ -241,6 +265,7 @@ export default async function handler(req, res) {
         return res.status(200).json(state.matches)
       }
       if (req.method === 'DELETE') {
+        await snapshotState(state)
         state.matches = state.matches.filter((m) => m.id !== param)
         await writeState(state)
         return res.status(200).json(state.matches)
@@ -251,11 +276,13 @@ export default async function handler(req, res) {
       if (req.method === 'POST') {
         const { url } = req.body || {}
         if (state.videos.length >= MAX_VIDEOS) return res.status(400).json({ error: `Max ${MAX_VIDEOS} videos reached` })
+        await snapshotState(state)
         state.videos.push(url)
         await writeState(state)
         return res.status(200).json(state.videos)
       }
       if (req.method === 'DELETE') {
+        await snapshotState(state)
         state.videos.splice(Number(param), 1)
         await writeState(state)
         return res.status(200).json(state.videos)
@@ -265,6 +292,7 @@ export default async function handler(req, res) {
     if (resource === 'slots') {
       if (req.method === 'POST') {
         const slot = req.body || {}
+        await snapshotState(state)
         state.slots.push({ ...slot, id: crypto.randomUUID() })
         await writeState(state)
         return res.status(200).json(state.slots)
@@ -276,6 +304,7 @@ export default async function handler(req, res) {
         return res.status(200).json(state.slots)
       }
       if (req.method === 'DELETE') {
+        await snapshotState(state)
         state.slots = state.slots.filter((s) => s.id !== param)
         await writeState(state)
         return res.status(200).json(state.slots)
@@ -286,6 +315,7 @@ export default async function handler(req, res) {
       if (req.method === 'POST') {
         const { dataUrl } = req.body || {}
         if (state.photos.length >= MAX_PHOTOS) return res.status(400).json({ error: `Max ${MAX_PHOTOS} photos reached` })
+        await snapshotState(state)
         state.photos.push(await savePhotoBlob(dataUrl))
         await writeState(state)
         return res.status(200).json(state.photos)
@@ -293,6 +323,7 @@ export default async function handler(req, res) {
       if (req.method === 'DELETE') {
         const entry = state.photos.find((p) => p.id === param)
         if (entry) await del(entry.dataUrl).catch(() => {})
+        await snapshotState(state)
         state.photos = state.photos.filter((p) => p.id !== param)
         await writeState(state)
         return res.status(200).json(state.photos)

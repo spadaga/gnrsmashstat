@@ -10,7 +10,7 @@ const HISTORY_DIR = path.resolve(process.cwd(), 'data/history')
 const PHOTOS_DIR = path.resolve(process.cwd(), 'public/photos')
 const MAX_PHOTOS = 50
 const MAX_VIDEOS = 20
-const MAX_VERSIONS = 5
+const MAX_VERSIONS = 3
 
 // Players are stored as { name, pin? } objects.
 // Those with a pin are admins; others are read-only.
@@ -41,13 +41,17 @@ function readJSON(name, fallback) {
 
 function snapshotState() {
   const state = getState()
-  const ts = new Date().toISOString().replace(/[:.]/g, '-')
-  fs.writeFileSync(path.join(HISTORY_DIR, `${ts}.json`), JSON.stringify(state, null, 2))
-  // Prune to MAX_VERSIONS
-  const files = fs.readdirSync(HISTORY_DIR).filter((f) => f.endsWith('.json')).sort()
-  files.slice(0, Math.max(0, files.length - MAX_VERSIONS)).forEach((f) =>
-    fs.rmSync(path.join(HISTORY_DIR, f), { force: true })
-  )
+  const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
+  const todayFile = path.join(HISTORY_DIR, `${today}.json`)
+  // Only snapshot once per day — preserve the start-of-day state for recovery
+  if (!fs.existsSync(todayFile)) {
+    fs.writeFileSync(todayFile, JSON.stringify(state, null, 2))
+    // Prune to keep only the last MAX_VERSIONS daily snapshots
+    const files = fs.readdirSync(HISTORY_DIR).filter((f) => f.endsWith('.json')).sort()
+    files.slice(0, Math.max(0, files.length - MAX_VERSIONS)).forEach((f) =>
+      fs.rmSync(path.join(HISTORY_DIR, f), { force: true })
+    )
+  }
 }
 
 function writeJSON(name, value) {
@@ -208,6 +212,22 @@ async function handleApi(req, res) {
         writeJSON('players.json', players)
         return sendJSON(res, 200, players)
       }
+      if (req.method === 'PUT') {
+        const body = await readBody(req)
+        const { name: newName, pin } = body
+        const players = getPlayers()
+        const idx = players.findIndex((p) => p.name === param)
+        if (idx === -1) return sendJSON(res, 404, { error: 'Player not found' })
+        snapshotState()
+        const existing = players[idx]
+        const updated = { name: newName || param }
+        // Keep existing pin if not explicitly changing it; allow clearing by passing pin: ''
+        if (pin !== undefined) { if (pin) updated.pin = pin }
+        else if (existing.pin) updated.pin = existing.pin
+        players[idx] = updated
+        writeJSON('players.json', players)
+        return sendJSON(res, 200, players)
+      }
     }
 
     if (resource === 'matches') {
@@ -215,7 +235,7 @@ async function handleApi(req, res) {
         const match = await readBody(req)
         snapshotState()
         const matches = readJSON('matches.json', [])
-        matches.push({ ...match, id: crypto.randomUUID() })
+        matches.push({ ...match, id: crypto.randomUUID(), loggedAt: new Date().toISOString() })
         writeJSON('matches.json', matches)
         return sendJSON(res, 200, matches)
       }

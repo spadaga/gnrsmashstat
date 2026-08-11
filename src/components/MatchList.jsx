@@ -27,7 +27,14 @@ function daysAgo(n) {
 function groupByDate(matches) {
   const map = {}
   for (const m of matches) { if (!map[m.date]) map[m.date] = []; map[m.date].push(m) }
-  return Object.entries(map).sort(([a], [b]) => (a < b ? 1 : -1)).map(([date, items]) => ({ date, items }))
+  return Object.entries(map).sort(([a], [b]) => (a < b ? 1 : -1)).map(([date, items]) => ({
+    date,
+    // Sort newest-first within each day using loggedAt if available
+    items: items.sort((a, b) => {
+      if (a.loggedAt && b.loggedAt) return a.loggedAt < b.loggedAt ? 1 : -1
+      return 0
+    })
+  }))
 }
 
 function EditScoreForm({ match, onSave, onCancel }) {

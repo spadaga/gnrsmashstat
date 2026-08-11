@@ -29,6 +29,25 @@ export function computeStats(matches, players) {
     .sort((a, b) => b.wins - a.wins || b.pointDiff - a.pointDiff)
 }
 
+// Compute wins/losses per unique 2-player pair (team combination) across all matches.
+export function computePairStats(matches) {
+  const stats = {}
+  for (const m of matches) {
+    const team1Won = m.score1 > m.score2
+    const teams = [[...m.team1].sort(), [...m.team2].sort()]
+    const won = [team1Won, !team1Won]
+    teams.forEach((pair, ti) => {
+      const key = pair.join('|||')
+      if (!stats[key]) stats[key] = { players: pair, wins: 0, losses: 0, played: 0 }
+      stats[key].played++
+      won[ti] ? stats[key].wins++ : stats[key].losses++
+    })
+  }
+  return Object.values(stats)
+    .map((s) => ({ ...s, winRate: s.played ? Math.round((s.wins / s.played) * 100) : 0 }))
+    .sort((a, b) => b.wins - a.wins || b.winRate - a.winRate)
+}
+
 export function filterByPeriod(matches, period) {
   if (period === 'all') return matches
   const now = new Date()
