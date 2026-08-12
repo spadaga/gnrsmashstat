@@ -1,5 +1,11 @@
+// Minimum matches a player needs before Win% ranking applies.
+const MIN_RANKED_MATCHES = 4
+
 // Ranking: count wins/losses and total point difference per player across
-// all doubles matches they played in. Sort by wins, then point diff.
+// all doubles matches they played in.
+// Qualified (played >= 4): sorted by Win% -> Wins -> fewer Losses.
+// Partial (1-3 played): sorted the same way, but always ranked below qualified.
+// 0 played: unranked (qualified: false, played: 0), listed last.
 // players may be an array of { name, pin? } objects or plain strings.
 export function computeStats(matches, players) {
   const names = players.map((p) => (typeof p === 'string' ? p : p.name))
@@ -24,9 +30,18 @@ export function computeStats(matches, players) {
     }
   }
 
-  return Object.values(stats)
-    .map((s) => ({ ...s, winRate: s.played ? Math.round((s.wins / s.played) * 100) : 0 }))
-    .sort((a, b) => b.wins - a.wins || b.pointDiff - a.pointDiff)
+  const all = Object.values(stats).map((s) => ({
+    ...s,
+    winRate: s.played ? Math.round((s.wins / s.played) * 100) : 0,
+  }))
+
+  const byRankRule = (a, b) => b.winRate - a.winRate || b.wins - a.wins || a.losses - b.losses
+
+  const qualified = all.filter((s) => s.played >= MIN_RANKED_MATCHES).sort(byRankRule).map((s) => ({ ...s, qualified: true }))
+  const partial = all.filter((s) => s.played > 0 && s.played < MIN_RANKED_MATCHES).sort(byRankRule).map((s) => ({ ...s, qualified: false }))
+  const unranked = all.filter((s) => s.played === 0).map((s) => ({ ...s, qualified: false }))
+
+  return [...qualified, ...partial, ...unranked]
 }
 
 // Compute wins/losses per unique 2-player pair (team combination) across all matches.
@@ -46,6 +61,26 @@ export function computePairStats(matches) {
   return Object.values(stats)
     .map((s) => ({ ...s, winRate: s.played ? Math.round((s.wins / s.played) * 100) : 0 }))
     .sort((a, b) => b.wins - a.wins || b.winRate - a.winRate)
+}
+
+// which: 'current' | 'last'. Week starts Sunday, matching filterByPeriod('week').
+export function filterByWeek(matches, which) {
+  const now = new Date()
+  const weekStart = new Date(now)
+  weekStart.setDate(now.getDate() - now.getDay())
+  weekStart.setHours(0, 0, 0, 0)
+
+  let from = weekStart
+  let to = null
+  if (which === 'last') {
+    from = new Date(weekStart)
+    from.setDate(weekStart.getDate() - 7)
+    to = weekStart
+  }
+  return matches.filter((m) => {
+    const d = new Date(m.date)
+    return d >= from && (!to || d < to)
+  })
 }
 
 export function filterByPeriod(matches, period) {

@@ -1,6 +1,11 @@
 import { useState } from 'react'
 import { Trophy, X } from 'lucide-react'
-import { computePairStats } from '../lib/ranking'
+import { computePairStats, filterByWeek } from '../lib/ranking'
+
+const WEEKS = [
+  { key: 'current', label: 'This Week' },
+  { key: 'last',    label: 'Last Week' },
+]
 
 function PairAllModal({ matches, onClose }) {
   const pairs = computePairStats(matches)
@@ -39,22 +44,38 @@ function PairAllModal({ matches, onClose }) {
 
 export default function TopSeeds({ matches }) {
   const [showAll, setShowAll] = useState(false)
-  const pairs = computePairStats(matches)
+  const [week, setWeek] = useState('current')
+  const weekMatches = filterByWeek(matches, week)
+  const pairs = computePairStats(weekMatches)
   const top2 = pairs.slice(0, 2)
-  if (top2.length === 0) return null
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
         <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">
           <Trophy size={16} className="text-orange-600" /> Top Seeds
         </h2>
-        {pairs.length > 2 && (
-          <button onClick={() => setShowAll(true)} className="text-xs font-bold uppercase tracking-wide text-orange-600 hover:text-orange-700 transition">
-            View All →
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          <div className="flex gap-1 bg-slate-100 dark:bg-slate-700 rounded-full p-1">
+            {WEEKS.map((w) => (
+              <button key={w.key} onClick={() => setWeek(w.key)}
+                className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide transition ${
+                  week === w.key ? 'bg-slate-900 dark:bg-orange-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                }`}>{w.label}</button>
+            ))}
+          </div>
+          {pairs.length > 2 && (
+            <button onClick={() => setShowAll(true)} className="text-xs font-bold uppercase tracking-wide text-orange-600 hover:text-orange-700 transition">
+              View All →
+            </button>
+          )}
+        </div>
       </div>
+      {top2.length === 0 && (
+        <p className="text-slate-400 text-sm text-center py-6 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl">
+          No matches {week === 'current' ? 'this week' : 'last week'} yet.
+        </p>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {top2.map((p, i) => (
           <div key={p.players.join('&')} className={`rounded-2xl p-3 relative overflow-hidden ${i === 0 ? 'bg-orange-600 text-white' : 'bg-white dark:bg-slate-800 border dark:border-slate-700'}`}>
@@ -73,7 +94,7 @@ export default function TopSeeds({ matches }) {
           </div>
         ))}
       </div>
-      {showAll && <PairAllModal matches={matches} onClose={() => setShowAll(false)} />}
+      {showAll && <PairAllModal matches={weekMatches} onClose={() => setShowAll(false)} />}
     </div>
   )
 }

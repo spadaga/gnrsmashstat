@@ -26,7 +26,7 @@ function Logo() {
   )
 }
 
-export default function Header({ page, onNavigate, isAdmin, adminName, onLoginClick, onLogout, dark, onToggleDark, onVersionsClick }) {
+export default function Header({ page, onNavigate, isAdmin, adminName, canViewHistory, onLoginClick, onLogout, dark, onToggleDark, onVersionsClick }) {
   const [menuOpen, setMenuOpen] = useState(false)
 
   function nav(key) { onNavigate(key); setMenuOpen(false) }
@@ -60,7 +60,7 @@ export default function Header({ page, onNavigate, isAdmin, adminName, onLoginCl
               {Icon && <Icon size={14} />}{label}
             </button>
           ))}
-          {isAdmin && (
+          {canViewHistory && (
             <button onClick={onVersionsClick}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
               <Clock size={14} /> History
@@ -125,7 +125,7 @@ export default function Header({ page, onNavigate, isAdmin, adminName, onLoginCl
           <button onClick={() => nav('slots')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition ${page === 'slots' ? 'bg-orange-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
             <CalendarClock size={15} /> Court Slots
           </button>
-          {isAdmin && (
+          {canViewHistory && (
             <button onClick={() => { onVersionsClick(); setMenuOpen(false) }} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
               <Clock size={15} /> Version History
             </button>

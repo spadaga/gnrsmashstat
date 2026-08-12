@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Loader2, Pencil, Save, Trophy, Trash2, X } from 'lucide-react'
+import { Loader2, Pencil, Save, Search, Trophy, Trash2, X } from 'lucide-react'
 import ConfirmDialog from './ConfirmDialog'
 
 const RANGES = [
@@ -37,47 +37,85 @@ function groupByDate(matches) {
   }))
 }
 
-function EditScoreForm({ match, onSave, onCancel }) {
+function PlayerSelect({ value, onChange, options }) {
+  return (
+    <select value={value} onChange={(e) => onChange(e.target.value)}
+      className="border dark:border-slate-600 rounded-lg px-2 py-1 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:border-orange-400 focus:outline-none">
+      {options.map((p) => <option key={p} value={p}>{p}</option>)}
+    </select>
+  )
+}
+
+function EditScoreForm({ match, players, onSave, onCancel }) {
   const [s1, setS1] = useState(String(match.score1))
   const [s2, setS2] = useState(String(match.score2))
+  const [p1, setP1] = useState(match.team1[0])
+  const [p2, setP2] = useState(match.team1[1])
+  const [p3, setP3] = useState(match.team2[0])
+  const [p4, setP4] = useState(match.team2[1])
   const [err, setErr] = useState('')
+
+  const chosen = [p1, p2, p3, p4]
+  const options = Array.from(new Set([...players, ...chosen]))
+  const availableFor = (current) => options.filter((p) => p === current || !chosen.includes(p))
+
   function handleSave() {
     const n1 = Number(s1), n2 = Number(s2)
     if (!Number.isInteger(n1) || !Number.isInteger(n2) || n1 < 0 || n1 > 30 || n2 < 0 || n2 > 30)
       return setErr('Scores must be 0–30.')
     if (n1 === n2) return setErr('Scores cannot be tied.')
-    onSave({ score1: n1, score2: n2 })
+    if (new Set(chosen).size < 4) return setErr('All four players must be different.')
+    onSave({ score1: n1, score2: n2, team1: [p1, p2], team2: [p3, p4] })
   }
   const inp = 'w-14 border dark:border-slate-600 rounded-lg px-2 py-1 text-sm text-center font-bold bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:border-orange-400 focus:outline-none'
   return (
-    <div className="mt-2 flex flex-wrap items-center gap-2">
-      <div className="flex items-center gap-1.5">
-        <input type="number" min={0} max={30} value={s1} onChange={(e) => { setS1(e.target.value); setErr('') }} className={inp} />
-        <span className="text-slate-400 text-sm">–</span>
-        <input type="number" min={0} max={30} value={s2} onChange={(e) => { setS2(e.target.value); setErr('') }} className={inp} />
+    <div className="mt-2 space-y-2">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <PlayerSelect value={p1} onChange={setP1} options={availableFor(p1)} />
+        <span className="text-slate-400 text-xs">&</span>
+        <PlayerSelect value={p2} onChange={setP2} options={availableFor(p2)} />
+        <span className="text-slate-300 dark:text-slate-600 text-xs mx-1">vs</span>
+        <PlayerSelect value={p3} onChange={setP3} options={availableFor(p3)} />
+        <span className="text-slate-400 text-xs">&</span>
+        <PlayerSelect value={p4} onChange={setP4} options={availableFor(p4)} />
       </div>
-      {err && <span className="text-xs text-red-500">{err}</span>}
-      <button onClick={handleSave} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-orange-600 text-white text-xs font-semibold hover:bg-orange-700 transition">
-        <Save size={12} /> Save
-      </button>
-      <button onClick={onCancel} className="flex items-center gap-1 px-3 py-1.5 rounded-lg border dark:border-slate-600 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
-        <X size={12} /> Cancel
-      </button>
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          <input type="number" min={0} max={30} value={s1} onChange={(e) => { setS1(e.target.value); setErr('') }} className={inp} />
+          <span className="text-slate-400 text-sm">–</span>
+          <input type="number" min={0} max={30} value={s2} onChange={(e) => { setS2(e.target.value); setErr('') }} className={inp} />
+        </div>
+        {err && <span className="text-xs text-red-500">{err}</span>}
+        <button onClick={handleSave} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-orange-600 text-white text-xs font-semibold hover:bg-orange-700 transition">
+          <Save size={12} /> Save
+        </button>
+        <button onClick={onCancel} className="flex items-center gap-1 px-3 py-1.5 rounded-lg border dark:border-slate-600 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+          <X size={12} /> Cancel
+        </button>
+      </div>
     </div>
   )
 }
 
-export default function MatchList({ matches, onDelete, onUpdate, onLogMatch, isAdmin }) {
+export default function MatchList({ matches, players, onDelete, onUpdate, onLogMatch, isAdmin }) {
   const [range, setRange] = useState('30d')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
+  const [search, setSearch] = useState('')
   const [confirm, setConfirm] = useState(null)
   const [deleting, setDeleting] = useState(false)
   const [editingId, setEditingId] = useState(null)
 
+  const playerNames = (players || []).map((p) => (typeof p === 'string' ? p : p.name))
+
   const visible = matches.filter((m) => {
-    if (range === '30d') return m.date >= daysAgo(30)
-    if (range === 'custom') return (!from || m.date >= from) && (!to || m.date <= to)
+    if (range === '30d' && m.date < daysAgo(30)) return false
+    if (range === 'custom' && ((from && m.date < from) || (to && m.date > to))) return false
+    if (search) {
+      const q = search.trim().toLowerCase()
+      const names = [...m.team1, ...m.team2].join(' ').toLowerCase()
+      if (!names.includes(q)) return false
+    }
     return true
   })
   const groups = groupByDate(visible)
@@ -115,6 +153,12 @@ export default function MatchList({ matches, onDelete, onUpdate, onLogMatch, isA
             <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className={inputCls} />
           </div>
         )}
+        <div className="relative flex-1 min-w-[10rem]">
+          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by player name…"
+            className={`${inputCls} w-full pl-7`} />
+        </div>
       </div>
 
       <div className="space-y-4 max-h-[40rem] overflow-y-auto pr-1">
@@ -151,7 +195,7 @@ export default function MatchList({ matches, onDelete, onUpdate, onLogMatch, isA
                           </div>
                         </div>
                         {m.comment && <p className="text-xs text-slate-400 italic mt-1">"{m.comment}"</p>}
-                        {isEditing && <EditScoreForm match={m} onSave={(u) => handleSaveScore(m.id, u)} onCancel={() => setEditingId(null)} />}
+                        {isEditing && <EditScoreForm match={m} players={playerNames} onSave={(u) => handleSaveScore(m.id, u)} onCancel={() => setEditingId(null)} />}
                       </div>
                       {isAdmin && !isEditing && (
                         <div className="flex items-center gap-1.5 shrink-0">

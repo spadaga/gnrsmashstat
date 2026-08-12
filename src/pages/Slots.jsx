@@ -50,7 +50,7 @@ export default function Slots({ slots, actions, isAdmin }) {
             <thead>
               <tr className="text-left text-slate-500 dark:text-slate-400 border-b dark:border-slate-700">
                 <th className="py-2 pr-2">Name</th>
-                <th className="py-2 pr-2">Time</th>
+                <th className="py-2 pr-2 hidden sm:table-cell">Time</th>
                 <th className="py-2 pr-2">End Date</th>
                 <th className="py-2 pr-2">Days</th>
                 {isAdmin && <th className="py-2 pr-2" />}
@@ -69,7 +69,7 @@ export default function Slots({ slots, actions, isAdmin }) {
                         ? <input defaultValue={s.name} onBlur={(e) => commit(s, 'name', e.target.value)} className={`w-full ${editCls} ${expiring ? 'font-semibold' : ''}`} />
                         : <span className={`px-2 py-1 ${cellCls} ${expiring ? 'font-semibold' : ''}`}>{s.name}</span>}
                     </td>
-                    <td className="py-1 pr-2">
+                    <td className="py-1 pr-2 hidden sm:table-cell">
                       {isAdmin
                         ? <input defaultValue={s.time} onBlur={(e) => commit(s, 'time', e.target.value)} className={`w-24 ${editCls}`} />
                         : <span className={`px-2 ${cellCls}`}>{s.time}</span>}

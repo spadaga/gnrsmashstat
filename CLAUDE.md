@@ -125,8 +125,11 @@ The `VersionsModal` is wired into Header (desktop: History button; mobile: hambu
 ## Ranking
 
 `src/lib/ranking.js`:
-- `computeStats(matches, players)` — wins/losses/pointDiff/winRate. Sorted by wins then point diff.
+- `computeStats(matches, players)` — wins/losses/pointDiff/winRate/played, plus `qualified: boolean`.
+  Minimum-4-matches rule: players with `played >= 4` are "qualified" and sorted Win% → Wins → fewer Losses;
+  players with 1–3 played are sorted the same way but always listed below qualified players; 0 played = unranked, listed last.
 - `filterByPeriod(matches, period)` — keys: `'all'` / `'year'` / `'month'` / `'week'`
+- `filterByWeek(matches, which)` — keys: `'current'` / `'last'`. Week starts Sunday. Used by `TopSeeds`.
 
 ## Structure
 
@@ -172,6 +175,7 @@ Add/remove players (admin). Shows **Admin** badge for players with a PIN.
 ### `src/pages/Slots.jsx`
 Court slots table. Admin: inline editable cells. Guest: read-only.
 Rows within 10 days of `endDate` highlight red. Sorted by `endDate` ascending.
+**Time column hidden on mobile** (`hidden sm:table-cell`) to save width; visible from `sm` breakpoint up.
 
 ### `src/components/MatchForm.jsx`
 **Select dropdowns** (not free text) for all 4 players sourced from the players list.
@@ -182,16 +186,23 @@ Scores: 0–30, no ties. Date: `max=today` (no future dates allowed). Comment op
 Total Matches (orange) + Active Players (slate-900). Responds to period filter.
 
 ### `src/components/TopSeeds.jsx`
-Top 3 players. Seed #1 = orange card. Dark mode supported.
+Top pair(s) by win rate, scoped to a week via **This Week / Last Week** toggle (`filterByWeek`) —
+independent of the Dashboard period filter, always receives full `data.matches`. Seed #1 = orange card.
+"View All →" modal lists all pair combos for the selected week. Dark mode supported.
 
 ### `src/components/Leaderboard.jsx`
-All players ranked by win count. Rank #1 badge orange.
+Ranked using `computeStats`'s qualified/partial/unranked ordering (min-4-matches rule).
+Rank badge only shown for qualified players (others show "–"). Shows W-L and **played count** per player;
+subtitle reads "Needs N more" (partial) or "Unranked" (0 played) for non-qualified rows.
 
 ### `src/components/MatchList.jsx`
-- Date range filter: Last 30 Days / All Matches / Custom Range.
+- Date range filter: Last 30 Days / All Matches / Custom Range, plus a **player-name search box**
+  (matches team1/team2 names, case-insensitive substring).
 - Matches **grouped by date** with date headers. Today's header shows **"Today (Aug 10)"** in orange.
-- Edit score (✏️, admin): inline form, validates 0–30.
+- Edit (✏️, admin): inline form with 4 player dropdowns (reassign either team, all-4-unique validated)
+  alongside the score inputs; validates scores 0–30, no ties.
 - Delete (🗑️, admin): ConfirmDialog + local overlay during in-flight request.
+- Receives `players` prop (from `data.players`) for the edit-form dropdowns.
 
 ### `src/components/VideoSection.jsx` / `PhotoGallery.jsx`
 Carousel (default) ↔ Manage (admin only). Video max 20, photos max 50.
@@ -227,7 +238,9 @@ All mutations return updated resource array. `updateMatch(id, updates)` → `PUT
 - Vercel Blob is `public` — blob URLs are accessible to anyone.
 - Local and Vercel data are independent — use Export/Import to sync.
 - Scores: 0–30, no deuce logic.
-- `VersionsModal` is wired into Header — accessible via History button (desktop) or hamburger menu (mobile).
+- `VersionsModal` / History button is restricted to the **PIN-2669 admin only** (Suresh Padaga), not all admins —
+  gated by `canViewHistory = data.players.some(p => p.name === adminName && p.pin === '2669')` in `App.jsx`,
+  passed to `Header` (desktop nav button + mobile menu item).
 - Snapshots are taken **once per day** (pre-mutation), labeled Today / Yesterday / Day Before Yesterday.
 - `matches[].loggedAt` ISO timestamp added on creation — `MatchList` sorts newest-first within each day,
   falling back to original array position (later = more recent) for legacy matches without `loggedAt`.

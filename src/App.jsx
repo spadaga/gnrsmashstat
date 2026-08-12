@@ -87,6 +87,8 @@ export default function App() {
 
   const isAdmin = !!adminName
   const names = playerNames(data.players)
+  // History is sensitive (full data restore) — restrict to the PIN-2669 admin only.
+  const canViewHistory = data.players.some((p) => p.name === adminName && p.pin === '2669')
 
   const actions = {
     addPlayer:    (name)          => withFeedback(api.addPlayer(name).then((players) => setData((d) => ({ ...d, players }))), 'Player added'),
@@ -108,7 +110,7 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
       <Header
         page={page} onNavigate={setPage}
-        isAdmin={isAdmin} adminName={adminName}
+        isAdmin={isAdmin} adminName={adminName} canViewHistory={canViewHistory}
         onLoginClick={() => setLoginOpen(true)} onLogout={handleLogout}
         dark={dark} onToggleDark={toggleDark}
         onVersionsClick={() => setVersionsOpen(true)}
