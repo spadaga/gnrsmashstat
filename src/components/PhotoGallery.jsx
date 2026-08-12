@@ -4,6 +4,48 @@ import Carousel from './Carousel'
 import ConfirmDialog from './ConfirmDialog'
 
 const MAX_PHOTOS = 50
+const MAX_DIMENSION = 1600 // px, longest side
+// Vercel Serverless Functions hard-cap the request body at 4.5MB — mobile
+// camera photos (often 3-8MB) blow past that once base64-encoded (+33%).
+// Downscale + recompress client-side so uploads stay well under the limit.
+const MAX_UPLOAD_BYTES = 3.5 * 1024 * 1024
+
+function readAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+function dataUrlBytes(dataUrl) {
+  return Math.ceil((dataUrl.length - dataUrl.indexOf(',') - 1) * 0.75)
+}
+
+// Resize to MAX_DIMENSION and re-encode as JPEG, stepping quality down until
+// the result fits MAX_UPLOAD_BYTES. Falls back to the original file's data
+// URL if the browser can't decode it (e.g. an unsupported format).
+async function prepareUpload(file) {
+  let bitmap
+  try {
+    bitmap = await createImageBitmap(file)
+  } catch {
+    return readAsDataURL(file)
+  }
+  const scale = Math.min(1, MAX_DIMENSION / Math.max(bitmap.width, bitmap.height))
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.round(bitmap.width * scale)
+  canvas.height = Math.round(bitmap.height * scale)
+  canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+  bitmap.close?.()
+
+  for (const quality of [0.82, 0.7, 0.6, 0.5, 0.4]) {
+    const dataUrl = canvas.toDataURL('image/jpeg', quality)
+    if (dataUrlBytes(dataUrl) <= MAX_UPLOAD_BYTES) return dataUrl
+  }
+  return canvas.toDataURL('image/jpeg', 0.4)
+}
 
 export default function PhotoGallery({ photos, onAdd, onDelete, isAdmin }) {
   const [editing, setEditing] = useState(false)
@@ -13,9 +55,7 @@ export default function PhotoGallery({ photos, onAdd, onDelete, isAdmin }) {
   function handleFiles(e) {
     const files = [...e.target.files].slice(0, MAX_PHOTOS - photos.length)
     for (const file of files) {
-      const reader = new FileReader()
-      reader.onload = () => onAdd(reader.result).catch(() => {})
-      reader.readAsDataURL(file)
+      prepareUpload(file).then((dataUrl) => onAdd(dataUrl)).catch(() => {})
     }
     e.target.value = ''
   }
