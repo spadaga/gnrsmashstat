@@ -97,7 +97,7 @@ function EditScoreForm({ match, players, onSave, onCancel }) {
   )
 }
 
-export default function MatchList({ matches, players, onDelete, onUpdate, onLogMatch, isAdmin }) {
+export default function MatchList({ matches, players, onDelete, onUpdate, onLogMatch, isAdmin, isSuperAdmin }) {
   const [range, setRange] = useState('30d')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
@@ -175,6 +175,7 @@ export default function MatchList({ matches, players, onDelete, onUpdate, onLogM
               {items.map((m) => {
                 const team1Won = m.score1 > m.score2
                 const isEditing = editingId === m.id
+                const canModify = isAdmin && (isSuperAdmin || m.date === todayISO())
                 return (
                   <div key={m.id} className="border dark:border-slate-700 rounded-xl px-3 py-2.5 hover:border-orange-200 dark:hover:border-orange-800 transition">
                     <div className="flex items-center gap-3">
@@ -197,7 +198,7 @@ export default function MatchList({ matches, players, onDelete, onUpdate, onLogM
                         {m.comment && <p className="text-xs text-slate-400 italic mt-1">"{m.comment}"</p>}
                         {isEditing && <EditScoreForm match={m} players={playerNames} onSave={(u) => handleSaveScore(m.id, u)} onCancel={() => setEditingId(null)} />}
                       </div>
-                      {isAdmin && !isEditing && (
+                      {canModify && !isEditing && (
                         <div className="flex items-center gap-1.5 shrink-0">
                           <button onClick={() => setEditingId(m.id)} className="p-1.5 rounded-lg text-slate-300 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/30 transition" title="Edit score">
                             <Pencil size={13} />

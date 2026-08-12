@@ -202,6 +202,8 @@ subtitle reads "Needs N more" (partial) or "Unranked" (0 played) for non-qualifi
 - Edit (✏️, admin): inline form with 4 player dropdowns (reassign either team, all-4-unique validated)
   alongside the score inputs; validates scores 0–30, no ties.
 - Delete (🗑️, admin): ConfirmDialog + local overlay during in-flight request.
+- Edit/Delete are only shown for **today's matches** for regular admins; the PIN-2669 super admin
+  (`isSuperAdmin`) can edit/delete matches from any day. Gated by `canModify = isAdmin && (isSuperAdmin || m.date === today)`.
 - Receives `players` prop (from `data.players`) for the edit-form dropdowns.
 
 ### `src/components/VideoSection.jsx` / `PhotoGallery.jsx`
@@ -238,9 +240,10 @@ All mutations return updated resource array. `updateMatch(id, updates)` → `PUT
 - Vercel Blob is `public` — blob URLs are accessible to anyone.
 - Local and Vercel data are independent — use Export/Import to sync.
 - Scores: 0–30, no deuce logic.
-- `VersionsModal` / History button is restricted to the **PIN-2669 admin only** (Suresh Padaga), not all admins —
-  gated by `canViewHistory = data.players.some(p => p.name === adminName && p.pin === '2669')` in `App.jsx`,
-  passed to `Header` (desktop nav button + mobile menu item).
+- `isSuperAdmin` (PIN-2669 admin, Suresh Padaga) computed once in `App.jsx`:
+  `data.players.some(p => p.name === adminName && p.pin === '2669')`. Elevated rights over regular admins:
+  - `VersionsModal` / History button (passed to `Header` as `canViewHistory`) — desktop nav + mobile menu.
+  - Edit/delete any match in `MatchList` regardless of date (regular admins: today's matches only).
 - Snapshots are taken **once per day** (pre-mutation), labeled Today / Yesterday / Day Before Yesterday.
 - `matches[].loggedAt` ISO timestamp added on creation — `MatchList` sorts newest-first within each day,
   falling back to original array position (later = more recent) for legacy matches without `loggedAt`.

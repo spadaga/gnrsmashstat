@@ -10,7 +10,7 @@ import SlotsTicker from '../components/SlotsTicker'
 import { computeStats, filterByPeriod } from '../lib/ranking'
 import { exportAll } from '../lib/api'
 
-export default function Dashboard({ data, actions, onNavigate, onImport, isAdmin }) {
+export default function Dashboard({ data, actions, onNavigate, onImport, isAdmin, isSuperAdmin }) {
   const [period, setPeriod] = useState('all')
   const filtered = filterByPeriod(data.matches, period)
   const stats = computeStats(filtered, data.players)
@@ -22,7 +22,7 @@ export default function Dashboard({ data, actions, onNavigate, onImport, isAdmin
       <StatCards matches={filtered} players={data.players} />
       <TopSeeds matches={data.matches} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <MatchList matches={data.matches} players={data.players} onDelete={actions.deleteMatch} onUpdate={actions.updateMatch} onLogMatch={() => onNavigate('log')} isAdmin={isAdmin} />
+        <MatchList matches={data.matches} players={data.players} onDelete={actions.deleteMatch} onUpdate={actions.updateMatch} onLogMatch={() => onNavigate('log')} isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} />
         <Leaderboard stats={stats} />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
