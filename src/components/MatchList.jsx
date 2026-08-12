@@ -113,8 +113,8 @@ export default function MatchList({ matches, players, onDelete, onUpdate, onLogM
     if (range === 'custom' && ((from && m.date < from) || (to && m.date > to))) return false
     if (search) {
       const q = search.trim().toLowerCase()
-      const names = [...m.team1, ...m.team2].join(' ').toLowerCase()
-      if (!names.includes(q)) return false
+      const haystack = [...m.team1, ...m.team2, m.comment || ''].join(' ').toLowerCase()
+      if (!haystack.includes(q)) return false
     }
     return true
   })
@@ -156,7 +156,7 @@ export default function MatchList({ matches, players, onDelete, onUpdate, onLogM
         <div className="relative flex-1 min-w-[10rem]">
           <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by player name…"
+            placeholder="Search by player or comment…"
             className={`${inputCls} w-full pl-7`} />
         </div>
       </div>

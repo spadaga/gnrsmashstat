@@ -196,8 +196,8 @@ Rank badge only shown for qualified players (others show "–"). Shows W-L and *
 subtitle reads "Needs N more" (partial) or "Unranked" (0 played) for non-qualified rows.
 
 ### `src/components/MatchList.jsx`
-- Date range filter: Last 30 Days / All Matches / Custom Range, plus a **player-name search box**
-  (matches team1/team2 names, case-insensitive substring).
+- Date range filter: Last 30 Days / All Matches / Custom Range, plus a **search box**
+  (matches team1/team2 names and comment text, case-insensitive substring).
 - Matches **grouped by date** with date headers. Today's header shows **"Today (Aug 10)"** in orange.
 - Edit (✏️, admin): inline form with 4 player dropdowns (reassign either team, all-4-unique validated)
   alongside the score inputs; validates scores 0–30, no ties.
