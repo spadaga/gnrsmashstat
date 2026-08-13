@@ -222,7 +222,7 @@ export default function MatchList({ matches, players, onDelete, onUpdate, onLogM
                 {formatDateHeader(date)}
               </span>
               <div className="flex-1 h-px bg-slate-100 dark:bg-slate-700" />
-              <span className="text-[10px] text-slate-300 dark:text-slate-600">{items.length} match{items.length !== 1 ? 'es' : ''}</span>
+              <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-300">{items.length} match{items.length !== 1 ? 'es' : ''}</span>
             </div>
             <div className="space-y-2">
               {items.map((m) => {
