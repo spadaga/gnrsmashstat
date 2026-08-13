@@ -13,6 +13,13 @@ const PERIODS = [
 export default function Leaderboard({ matches, players }) {
   const [period, setPeriod] = useState('all')
   const stats = computeStats(filterByPeriod(matches, period), players)
+  // Standard competition ranking (1-2-2-4): players tied on win rate share a
+  // rank, and the next distinct rank skips the tied count.
+  const ranks = []
+  stats.forEach((s, i) => {
+    if (!s.qualified) { ranks.push(null); return }
+    ranks.push(i > 0 && stats[i - 1].qualified && stats[i - 1].winRate === s.winRate ? ranks[i - 1] : i + 1)
+  })
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-4">
@@ -31,7 +38,7 @@ export default function Leaderboard({ matches, players }) {
       </div>
       <div className="space-y-1">
         {stats.map((s, i) => {
-          const rank = s.qualified ? i + 1 : null
+          const rank = ranks[i]
           return (
             <div key={s.name} className="flex items-center justify-between px-2 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700">
               <div className="flex items-center gap-3">

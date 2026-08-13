@@ -2,11 +2,10 @@ import { useState } from 'react'
 import { Loader2, Pencil, Save, Search, Swords, Trophy, Trash2, X } from 'lucide-react'
 import ConfirmDialog from './ConfirmDialog'
 
-const RANGES = [
-  { key: 'today',  label: "Today's Matches" },
-  { key: '30d',    label: 'Last 30 Days' },
-  { key: 'all',    label: 'All Matches' },
-  { key: 'custom', label: 'Custom Range' },
+const MODES = [
+  { key: 'today', label: 'Today' },
+  { key: 'h2h',   label: 'Head-to-Head' },
+  { key: 'all',   label: 'All Matches' },
 ]
 
 const todayISO = () => new Date().toISOString().slice(0, 10)
@@ -19,10 +18,6 @@ function formatDateHeader(iso) {
   return new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', {
     weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
   })
-}
-
-function daysAgo(n) {
-  const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10)
 }
 
 function groupByDate(matches) {
@@ -102,33 +97,32 @@ function EditScoreForm({ match, players, onSave, onCancel }) {
 }
 
 export default function MatchList({ matches, players, onDelete, onUpdate, onLogMatch, isAdmin, isSuperAdmin }) {
-  const [range, setRange] = useState('today')
+  const [mode, setMode] = useState('today')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [search, setSearch] = useState('')
   const [confirm, setConfirm] = useState(null)
   const [deleting, setDeleting] = useState(false)
   const [editingId, setEditingId] = useState(null)
-  const [h2hOpen, setH2hOpen] = useState(false)
   const [h2h, setH2h] = useState(['', '', '', ''])
 
   const playerNames = (players || []).map((p) => (typeof p === 'string' ? p : p.name))
 
   const [ha, hb, hc, hd] = h2h
   const h2hChosen = h2h.filter(Boolean)
-  const h2hActive = h2hOpen && h2hChosen.length === 4 && new Set(h2hChosen).size === 4
+  const h2hActive = mode === 'h2h' && h2hChosen.length === 4 && new Set(h2hChosen).size === 4
 
-  function toggleH2h() {
-    setH2hOpen((open) => { if (open) setH2h(['', '', '', '']); return !open })
+  function selectMode(next) {
+    setMode(next)
+    if (next !== 'h2h') setH2h(['', '', '', ''])
   }
   const h2hOptions = (current) => playerNames.filter((p) => p === current || !h2hChosen.includes(p))
   const selA = h2hActive ? pairKey(ha, hb) : null
   const selB = h2hActive ? pairKey(hc, hd) : null
 
   const visible = matches.filter((m) => {
-    if (range === 'today' && m.date !== todayISO()) return false
-    if (range === '30d' && m.date < daysAgo(30)) return false
-    if (range === 'custom' && ((from && m.date < from) || (to && m.date > to))) return false
+    if (mode === 'today' && m.date !== todayISO()) return false
+    if (mode === 'all' && ((from && m.date < from) || (to && m.date > to))) return false
     if (search) {
       const q = search.trim().toLowerCase()
       const haystack = [...m.team1, ...m.team2, m.comment || ''].join(' ').toLowerCase()
@@ -186,29 +180,26 @@ export default function MatchList({ matches, players, onDelete, onUpdate, onLogM
 
       <div className="flex flex-wrap items-center gap-2 mb-3">
         <div className="flex gap-1 bg-slate-100 dark:bg-slate-700 rounded-full p-1">
-          {RANGES.map((r) => (
-            <button key={r.key} onClick={() => setRange(r.key)}
-              className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide transition ${
-                range === r.key ? 'bg-slate-900 dark:bg-orange-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-              }`}>{r.label}</button>
+          {MODES.map((r) => (
+            <button key={r.key} onClick={() => selectMode(r.key)}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide transition ${
+                mode === r.key ? 'bg-slate-900 dark:bg-orange-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              }`}>{r.key === 'h2h' && <Swords size={12} />}{r.label}</button>
           ))}
         </div>
-        {range === 'custom' && (
+        {mode === 'all' && (
           <div className="flex items-center gap-2">
             <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className={inputCls} />
             <span className="text-slate-400 text-xs">to</span>
             <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className={inputCls} />
+            {(from || to) && (
+              <button onClick={() => { setFrom(''); setTo('') }} className="text-xs font-medium text-slate-400 hover:text-orange-500">Clear</button>
+            )}
           </div>
         )}
-        <button onClick={toggleH2h}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide transition ${
-            h2hOpen ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-          }`}>
-          <Swords size={12} /> Head-to-Head
-        </button>
       </div>
 
-      {h2hOpen && (
+      {mode === 'h2h' && (
         <div className="flex flex-wrap items-center gap-1.5 mb-3">
           <PlayerSelect value={ha} onChange={(v) => setH2h([v, hb, hc, hd])} options={h2hOptions(ha)} placeholder="Player 1" />
           <span className="text-slate-400 text-xs">&</span>

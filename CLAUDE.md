@@ -197,7 +197,8 @@ Each dropdown filters out already-selected players so all 4 are always unique.
 Scores: 0–30, no ties. Date: `max=today` (no future dates allowed). Comment optional.
 
 ### `src/components/StatCards.jsx`
-Total Matches (orange) + Active Players (slate-900). Responds to period filter.
+Single orange card showing **Total Matches** and **Total Players** side by side (divider between).
+Responds to period filter.
 
 ### `src/components/TopSeeds.jsx`
 Top pair(s) by win rate, scoped to a week via **This Week / Last Week** toggle (`filterByWeek`) —
@@ -209,16 +210,21 @@ independent of the Dashboard period filter, always receives full `data.matches`.
 Owns its own period tabs — **Today / Weekly / Monthly / Yearly / Overall** (`filterByPeriod`) — receives
 raw `matches`/`players` and computes stats internally, independent of the Dashboard's FilterBar period.
 Ranked using `computeStats`'s qualified/partial/unranked ordering (min-4-matches rule).
+**Standard competition ranking (1-2-2-4)**: qualified players tied on win rate share the same rank
+badge, and the next distinct rank skips the tied count (computed as a `ranks[]` array alongside `stats`,
+comparing each row to the previous row's `winRate` since the list is already sorted).
 Rank badge only shown for qualified players (others show "–"). Shows W-L and **played count** per player;
 subtitle reads "Needs N more" (partial) or "Unranked" (0 played) for non-qualified rows.
 
 ### `src/components/MatchList.jsx`
-- **Search box sits above the "Recent Matches" heading**; date range tabs are **Today's Matches
-  (default) / Last 30 Days / All Matches / Custom Range**.
-- **Head-to-Head filter**: a toggle button (Swords icon) shows/hides 4 player dropdowns
-  (Player 1 & 2 vs Player 3 & 4, all unique). When all 4 are chosen the list narrows to matches
-  between that exact pair matchup (team sides ignored) and a summary banner shows the record, e.g.
-  "A & B lead C & D 3–1" (or tied / no matches yet). Closing the toggle clears the selection.
+- **Search box sits above the "Recent Matches" heading.**
+- Single 3-way mode pill row (no separate tabs row): **Today** (default) / **Head-to-Head** / **All
+  Matches**. Switching away from Head-to-Head clears the picked players.
+  - **All Matches**: reveals an optional from/to date-range pair inline (with a Clear button); leaving
+    both blank shows every match.
+  - **Head-to-Head**: reveals 4 player dropdowns (Player 1 & 2 vs Player 3 & 4, all unique). When all 4
+    are chosen the list narrows to matches between that exact pair matchup (team sides ignored) and a
+    summary banner shows the record, e.g. "A & B lead C & D 3–1" (or tied / no matches yet).
 - Matches **grouped by date** with date headers. Today's header shows **"Today (Aug 10)"** in orange.
   The per-date match-count label is dark/bold (`text-slate-600 dark:text-slate-300`), not faint gray.
 - Edit (✏️, admin): inline form with 4 player dropdowns (reassign either team, all-4-unique validated)
