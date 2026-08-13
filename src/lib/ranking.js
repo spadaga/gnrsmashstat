@@ -86,6 +86,10 @@ export function filterByWeek(matches, which) {
 export function filterByPeriod(matches, period) {
   if (period === 'all') return matches
   const now = new Date()
+  if (period === 'today') {
+    const todayStr = now.toISOString().slice(0, 10)
+    return matches.filter((m) => m.date === todayStr)
+  }
   return matches.filter((m) => {
     const d = new Date(m.date)
     if (period === 'year')  return d.getFullYear() === now.getFullYear()
@@ -98,4 +102,24 @@ export function filterByPeriod(matches, period) {
     }
     return true
   })
+}
+
+// Head-to-head duo report: given two players, how they do together vs. how
+// `a` does when paired with anyone other than `b`.
+export function computeDuoStats(matches, a, b) {
+  let togetherWins = 0, togetherLosses = 0
+  let aWithoutBWins = 0, aWithoutBLosses = 0
+  for (const m of matches) {
+    const team1Won = m.score1 > m.score2
+    ;[m.team1, m.team2].forEach((team, ti) => {
+      if (!team.includes(a)) return
+      const won = ti === 0 ? team1Won : !team1Won
+      if (team.includes(b)) { won ? togetherWins++ : togetherLosses++ }
+      else { won ? aWithoutBWins++ : aWithoutBLosses++ }
+    })
+  }
+  return {
+    togetherWins, togetherLosses, togetherPlayed: togetherWins + togetherLosses,
+    aWithoutBWins, aWithoutBLosses, aWithoutBPlayed: aWithoutBWins + aWithoutBLosses,
+  }
 }

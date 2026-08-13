@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Loader2, Pencil, Save, Search, Trophy, Trash2, X } from 'lucide-react'
+import { Loader2, Pencil, Save, Search, Swords, Trophy, Trash2, X } from 'lucide-react'
 import ConfirmDialog from './ConfirmDialog'
 
 const RANGES = [
+  { key: 'today',  label: "Today's Matches" },
   { key: '30d',    label: 'Last 30 Days' },
   { key: 'all',    label: 'All Matches' },
   { key: 'custom', label: 'Custom Range' },
@@ -101,25 +102,31 @@ function EditScoreForm({ match, players, onSave, onCancel }) {
 }
 
 export default function MatchList({ matches, players, onDelete, onUpdate, onLogMatch, isAdmin, isSuperAdmin }) {
-  const [range, setRange] = useState('30d')
+  const [range, setRange] = useState('today')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [search, setSearch] = useState('')
   const [confirm, setConfirm] = useState(null)
   const [deleting, setDeleting] = useState(false)
   const [editingId, setEditingId] = useState(null)
+  const [h2hOpen, setH2hOpen] = useState(false)
   const [h2h, setH2h] = useState(['', '', '', ''])
 
   const playerNames = (players || []).map((p) => (typeof p === 'string' ? p : p.name))
 
   const [ha, hb, hc, hd] = h2h
   const h2hChosen = h2h.filter(Boolean)
-  const h2hActive = h2hChosen.length === 4 && new Set(h2hChosen).size === 4
+  const h2hActive = h2hOpen && h2hChosen.length === 4 && new Set(h2hChosen).size === 4
+
+  function toggleH2h() {
+    setH2hOpen((open) => { if (open) setH2h(['', '', '', '']); return !open })
+  }
   const h2hOptions = (current) => playerNames.filter((p) => p === current || !h2hChosen.includes(p))
   const selA = h2hActive ? pairKey(ha, hb) : null
   const selB = h2hActive ? pairKey(hc, hd) : null
 
   const visible = matches.filter((m) => {
+    if (range === 'today' && m.date !== todayISO()) return false
     if (range === '30d' && m.date < daysAgo(30)) return false
     if (range === 'custom' && ((from && m.date < from) || (to && m.date > to))) return false
     if (search) {
@@ -163,6 +170,13 @@ export default function MatchList({ matches, players, onDelete, onUpdate, onLogM
 
   return (
     <div className="relative bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-4">
+      <div className="relative mb-3">
+        <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+        <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by player or comment…"
+          className={`${inputCls} w-full pl-7`} />
+      </div>
+
       <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
         <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">Recent Matches</h2>
         {onLogMatch && isAdmin && (
@@ -186,27 +200,28 @@ export default function MatchList({ matches, players, onDelete, onUpdate, onLogM
             <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className={inputCls} />
           </div>
         )}
-        <div className="relative flex-1 min-w-[10rem]">
-          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by player or comment…"
-            className={`${inputCls} w-full pl-7`} />
-        </div>
+        <button onClick={toggleH2h}
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide transition ${
+            h2hOpen ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+          }`}>
+          <Swords size={12} /> Head-to-Head
+        </button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5 mb-3">
-        <span className="text-[11px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500 mr-1">Head-to-Head</span>
-        <PlayerSelect value={ha} onChange={(v) => setH2h([v, hb, hc, hd])} options={h2hOptions(ha)} placeholder="Player 1" />
-        <span className="text-slate-400 text-xs">&</span>
-        <PlayerSelect value={hb} onChange={(v) => setH2h([ha, v, hc, hd])} options={h2hOptions(hb)} placeholder="Player 2" />
-        <span className="text-slate-300 dark:text-slate-600 text-xs mx-1">vs</span>
-        <PlayerSelect value={hc} onChange={(v) => setH2h([ha, hb, v, hd])} options={h2hOptions(hc)} placeholder="Player 3" />
-        <span className="text-slate-400 text-xs">&</span>
-        <PlayerSelect value={hd} onChange={(v) => setH2h([ha, hb, hc, v])} options={h2hOptions(hd)} placeholder="Player 4" />
-        {h2hChosen.length > 0 && (
-          <button onClick={() => setH2h(['', '', '', ''])} className="text-xs font-medium text-slate-400 hover:text-orange-500 ml-1">Clear</button>
-        )}
-      </div>
+      {h2hOpen && (
+        <div className="flex flex-wrap items-center gap-1.5 mb-3">
+          <PlayerSelect value={ha} onChange={(v) => setH2h([v, hb, hc, hd])} options={h2hOptions(ha)} placeholder="Player 1" />
+          <span className="text-slate-400 text-xs">&</span>
+          <PlayerSelect value={hb} onChange={(v) => setH2h([ha, v, hc, hd])} options={h2hOptions(hb)} placeholder="Player 2" />
+          <span className="text-slate-300 dark:text-slate-600 text-xs mx-1">vs</span>
+          <PlayerSelect value={hc} onChange={(v) => setH2h([ha, hb, v, hd])} options={h2hOptions(hc)} placeholder="Player 3" />
+          <span className="text-slate-400 text-xs">&</span>
+          <PlayerSelect value={hd} onChange={(v) => setH2h([ha, hb, hc, v])} options={h2hOptions(hd)} placeholder="Player 4" />
+          {h2hChosen.length > 0 && (
+            <button onClick={() => setH2h(['', '', '', ''])} className="text-xs font-medium text-slate-400 hover:text-orange-500 ml-1">Clear</button>
+          )}
+        </div>
+      )}
 
       {h2hSummary && (
         <div className="mb-3 px-3 py-2 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 text-sm font-semibold text-center">

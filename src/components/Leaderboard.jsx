@@ -1,11 +1,34 @@
+import { useState } from 'react'
 import { Medal } from 'lucide-react'
+import { computeStats, filterByPeriod } from '../lib/ranking'
 
-export default function Leaderboard({ stats }) {
+const PERIODS = [
+  { key: 'today', label: 'Today' },
+  { key: 'week',  label: 'Weekly' },
+  { key: 'month', label: 'Monthly' },
+  { key: 'year',  label: 'Yearly' },
+  { key: 'all',   label: 'Overall' },
+]
+
+export default function Leaderboard({ matches, players }) {
+  const [period, setPeriod] = useState('all')
+  const stats = computeStats(filterByPeriod(matches, period), players)
+
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-4">
-      <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300 mb-3">
-        <Medal size={16} className="text-orange-600" /> Leaderboard
-      </h2>
+      <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+        <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">
+          <Medal size={16} className="text-orange-600" /> Leaderboard
+        </h2>
+        <div className="flex gap-1 bg-slate-100 dark:bg-slate-700 rounded-full p-1">
+          {PERIODS.map((p) => (
+            <button key={p.key} onClick={() => setPeriod(p.key)}
+              className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide transition ${
+                period === p.key ? 'bg-slate-900 dark:bg-orange-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              }`}>{p.label}</button>
+          ))}
+        </div>
+      </div>
       <div className="space-y-1">
         {stats.map((s, i) => {
           const rank = s.qualified ? i + 1 : null

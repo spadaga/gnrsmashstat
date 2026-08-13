@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard'
 import LogMatch from './pages/LogMatch'
 import Players from './pages/Players'
 import Slots from './pages/Slots'
+import Report from './pages/Report'
 import LoginModal from './components/LoginModal'
 import VersionsModal from './components/VersionsModal'
 import Footer from './components/Footer'
@@ -144,6 +145,9 @@ export default function App() {
         )}
         {page === 'slots' && (
           <Slots slots={data.slots} actions={actions} isAdmin={isAdmin} />
+        )}
+        {page === 'report' && (
+          <Report data={{ matches: data.matches, players: names }} />
         )}
       </main>
 

@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { Activity, CalendarClock, Clock, LogIn, LogOut, Menu, Moon, Phone, Plus, ShieldCheck, Sun, Users, X } from 'lucide-react'
+import { Activity, BarChart3, CalendarClock, Clock, LogIn, LogOut, Menu, Moon, Phone, Plus, ShieldCheck, Sun, Users, X } from 'lucide-react'
 
 const NAV_DESKTOP = [
   { key: 'dashboard', label: 'Dashboard' },
   { key: 'log',       label: 'Log Match', icon: Plus, adminOnly: true },
   { key: 'players',   label: 'Players',   icon: Users },
   { key: 'slots',     label: 'Court Slots', icon: CalendarClock },
+  { key: 'report',    label: 'Report',    icon: BarChart3 },
 ]
 
 function Logo() {
@@ -124,6 +125,9 @@ export default function Header({ page, onNavigate, isAdmin, adminName, canViewHi
           </button>
           <button onClick={() => nav('slots')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition ${page === 'slots' ? 'bg-orange-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
             <CalendarClock size={15} /> Court Slots
+          </button>
+          <button onClick={() => nav('report')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition ${page === 'report' ? 'bg-orange-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
+            <BarChart3 size={15} /> Report
           </button>
           {canViewHistory && (
             <button onClick={() => { onVersionsClick(); setMenuOpen(false) }} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition">

@@ -78,7 +78,7 @@ export default function TopSeeds({ matches }) {
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {top2.map((p, i) => (
-          <div key={p.players.join('&')} className={`rounded-2xl p-3 relative overflow-hidden ${i === 0 ? 'bg-orange-600 text-white' : 'bg-white dark:bg-slate-800 border dark:border-slate-700'}`}>
+          <div key={p.players.join('&')} className={`rounded-2xl p-3 relative overflow-hidden ${i === 1 ? 'hidden sm:block' : ''} ${i === 0 ? 'bg-orange-600 text-white' : 'bg-white dark:bg-slate-800 border dark:border-slate-700'}`}>
             <div className="flex items-center justify-between mb-2">
               <span className={`text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${i === 0 ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'}`}>
                 Top Seed #{i + 1}

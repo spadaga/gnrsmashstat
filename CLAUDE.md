@@ -128,8 +128,11 @@ The `VersionsModal` is wired into Header (desktop: History button; mobile: hambu
 - `computeStats(matches, players)` — wins/losses/pointDiff/winRate/played, plus `qualified: boolean`.
   Minimum-4-matches rule: players with `played >= 4` are "qualified" and sorted Win% → Wins → fewer Losses;
   players with 1–3 played are sorted the same way but always listed below qualified players; 0 played = unranked, listed last.
-- `filterByPeriod(matches, period)` — keys: `'all'` / `'year'` / `'month'` / `'week'`
+- `filterByPeriod(matches, period)` — keys: `'all'` / `'today'` / `'year'` / `'month'` / `'week'`
 - `filterByWeek(matches, which)` — keys: `'current'` / `'last'`. Week starts Sunday. Used by `TopSeeds`.
+- `computeDuoStats(matches, a, b)` — head-to-head: `togetherWins`/`togetherLosses` (a & b on the same
+  team) plus `aWithoutBWins`/`aWithoutBLosses` (a's record when partnered with anyone but b). Used by
+  the Report page's Duo Head-to-Head tab.
 
 ## Structure
 
@@ -141,7 +144,7 @@ All 12 actions go through `withFeedback()` → full-screen transparent overlay +
 toast on settle.
 
 ### `src/components/Header.jsx`
-Logo + wordmark + nav pills. Log Match tab hidden for guests.
+Logo + wordmark + nav pills: Dashboard / Log Match (admin only) / Players / Court Slots / Report.
 Moon/Sun theme toggle. Admin Login button (guests) / name badge + Logout (admins).
 
 ### `src/components/LoginModal.jsx`
@@ -165,9 +168,20 @@ Sticky footer: `© {year} GNR SmashStats. All rights reserved. | 🏸 GNR Team �
 
 ### `src/pages/Dashboard.jsx`
 SlotsTicker → FilterBar → StatCards → TopSeeds → [Leaderboard | MatchList] → [VideoSection | PhotoGallery].
+`Leaderboard` gets raw `data.matches`/`data.players` (not pre-filtered) — it owns its own period tabs, independent of the FilterBar period which only drives StatCards/TopSeeds context.
 
 ### `src/pages/LogMatch.jsx`
 Wraps `MatchForm.jsx`, navigates back to Dashboard on save.
+
+### `src/pages/Report.jsx`
+Read-only analytics page (nav: Report). 4 tabs, each with a bar chart (plain div-width bars, no
+chart lib) + text list:
+- **Duo Head-to-Head**: pick players A & B → wins together, losses with B, and A's wins *without*
+  B as partner (`computeDuoStats` in ranking.js).
+- **Player Combos**: pick one player → every partner combination they've played, played/wins/losses
+  per combo (`computePairStats` filtered to pairs containing that player).
+- **Individual Rankings**: `computeStats` ranked by wins, period-filterable (Day/Week/Month/Year/Custom Range).
+- **Pair Rankings**: `computePairStats` ranked by wins, same period filter options.
 
 ### `src/pages/Players.jsx`
 Add/remove players (admin). Shows **Admin** badge for players with a PIN.
@@ -188,17 +202,25 @@ Total Matches (orange) + Active Players (slate-900). Responds to period filter.
 ### `src/components/TopSeeds.jsx`
 Top pair(s) by win rate, scoped to a week via **This Week / Last Week** toggle (`filterByWeek`) —
 independent of the Dashboard period filter, always receives full `data.matches`. Seed #1 = orange card.
+**Seed #2 card is hidden on mobile** (`hidden sm:block`) — only Top Seed #1 shows below the `sm` breakpoint.
 "View All →" modal lists all pair combos for the selected week. Dark mode supported.
 
 ### `src/components/Leaderboard.jsx`
+Owns its own period tabs — **Today / Weekly / Monthly / Yearly / Overall** (`filterByPeriod`) — receives
+raw `matches`/`players` and computes stats internally, independent of the Dashboard's FilterBar period.
 Ranked using `computeStats`'s qualified/partial/unranked ordering (min-4-matches rule).
 Rank badge only shown for qualified players (others show "–"). Shows W-L and **played count** per player;
 subtitle reads "Needs N more" (partial) or "Unranked" (0 played) for non-qualified rows.
 
 ### `src/components/MatchList.jsx`
-- Date range filter: Last 30 Days / All Matches / Custom Range, plus a **search box**
-  (matches team1/team2 names and comment text, case-insensitive substring).
+- **Search box sits above the "Recent Matches" heading**; date range tabs are **Today's Matches
+  (default) / Last 30 Days / All Matches / Custom Range**.
+- **Head-to-Head filter**: a toggle button (Swords icon) shows/hides 4 player dropdowns
+  (Player 1 & 2 vs Player 3 & 4, all unique). When all 4 are chosen the list narrows to matches
+  between that exact pair matchup (team sides ignored) and a summary banner shows the record, e.g.
+  "A & B lead C & D 3–1" (or tied / no matches yet). Closing the toggle clears the selection.
 - Matches **grouped by date** with date headers. Today's header shows **"Today (Aug 10)"** in orange.
+  The per-date match-count label is dark/bold (`text-slate-600 dark:text-slate-300`), not faint gray.
 - Edit (✏️, admin): inline form with 4 player dropdowns (reassign either team, all-4-unique validated)
   alongside the score inputs; validates scores 0–30, no ties.
 - Delete (🗑️, admin): ConfirmDialog + local overlay during in-flight request.

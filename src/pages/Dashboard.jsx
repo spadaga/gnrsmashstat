@@ -7,13 +7,12 @@ import MatchList from '../components/MatchList'
 import VideoSection from '../components/VideoSection'
 import PhotoGallery from '../components/PhotoGallery'
 import SlotsTicker from '../components/SlotsTicker'
-import { computeStats, filterByPeriod } from '../lib/ranking'
+import { filterByPeriod } from '../lib/ranking'
 import { exportAll } from '../lib/api'
 
 export default function Dashboard({ data, actions, onNavigate, onImport, isAdmin, isSuperAdmin }) {
   const [period, setPeriod] = useState('all')
   const filtered = filterByPeriod(data.matches, period)
-  const stats = computeStats(filtered, data.players)
 
   return (
     <div className="space-y-4">
@@ -23,7 +22,7 @@ export default function Dashboard({ data, actions, onNavigate, onImport, isAdmin
       <TopSeeds matches={data.matches} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <MatchList matches={data.matches} players={data.players} onDelete={actions.deleteMatch} onUpdate={actions.updateMatch} onLogMatch={() => onNavigate('log')} isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} />
-        <Leaderboard stats={stats} />
+        <Leaderboard matches={data.matches} players={data.players} />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <VideoSection videos={data.videos} onAdd={actions.addVideo} onDelete={actions.deleteVideo} isAdmin={isAdmin} />
