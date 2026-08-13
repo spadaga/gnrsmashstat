@@ -205,6 +205,9 @@ subtitle reads "Needs N more" (partial) or "Unranked" (0 played) for non-qualifi
 - Edit/Delete are only shown for **today's matches** for regular admins; the PIN-2669 super admin
   (`isSuperAdmin`) can edit/delete matches from any day. Gated by `canModify = isAdmin && (isSuperAdmin || m.date === today)`.
 - Receives `players` prop (from `data.players`) for the edit-form dropdowns.
+- **Head-to-Head filter**: 4 player dropdowns (Player 1 & 2 vs Player 3 & 4, all unique). When all 4 are
+  chosen, the list narrows to matches between that exact pair matchup (team sides ignored) and a summary
+  banner shows the record, e.g. "A & B lead C & D 3–1" (or tied / no matches yet). `Clear` resets it.
 
 ### `src/components/VideoSection.jsx` / `PhotoGallery.jsx`
 Carousel (default) ↔ Manage (admin only). Video max 20, photos max 50.

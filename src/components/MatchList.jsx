@@ -37,14 +37,17 @@ function groupByDate(matches) {
   }))
 }
 
-function PlayerSelect({ value, onChange, options }) {
+function PlayerSelect({ value, onChange, options, placeholder }) {
   return (
     <select value={value} onChange={(e) => onChange(e.target.value)}
       className="border dark:border-slate-600 rounded-lg px-2 py-1 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:border-orange-400 focus:outline-none">
+      {placeholder && <option value="">{placeholder}</option>}
       {options.map((p) => <option key={p} value={p}>{p}</option>)}
     </select>
   )
 }
+
+const pairKey = (a, b) => [a, b].sort().join('|')
 
 function EditScoreForm({ match, players, onSave, onCancel }) {
   const [s1, setS1] = useState(String(match.score1))
@@ -105,8 +108,16 @@ export default function MatchList({ matches, players, onDelete, onUpdate, onLogM
   const [confirm, setConfirm] = useState(null)
   const [deleting, setDeleting] = useState(false)
   const [editingId, setEditingId] = useState(null)
+  const [h2h, setH2h] = useState(['', '', '', ''])
 
   const playerNames = (players || []).map((p) => (typeof p === 'string' ? p : p.name))
+
+  const [ha, hb, hc, hd] = h2h
+  const h2hChosen = h2h.filter(Boolean)
+  const h2hActive = h2hChosen.length === 4 && new Set(h2hChosen).size === 4
+  const h2hOptions = (current) => playerNames.filter((p) => p === current || !h2hChosen.includes(p))
+  const selA = h2hActive ? pairKey(ha, hb) : null
+  const selB = h2hActive ? pairKey(hc, hd) : null
 
   const visible = matches.filter((m) => {
     if (range === '30d' && m.date < daysAgo(30)) return false
@@ -116,9 +127,31 @@ export default function MatchList({ matches, players, onDelete, onUpdate, onLogM
       const haystack = [...m.team1, ...m.team2, m.comment || ''].join(' ').toLowerCase()
       if (!haystack.includes(q)) return false
     }
+    if (h2hActive) {
+      const mA = pairKey(m.team1[0], m.team1[1])
+      const mB = pairKey(m.team2[0], m.team2[1])
+      const isMatchup = (mA === selA && mB === selB) || (mA === selB && mB === selA)
+      if (!isMatchup) return false
+    }
     return true
   })
   const groups = groupByDate(visible)
+
+  let h2hSummary = null
+  if (h2hActive) {
+    let winsA = 0, winsB = 0
+    visible.forEach((m) => {
+      const team1Won = m.score1 > m.score2
+      const team1IsA = pairKey(m.team1[0], m.team1[1]) === selA
+      if (team1Won === team1IsA) winsA++
+      else winsB++
+    })
+    const labelA = `${ha} & ${hb}`, labelB = `${hc} & ${hd}`
+    if (winsA === 0 && winsB === 0) h2hSummary = `No matches yet between ${labelA} and ${labelB}.`
+    else if (winsA === winsB) h2hSummary = `${labelA} vs ${labelB}: tied ${winsA}–${winsB}.`
+    else if (winsA > winsB) h2hSummary = `${labelA} lead ${labelB} ${winsA}–${winsB}.`
+    else h2hSummary = `${labelB} lead ${labelA} ${winsB}–${winsA}.`
+  }
 
   async function handleDelete() {
     const id = confirm; setConfirm(null); setDeleting(true)
@@ -160,6 +193,26 @@ export default function MatchList({ matches, players, onDelete, onUpdate, onLogM
             className={`${inputCls} w-full pl-7`} />
         </div>
       </div>
+
+      <div className="flex flex-wrap items-center gap-1.5 mb-3">
+        <span className="text-[11px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500 mr-1">Head-to-Head</span>
+        <PlayerSelect value={ha} onChange={(v) => setH2h([v, hb, hc, hd])} options={h2hOptions(ha)} placeholder="Player 1" />
+        <span className="text-slate-400 text-xs">&</span>
+        <PlayerSelect value={hb} onChange={(v) => setH2h([ha, v, hc, hd])} options={h2hOptions(hb)} placeholder="Player 2" />
+        <span className="text-slate-300 dark:text-slate-600 text-xs mx-1">vs</span>
+        <PlayerSelect value={hc} onChange={(v) => setH2h([ha, hb, v, hd])} options={h2hOptions(hc)} placeholder="Player 3" />
+        <span className="text-slate-400 text-xs">&</span>
+        <PlayerSelect value={hd} onChange={(v) => setH2h([ha, hb, hc, v])} options={h2hOptions(hd)} placeholder="Player 4" />
+        {h2hChosen.length > 0 && (
+          <button onClick={() => setH2h(['', '', '', ''])} className="text-xs font-medium text-slate-400 hover:text-orange-500 ml-1">Clear</button>
+        )}
+      </div>
+
+      {h2hSummary && (
+        <div className="mb-3 px-3 py-2 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 text-sm font-semibold text-center">
+          {h2hSummary}
+        </div>
+      )}
 
       <div className="space-y-4 max-h-[40rem] overflow-y-auto pr-1">
         {groups.map(({ date, items }) => (
