@@ -1,6 +1,68 @@
 import { useState } from 'react'
-import { Pencil, Save, ShieldCheck, Trash2, UserPlus, X } from 'lucide-react'
+import { Camera, Pencil, Save, ShieldCheck, Trash2, UserPlus, X } from 'lucide-react'
 import ConfirmDialog from '../components/ConfirmDialog'
+import Avatar from '../components/Avatar'
+
+const MAX_AVATAR_DIMENSION = 300 // px, longest side — small since it's only ever shown as a circle
+const MAX_AVATAR_BYTES = 150 * 1024
+
+function readAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+// Same downscale-then-recompress approach as PhotoGallery's prepareUpload, just
+// tuned much smaller since this is only ever rendered as a small avatar circle.
+async function prepareAvatar(file) {
+  let bitmap
+  try {
+    bitmap = await createImageBitmap(file)
+  } catch {
+    return readAsDataURL(file)
+  }
+  const scale = Math.min(1, MAX_AVATAR_DIMENSION / Math.max(bitmap.width, bitmap.height))
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.round(bitmap.width * scale)
+  canvas.height = Math.round(bitmap.height * scale)
+  canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+  bitmap.close?.()
+
+  for (const quality of [0.85, 0.7, 0.6, 0.5]) {
+    const dataUrl = canvas.toDataURL('image/jpeg', quality)
+    const bytes = Math.ceil((dataUrl.length - dataUrl.indexOf(',') - 1) * 0.75)
+    if (bytes <= MAX_AVATAR_BYTES) return dataUrl
+  }
+  return canvas.toDataURL('image/jpeg', 0.5)
+}
+
+function PlayerAvatarPicker({ name, photo, isAdmin, onChange, onClear }) {
+  async function handleFile(e) {
+    const file = e.target.files[0]
+    e.target.value = ''
+    if (!file) return
+    onChange(await prepareAvatar(file))
+  }
+  if (!isAdmin) return <Avatar name={name} photo={photo} size="md" />
+  return (
+    <div className="relative group shrink-0">
+      <Avatar name={name} photo={photo} size="md" />
+      <label className="absolute inset-0 rounded-full flex items-center justify-center cursor-pointer bg-black/0 group-hover:bg-black/40 transition" title="Change photo">
+        <Camera size={13} className="text-white opacity-0 group-hover:opacity-100 transition" />
+        <input type="file" accept="image/*" onChange={handleFile} className="hidden" />
+      </label>
+      {photo && (
+        <button type="button" onClick={onClear} title="Remove photo"
+          className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] leading-none flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+          <X size={10} />
+        </button>
+      )}
+    </div>
+  )
+}
 
 function EditPlayerForm({ player, onSave, onCancel }) {
   const pName = typeof player === 'string' ? player : player.name
@@ -64,12 +126,16 @@ export default function Players({ players, actions, isAdmin }) {
         <div className="space-y-1">
           {players.map((p) => {
             const playerName = typeof p === 'string' ? p : p.name
+            const playerPhoto = typeof p === 'object' ? p.photo : undefined
             const isAdminPlayer = typeof p === 'object' && !!p.pin
             const isEditing = editingName === playerName
             return (
               <div key={playerName} className="px-2 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
+                    <PlayerAvatarPicker name={playerName} photo={playerPhoto} isAdmin={isAdmin}
+                      onChange={(photo) => actions.updatePlayer(playerName, { photo })}
+                      onClear={() => actions.updatePlayer(playerName, { photo: '' })} />
                     <span className="text-sm font-medium text-slate-800 dark:text-slate-100">{playerName}</span>
                     {isAdminPlayer && (
                       <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800 px-1.5 py-0.5 rounded-full">

@@ -5,7 +5,7 @@ const MAX_SCORE = 30
 
 const empty = () => ({ date: today(), p1: '', p2: '', p3: '', p4: '', score1: '', score2: '', comment: '' })
 
-export default function MatchForm({ players, onAddMatch }) {
+export default function MatchForm({ players, onAddMatch, isSuperAdmin = false }) {
   const [form, setForm] = useState(empty())
   const [error, setError] = useState('')
 
@@ -20,7 +20,9 @@ export default function MatchForm({ players, onAddMatch }) {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    const { date, p1, p2, p3, p4, score1, score2, comment } = form
+    const { p1, p2, p3, p4, score1, score2, comment } = form
+    // Regular admins can only log matches for today; only the super admin may back-date.
+    const date = isSuperAdmin ? form.date : today()
 
     // Date validation — no future dates
     if (date > today()) return setError('Match date cannot be in the future.')
@@ -51,9 +53,11 @@ export default function MatchForm({ players, onAddMatch }) {
 
       <div>
         <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Date</label>
-        <input type="date" value={form.date} max={today()}
+        <input type="date" value={isSuperAdmin ? form.date : today()} max={today()}
           onChange={(e) => set('date', e.target.value)}
-          className={inputCls} required />
+          disabled={!isSuperAdmin}
+          className={`${inputCls} ${!isSuperAdmin ? 'opacity-60 cursor-not-allowed' : ''}`} required />
+        {!isSuperAdmin && <p className="text-xs text-slate-400 mt-1">Only today's date can be logged.</p>}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Medal } from 'lucide-react'
 import { computeStats, filterByPeriod } from '../lib/ranking'
+import Avatar from './Avatar'
 
 const PERIODS = [
   { key: 'today', label: 'Today' },
@@ -10,8 +11,8 @@ const PERIODS = [
   { key: 'all',   label: 'Overall' },
 ]
 
-export default function Leaderboard({ matches, players }) {
-  const [period, setPeriod] = useState('all')
+export default function Leaderboard({ matches, players, photoByName = {} }) {
+  const [period, setPeriod] = useState('today')
   const stats = computeStats(filterByPeriod(matches, period), players)
   // Standard competition ranking (1-2-2-4): players tied on win rate share a
   // rank, and the next distinct rank skips the tied count.
@@ -45,6 +46,7 @@ export default function Leaderboard({ matches, players }) {
                 <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${rank === 1 ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
                   {rank ?? '–'}
                 </span>
+                <Avatar name={s.name} photo={photoByName[s.name]} />
                 <div>
                   <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{s.name}</p>
                   <p className="text-xs text-slate-400 dark:text-slate-500">{s.wins}W - {s.losses}L · {s.played} played</p>

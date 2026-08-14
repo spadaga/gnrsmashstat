@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { BarChart3 } from 'lucide-react'
-import { computeStats, computePairStats, computeDuoStats, filterByPeriod } from '../lib/ranking'
+import { computeStats, computePairStats, computeDuoStats, computeHeadToHead, filterByPeriod } from '../lib/ranking'
+import Avatar from '../components/Avatar'
 
 const TABS = [
   { key: 'duo',        label: 'Duo Head-to-Head' },
@@ -60,54 +61,132 @@ function PeriodTabs({ period, onPeriod, from, to, onFrom, onTo }) {
   )
 }
 
-function StatTile({ value, label, color = 'text-orange-600' }) {
+function StatTile({ value, label, color = 'text-orange-600', onClick, active }) {
+  const Tag = onClick ? 'button' : 'div'
   return (
-    <div className="text-center bg-slate-50 dark:bg-slate-700/50 rounded-xl py-3 px-2">
+    <Tag type={onClick ? 'button' : undefined} onClick={onClick}
+      className={`text-center rounded-xl py-3 px-2 transition w-full ${
+        active ? 'bg-orange-100 dark:bg-orange-900/30 ring-2 ring-orange-400' : 'bg-slate-50 dark:bg-slate-700/50'
+      } ${onClick ? 'cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/20' : ''}`}>
       <p className={`text-2xl font-extrabold ${color}`}>{value}</p>
       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{label}</p>
+    </Tag>
+  )
+}
+
+function MatchRow({ m, photoByName }) {
+  const team1Won = m.score1 > m.score2
+  const side = (names, won) => (
+    <span className={`flex-1 flex items-center gap-1 flex-wrap ${won ? 'font-bold text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
+      {names.map((n) => (
+        <span key={n} className="inline-flex items-center gap-1">
+          <Avatar name={n} photo={photoByName[n]} size="xs" />{n}
+        </span>
+      ))}
+    </span>
+  )
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 rounded-lg border dark:border-slate-700 text-xs">
+      <span className="text-slate-400 w-16 shrink-0">{m.date}</span>
+      <span className="flex-1 flex justify-end">{side(m.team1, team1Won)}</span>
+      <span className="font-bold shrink-0 bg-slate-50 dark:bg-slate-700 rounded px-1.5 py-0.5">
+        <span className={team1Won ? 'text-orange-600' : ''}>{m.score1}</span>-<span className={!team1Won ? 'text-orange-600' : ''}>{m.score2}</span>
+      </span>
+      {side(m.team2, !team1Won)}
     </div>
   )
 }
 
-function DuoSection({ matches, players }) {
+function MatchResultsPanel({ title, matches, photoByName }) {
+  return (
+    <div className="mt-4 border-t dark:border-slate-700 pt-4">
+      <h4 className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">{title} ({matches.length})</h4>
+      {matches.length === 0 ? <p className="text-slate-400 text-sm">No matches.</p> : (
+        <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1">
+          {matches.map((m) => <MatchRow key={m.id} m={m} photoByName={photoByName} />)}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function DuoSection({ matches, players, photoByName }) {
   const [a, setA] = useState(players[0] || '')
   const [b, setB] = useState(players[1] || '')
+  const [selected, setSelected] = useState(null)
   const aOptions = players.filter((p) => p !== b)
   const bOptions = players.filter((p) => p !== a)
   const ready = a && b && a !== b
   const s = ready ? computeDuoStats(matches, a, b) : null
+  const h2h = ready ? computeHeadToHead(matches, a, b) : null
   const max = s ? Math.max(1, s.togetherWins, s.togetherLosses, s.aWithoutBWins) : 1
+
+  function pick(key, e) { e.target.blur(); setSelected((cur) => (cur === key ? null : key)) }
+  function selectPlayer(setter, value) { setter(value); setSelected(null) }
+
+  const panels = s && h2h ? {
+    togetherWins:   { title: `Wins — ${a} & ${b} together`, list: s.matches.togetherWins },
+    togetherLosses: { title: `Losses — ${a} & ${b} together`, list: s.matches.togetherLosses },
+    aWithoutBWins:  { title: `${a}'s wins without ${b}`, list: s.matches.aWithoutBWins },
+    h2hA:           { title: `${a} beat ${b} (any partner)`, list: h2h.matches.aWins },
+    h2hB:           { title: `${b} beat ${a} (any partner)`, list: h2h.matches.bWins },
+  } : {}
+  const activePanel = selected ? panels[selected] : null
 
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        <select value={a} onChange={(e) => setA(e.target.value)} className={selectCls}>
+        <select value={a} onChange={(e) => selectPlayer(setA, e.target.value)} className={selectCls}>
           {aOptions.map((p) => <option key={p} value={p}>{p}</option>)}
         </select>
         <span className="text-slate-400 text-xs">&</span>
-        <select value={b} onChange={(e) => setB(e.target.value)} className={selectCls}>
+        <select value={b} onChange={(e) => selectPlayer(setB, e.target.value)} className={selectCls}>
           {bOptions.map((p) => <option key={p} value={p}>{p}</option>)}
         </select>
       </div>
       {!ready ? <p className="text-slate-400 text-sm">Pick two different players.</p> : (
         <>
-          <div className="grid grid-cols-3 gap-3 mb-5">
-            <StatTile value={s.togetherWins} label={`Wins ${a} & ${b} together`} />
-            <StatTile value={s.togetherLosses} label={`Losses with ${b}`} color="text-slate-700 dark:text-slate-200" />
-            <StatTile value={s.aWithoutBWins} label={`${a}'s wins without ${b}`} />
+          <h3 className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">As Teammates</h3>
+          <div className="grid grid-cols-3 gap-3 mb-2">
+            <StatTile value={s.togetherWins} label={`Wins ${a} & ${b} together`} onClick={(e) => pick('togetherWins', e)} active={selected === 'togetherWins'} />
+            <StatTile value={s.togetherLosses} label={`Losses with ${b}`} color="text-slate-700 dark:text-slate-200" onClick={(e) => pick('togetherLosses', e)} active={selected === 'togetherLosses'} />
+            <StatTile value={s.aWithoutBWins} label={`${a}'s wins without ${b}`} onClick={(e) => pick('aWithoutBWins', e)} active={selected === 'aWithoutBWins'} />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 mb-5">
             <Bar label="Together — Wins" value={s.togetherWins} max={max} />
             <Bar label={`Losses w/ ${b}`} value={s.togetherLosses} max={max} color="bg-slate-400 dark:bg-slate-500" />
             <Bar label={`${a} w/o ${b} — Wins`} value={s.aWithoutBWins} max={max} />
           </div>
+
+          <h3 className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">
+            Head-to-Head — {a} vs {b} (any partner)
+          </h3>
+          {h2h.played === 0 ? (
+            <p className="text-slate-400 text-sm">{a} and {b} haven't faced each other directly yet.</p>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 gap-3 mb-2">
+                <StatTile value={h2h.aWins} label={`${a} wins vs ${b}`} onClick={(e) => pick('h2hA', e)} active={selected === 'h2hA'} />
+                <StatTile value={h2h.bWins} label={`${b} wins vs ${a}`} onClick={(e) => pick('h2hB', e)} active={selected === 'h2hB'} />
+              </div>
+              <p className="text-xs text-center text-slate-500 dark:text-slate-400">
+                {h2h.aWins === h2h.bWins
+                  ? `Tied ${h2h.aWins}–${h2h.bWins} in direct matchups.`
+                  : h2h.aWins > h2h.bWins
+                    ? `${a} leads ${b} ${h2h.aWins}–${h2h.bWins} in direct matchups.`
+                    : `${b} leads ${a} ${h2h.bWins}–${h2h.aWins} in direct matchups.`}
+              </p>
+            </>
+          )}
+
+          {activePanel && <MatchResultsPanel title={activePanel.title} matches={activePanel.list} photoByName={photoByName} />}
         </>
       )}
     </div>
   )
 }
 
-function CombosSection({ matches, players }) {
+function CombosSection({ matches, players, photoByName }) {
   const [p, setP] = useState(players[0] || '')
   const pairs = computePairStats(matches).filter((x) => x.players.includes(p))
   const partnerOf = (pair) => pair.players.find((n) => n !== p)
@@ -132,7 +211,9 @@ function CombosSection({ matches, players }) {
           <div className="space-y-1.5">
             {pairs.map((x) => (
               <div key={x.players.join('|')} className="flex items-center justify-between text-xs px-3 py-2 rounded-lg border dark:border-slate-700">
-                <span className="font-semibold text-slate-700 dark:text-slate-200">w/ {partnerOf(x)}</span>
+                <span className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
+                  <Avatar name={partnerOf(x)} photo={photoByName[partnerOf(x)]} size="xs" /> w/ {partnerOf(x)}
+                </span>
                 <span className="text-slate-500 dark:text-slate-400">{x.played} played · <span className="text-orange-600 font-bold">{x.wins}W</span> – {x.losses}L · {x.winRate}%</span>
               </div>
             ))}
@@ -143,7 +224,7 @@ function CombosSection({ matches, players }) {
   )
 }
 
-function IndividualSection({ matches, players }) {
+function IndividualSection({ matches, players, photoByName }) {
   const [period, setPeriod] = useState('week')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
@@ -162,7 +243,9 @@ function IndividualSection({ matches, players }) {
           <div className="space-y-1.5">
             {stats.map((s, i) => (
               <div key={s.name} className="flex items-center justify-between text-xs px-3 py-2 rounded-lg border dark:border-slate-700">
-                <span className="font-semibold text-slate-700 dark:text-slate-200">{i + 1}. {s.name}</span>
+                <span className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
+                  {i + 1}. <Avatar name={s.name} photo={photoByName[s.name]} size="xs" /> {s.name}
+                </span>
                 <span className="text-slate-500 dark:text-slate-400">{s.played} played · <span className="text-orange-600 font-bold">{s.wins}W</span> – {s.losses}L · {s.winRate}%</span>
               </div>
             ))}
@@ -173,7 +256,7 @@ function IndividualSection({ matches, players }) {
   )
 }
 
-function PairsSection({ matches }) {
+function PairsSection({ matches, photoByName }) {
   const [period, setPeriod] = useState('week')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
@@ -192,7 +275,9 @@ function PairsSection({ matches }) {
           <div className="space-y-1.5">
             {pairs.map((p, i) => (
               <div key={p.players.join('|')} className="flex items-center justify-between text-xs px-3 py-2 rounded-lg border dark:border-slate-700">
-                <span className="font-semibold text-slate-700 dark:text-slate-200">{i + 1}. {p.players.join(' & ')}</span>
+                <span className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
+                  {i + 1}. <span className="flex -space-x-1">{p.players.map((n) => <Avatar key={n} name={n} photo={photoByName[n]} size="xs" className="ring-1 ring-white dark:ring-slate-800" />)}</span> {p.players.join(' & ')}
+                </span>
                 <span className="text-slate-500 dark:text-slate-400">{p.played} played · <span className="text-orange-600 font-bold">{p.wins}W</span> – {p.losses}L · {p.winRate}%</span>
               </div>
             ))}
@@ -203,7 +288,7 @@ function PairsSection({ matches }) {
   )
 }
 
-export default function Report({ data }) {
+export default function Report({ data, photoByName = {} }) {
   const [tab, setTab] = useState('duo')
   const players = data.players
   const matches = data.matches
@@ -223,10 +308,10 @@ export default function Report({ data }) {
       </div>
       {players.length < 2 ? <p className="text-slate-400 text-sm">Add at least 2 players first.</p> : (
         <>
-          {tab === 'duo' && <DuoSection matches={matches} players={players} />}
-          {tab === 'combos' && <CombosSection matches={matches} players={players} />}
-          {tab === 'individual' && <IndividualSection matches={matches} players={players} />}
-          {tab === 'pairs' && <PairsSection matches={matches} />}
+          {tab === 'duo' && <DuoSection matches={matches} players={players} photoByName={photoByName} />}
+          {tab === 'combos' && <CombosSection matches={matches} players={players} photoByName={photoByName} />}
+          {tab === 'individual' && <IndividualSection matches={matches} players={players} photoByName={photoByName} />}
+          {tab === 'pairs' && <PairsSection matches={matches} photoByName={photoByName} />}
         </>
       )}
     </div>

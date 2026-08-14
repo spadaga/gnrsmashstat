@@ -35,10 +35,17 @@ npm run lint     # oxlint
 ]
 ```
 
-- Players **with** a `pin` = **admins** (all write operations).
+- Players **with** a `pin` = **admins**. Only the super admin (PIN `2669`, Suresh Padaga) has write
+  access though — regular admins can only log a match for **today** (see Admin auth below).
 - Players **without** a `pin` = read-only.
 - PIN = last 4 digits of mobile number.
 - Old string-array format auto-migrates to objects on first read.
+- Optional `photo` field: a small downscaled JPEG data URL (`data:image/jpeg;base64,...`), set via
+  `Players.jsx`'s avatar picker (super-admin only). Stored inline on the player object in both backends —
+  no separate blob/file, unlike match photos — since avatars are capped to 300px/~150KB so the whole
+  players array stays small. `PUT /api/players/:name` accepts `photo` the same way it accepts `pin`:
+  omit to keep the existing photo, pass a data URL to set it, pass `""` to clear it back to the
+  initials-circle fallback. `POST /api/players` also accepts an initial `photo`.
 
 ## Admin auth (PIN-first login)
 
@@ -47,8 +54,12 @@ npm run lint     # oxlint
   shows name with ✅ → logs in automatically after 700 ms.
 - Session persisted in `localStorage.adminName` — survives page reload until
   **Logout** is clicked (which clears localStorage).
-- What admins can do: log/edit/delete matches, add/delete players, add/delete
-  slots/videos/photos, import/export snapshots, restore versions.
+- **Write access is super-admin-only** (PIN `2669`, Suresh Padaga = `isSuperAdmin` in `App.jsx`), with one
+  carve-out: any regular admin can log a **new** match dated today (`MatchForm`'s date field is locked to
+  today and disabled unless `isSuperAdmin`). Editing/deleting matches, add/delete/edit players, add/edit/
+  delete slots/videos/photos, import/export snapshots, and restoring versions are all super-admin-only —
+  `isAdmin` alone no longer unlocks any of those UIs (see components below, each now gated on
+  `isSuperAdmin` rather than `isAdmin`).
 
 `src/lib/admins.js` helpers:
 - `getAdmins(players)` — players with a pin
@@ -99,7 +110,7 @@ The `VersionsModal` is wired into Header (desktop: History button; mobile: hambu
 |--------|------|-------------|
 | GET | `/api/state` | Full app state |
 | POST | `/api/players` | Add player `{ name, pin? }` |
-| PUT | `/api/players/:name` | Update player name/pin |
+| PUT | `/api/players/:name` | Update player name/pin/photo |
 | DELETE | `/api/players/:name` | Remove player |
 | POST | `/api/matches` | Add match |
 | PUT | `/api/matches/:id` | Update match score/comment |
@@ -130,13 +141,44 @@ The `VersionsModal` is wired into Header (desktop: History button; mobile: hambu
   players with 1–3 played are sorted the same way but always listed below qualified players; 0 played = unranked, listed last.
 - `filterByPeriod(matches, period)` — keys: `'all'` / `'today'` / `'year'` / `'month'` / `'week'`
 - `filterByWeek(matches, which)` — keys: `'current'` / `'last'`. Week starts Sunday. Used by `TopSeeds`.
-- `computeDuoStats(matches, a, b)` — head-to-head: `togetherWins`/`togetherLosses` (a & b on the same
-  team) plus `aWithoutBWins`/`aWithoutBLosses` (a's record when partnered with anyone but b). Used by
-  the Report page's Duo Head-to-Head tab.
+- `computeDuoStats(matches, a, b)` — **teammate** head-to-head: `togetherWins`/`togetherLosses` (a & b on
+  the same team) plus `aWithoutBWins`/`aWithoutBLosses` (a's record when partnered with anyone but b).
+  Also returns `.matches` — `{ togetherWins, togetherLosses, aWithoutBWins, aWithoutBLosses }`, each the
+  actual array of matches behind that count, so the UI can show "what made up this number" on click.
+  Used by the Report page's Duo Head-to-Head tab.
+- `computeHeadToHead(matches, a, b)` — **individual, any-partner** head-to-head: how `a` and `b` fare when
+  directly *opposing* each other on a match, regardless of who else is on either side. Returns
+  `{ aWins, bWins, played, matches: { aWins, bWins } }` (again with the backing match arrays). This is
+  distinct from `computeDuoStats`' `aWithoutBWins`, which is `a`'s overall record without `b` as a
+  teammate — `b` might not even be in that match. Used by the Report page's Duo Head-to-Head tab
+  alongside `computeDuoStats` (teammate stats and any-partner opponent stats are shown together, not
+  as alternatives).
 - `computeTopPairs(matches)` — pair ranking for `TopSeeds`: win rate → wins → fewer losses, with the
   same min-4-games qualify rule as `computeStats` (pairs below 4 games are listed after qualified ones).
   `computePairStats` sorts by raw win count instead and has no qualify gate — kept as-is for
   `Report.jsx`'s wins-based Pair Rankings/Player Combos tabs.
+
+## Player avatars
+
+- `src/components/Avatar.jsx` — `<Avatar name photo size className />`. Renders the player's `photo` if
+  set, else a colored circle with initials (color deterministically hashed from the name, so a given
+  player always gets the same fallback color across sessions/components). Sizes: `xs`/`sm`/`md`/`lg`/`xl`.
+- `src/lib/admins.js`'s `photoMap(players)` builds a `{ [name]: photo }` lookup. Needed because most
+  components downstream of `App.jsx` only carry plain name strings (via `playerNames()`), not full player
+  objects — `photoByName` is threaded as a prop everywhere an `Avatar` needs to be rendered next to a
+  bare name: `App.jsx` computes it once and passes it to `Dashboard` and `Report`; `Dashboard.jsx` passes
+  it on to `MatchList`, `Leaderboard`, `TopSeeds`.
+- Rendered next to every player name across the app: `Leaderboard` rows, `TopSeeds` headline cards + "View
+  All" modal, `MatchList` team rows (via a local `TeamNames` sub-component), `Report.jsx`'s Duo/Combos/
+  Individual/Pairs sections and its match-result rows, and the `Players.jsx` list itself. Native `<select>`
+  dropdowns (player pickers in `MatchForm`, `Report`, `MatchList`'s H2H/edit forms) can't show inline
+  images, so those stay text-only by necessity.
+- Upload/clear control lives only in `Players.jsx` (`PlayerAvatarPicker`, super-admin only, consistent
+  with the write-access lockdown above): hovering a player's avatar reveals a camera icon (click to pick a
+  file) and, if a photo is set, a small red × to clear it back to initials. `prepareAvatar(file)` downscales
+  to `MAX_AVATAR_DIMENSION = 300`px and recompresses JPEG down through quality steps until under
+  `MAX_AVATAR_BYTES = 150KB` — same technique as `PhotoGallery`'s `prepareUpload`, just tuned much smaller
+  since this only ever renders as a small circle.
 
 ## Structure
 
@@ -173,6 +215,8 @@ Sticky footer: `© {year} GNR SmashStats. All rights reserved. | 🏸 GNR Team �
 ### `src/pages/Dashboard.jsx`
 SlotsTicker → FilterBar → StatCards → TopSeeds → [Leaderboard | MatchList] → [VideoSection | PhotoGallery].
 `Leaderboard` gets raw `data.matches`/`data.players` (not pre-filtered) — it owns its own period tabs, independent of the FilterBar period which only drives StatCards/TopSeeds context.
+Receives `photoByName` from `App.jsx` and passes it on to `TopSeeds`, `MatchList`, and `Leaderboard` (see
+Player avatars above).
 
 ### `src/pages/LogMatch.jsx`
 Wraps `MatchForm.jsx`, navigates back to Dashboard on save.
@@ -180,25 +224,39 @@ Wraps `MatchForm.jsx`, navigates back to Dashboard on save.
 ### `src/pages/Report.jsx`
 Read-only analytics page (nav: Report). 4 tabs, each with a bar chart (plain div-width bars, no
 chart lib) + text list:
-- **Duo Head-to-Head**: pick players A & B → wins together, losses with B, and A's wins *without*
-  B as partner (`computeDuoStats` in ranking.js).
+- **Duo Head-to-Head**: pick players A & B → two stacked sub-sections:
+  - **As Teammates** (`computeDuoStats`): wins together, losses with B, and A's wins *without* B as partner.
+  - **Head-to-Head — any partner** (`computeHeadToHead`): A's wins vs B and B's wins vs A when they were
+    directly opposing each other, regardless of who else was on either team — plus a "leads X–Y" / "tied"
+    summary line. Hidden (replaced by a "haven't faced each other" message) if they've never been direct
+    opponents.
+  - Every stat tile in both sub-sections is clickable (`StatTile`'s `onClick`/`active` props) — clicking
+    toggles a `MatchResultsPanel` below showing the actual matches behind that number (date, teams with
+    avatars, score), via `MatchRow`. Click the same tile again to collapse.
 - **Player Combos**: pick one player → every partner combination they've played, played/wins/losses
   per combo (`computePairStats` filtered to pairs containing that player).
 - **Individual Rankings**: `computeStats` ranked by wins, period-filterable (Day/Week/Month/Year/Custom Range).
 - **Pair Rankings**: `computePairStats` ranked by wins, same period filter options.
 
 ### `src/pages/Players.jsx`
-Add/remove players (admin). Shows **Admin** badge for players with a PIN.
+Add/remove/edit players — **super admin only** (`isAdmin` prop here is fed `isSuperAdmin` from `App.jsx`,
+not plain `isAdmin`). Regular admins and guests get the read-only list. Shows **Admin** badge for players
+with a PIN. Each row's `Avatar` is wrapped in `PlayerAvatarPicker` (super-admin only) — see Player avatars
+above for the upload/clear behavior.
 
 ### `src/pages/Slots.jsx`
-Court slots table. Admin: inline editable cells. Guest: read-only.
+Court slots table. **Super admin only**: inline editable cells + add/delete. Everyone else: read-only.
 Rows within 10 days of `endDate` highlight red. Sorted by `endDate` ascending.
 **Time column hidden on mobile** (`hidden sm:table-cell`) to save width; visible from `sm` breakpoint up.
 
 ### `src/components/MatchForm.jsx`
 **Select dropdowns** (not free text) for all 4 players sourced from the players list.
 Each dropdown filters out already-selected players so all 4 are always unique.
-Scores: 0–30, no ties. Date: `max=today` (no future dates allowed). Comment optional.
+Scores: 0–30, no ties. Comment optional.
+**Date field is super-admin-only** — regular admins get it locked to today (`disabled`, value forced to
+`today()`, helper text "Only today's date can be logged") and `handleSubmit` overrides the date to
+today regardless of form state when `!isSuperAdmin`; the super admin can pick any past date up to
+`max=today` (no future dates allowed).
 
 ### `src/components/StatCards.jsx`
 Single orange card showing **Total Matches** and **Total Players** side by side (divider between).
@@ -209,17 +267,22 @@ Top pair(s) by win rate (`computeTopPairs` — min 4 games to qualify, unlike Re
 `computePairStats`), scoped to a week via **This Week / Last Week** toggle (`filterByWeek`) —
 independent of the Dashboard period filter, always receives full `data.matches`. Seed #1 = orange card.
 **Seed #2 card is hidden on mobile** (`hidden sm:block`) — only Top Seed #1 shows below the `sm` breakpoint.
-"View All →" modal lists all pair combos for the selected week. Dark mode supported.
+"View All →" modal lists all pair combos **across all-time matches** (not scoped to the selected week) —
+button visibility is likewise based on the all-time pair count, not the current week's. Dark mode supported.
+Renders each pair as overlapping `Avatar`s (via `photoByName` prop) next to the names, in both the
+headline cards and the modal.
 
 ### `src/components/Leaderboard.jsx`
-Owns its own period tabs — **Today / Weekly / Monthly / Yearly / Overall** (`filterByPeriod`) — receives
-raw `matches`/`players` and computes stats internally, independent of the Dashboard's FilterBar period.
-Ranked using `computeStats`'s qualified/partial/unranked ordering (min-4-matches rule).
+Owns its own period tabs — **Today / Weekly / Monthly / Yearly / Overall** (`filterByPeriod`), **defaults
+to Today** — receives raw `matches`/`players` and computes stats internally, independent of the
+Dashboard's FilterBar period. Ranked using `computeStats`'s qualified/partial/unranked ordering
+(min-4-matches rule).
 **Standard competition ranking (1-2-2-4)**: qualified players tied on win rate share the same rank
 badge, and the next distinct rank skips the tied count (computed as a `ranks[]` array alongside `stats`,
 comparing each row to the previous row's `winRate` since the list is already sorted).
-Rank badge only shown for qualified players (others show "–"). Shows W-L and **played count** per player;
-subtitle reads "Needs N more" (partial) or "Unranked" (0 played) for non-qualified rows.
+Rank badge only shown for qualified players (others show "–"). Shows an `Avatar` (via `photoByName` prop),
+W-L, and **played count** per player; subtitle reads "Needs N more" (partial) or "Unranked" (0 played) for
+non-qualified rows.
 
 ### `src/components/MatchList.jsx`
 - **Search box sits above the "Recent Matches" heading.**
@@ -232,25 +295,29 @@ subtitle reads "Needs N more" (partial) or "Unranked" (0 played) for non-qualifi
     summary banner shows the record, e.g. "A & B lead C & D 3–1" (or tied / no matches yet).
 - Matches **grouped by date** with date headers. Today's header shows **"Today (Aug 10)"** in orange.
   The per-date match-count label is dark/bold (`text-slate-600 dark:text-slate-300`), not faint gray.
-- Edit (✏️, admin): inline form with 4 player dropdowns (reassign either team, all-4-unique validated)
-  alongside the score inputs; validates scores 0–30, no ties.
-- Delete (🗑️, admin): ConfirmDialog + local overlay during in-flight request.
-- Edit/Delete are only shown for **today's matches** for regular admins; the PIN-2669 super admin
-  (`isSuperAdmin`) can edit/delete matches from any day. Gated by `canModify = isAdmin && (isSuperAdmin || m.date === today)`.
+- Edit (✏️, **super admin only**): inline form with 4 player dropdowns (reassign either team, all-4-unique
+  validated) alongside the score inputs; validates scores 0–30, no ties.
+- Delete (🗑️, **super admin only**): ConfirmDialog + local overlay during in-flight request.
+- Edit/Delete are gated purely by `canModify = isSuperAdmin` — regular admins can no longer edit/delete
+  even today's matches (only the PIN-2669 super admin, Suresh Padaga, has this). `isAdmin` still controls
+  the "Log Match →" button (any admin can log a new match for today) and the mode filters.
 - Receives `players` prop (from `data.players`) for the edit-form dropdowns.
 - **Head-to-Head filter**: 4 player dropdowns (Player 1 & 2 vs Player 3 & 4, all unique). When all 4 are
   chosen, the list narrows to matches between that exact pair matchup (team sides ignored) and a summary
   banner shows the record, e.g. "A & B lead C & D 3–1" (or tied / no matches yet). `Clear` resets it.
+- Each team's names are rendered via a local `TeamNames` sub-component — `Avatar` (via `photoByName` prop)
+  + name per player, with "&" between the two — instead of a plain `team.join(' & ')` string.
 
 ### `src/components/VideoSection.jsx` / `PhotoGallery.jsx`
-Carousel (default) ↔ Manage (admin only). Video max 20, photos max 50.
+Carousel (default) ↔ Manage (**super admin only** — `isAdmin` prop fed `isSuperAdmin` from `Dashboard.jsx`).
+Video max 20, photos max 50.
 
 ### `src/components/Carousel.jsx`
 Auto-advances every 4 s. Orange active dot.
 
 ### `src/components/FilterBar.jsx`
 Period pills: **All Time / This Year / This Month / This Week**.
-Import + Export visible to admins only.
+Import + Export visible to the **super admin only** (`isAdmin` prop fed `isSuperAdmin` from `Dashboard.jsx`).
 
 ### `src/lib/api.js`
 All mutations return updated resource array. `updateMatch(id, updates)` → `PUT /api/matches/:id`.
@@ -277,9 +344,16 @@ All mutations return updated resource array. `updateMatch(id, updates)` → `PUT
 - Local and Vercel data are independent — use Export/Import to sync.
 - Scores: 0–30, no deuce logic.
 - `isSuperAdmin` (PIN-2669 admin, Suresh Padaga) computed once in `App.jsx`:
-  `data.players.some(p => p.name === adminName && p.pin === '2669')`. Elevated rights over regular admins:
+  `data.players.some(p => p.name === adminName && p.pin === '2669')`. As of the write-access lockdown,
+  this is effectively the only role with write access:
   - `VersionsModal` / History button (passed to `Header` as `canViewHistory`) — desktop nav + mobile menu.
-  - Edit/delete any match in `MatchList` regardless of date (regular admins: today's matches only).
+  - Edit/delete matches in `MatchList` (`canModify = isSuperAdmin`), add/edit/delete players (`Players.jsx`),
+    add/edit/delete slots (`Slots.jsx`), manage videos/photos (`VideoSection`/`PhotoGallery`), Import/Export
+    (`FilterBar`) — all gated on `isSuperAdmin`, not plain `isAdmin`.
+  - The one exception: any regular admin can still log a **new** match, but only dated today —
+    `MatchForm`'s date field is locked/disabled to `today()` unless `isSuperAdmin`.
+  - This is enforced client-side only (see the auth limitation above) — a regular admin could still hit
+    the API routes directly to bypass these UI gates, same caveat as the rest of the auth model.
 - Snapshots are taken **once per day** (pre-mutation), labeled Today / Yesterday / Day Before Yesterday.
 - `matches[].loggedAt` ISO timestamp added on creation — `MatchList` sorts newest-first within each day,
   falling back to original array position (later = more recent) for legacy matches without `loggedAt`.

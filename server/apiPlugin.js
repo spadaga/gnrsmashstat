@@ -197,11 +197,11 @@ async function handleApi(req, res) {
     if (resource === 'players') {
       if (req.method === 'POST') {
         const body = await readBody(req)
-        const { name, pin } = body
+        const { name, pin, photo } = body
         const players = getPlayers()
         if (name && !players.find((p) => p.name === name)) {
           snapshotState()
-          players.push(pin ? { name, pin } : { name })
+          players.push({ name, ...(pin && { pin }), ...(photo && { photo }) })
           writeJSON('players.json', players)
         }
         return sendJSON(res, 200, players)
@@ -214,16 +214,18 @@ async function handleApi(req, res) {
       }
       if (req.method === 'PUT') {
         const body = await readBody(req)
-        const { name: newName, pin } = body
+        const { name: newName, pin, photo } = body
         const players = getPlayers()
         const idx = players.findIndex((p) => p.name === param)
         if (idx === -1) return sendJSON(res, 404, { error: 'Player not found' })
         snapshotState()
         const existing = players[idx]
         const updated = { name: newName || param }
-        // Keep existing pin if not explicitly changing it; allow clearing by passing pin: ''
+        // Keep existing pin/photo if not explicitly changing it; allow clearing by passing '' / null
         if (pin !== undefined) { if (pin) updated.pin = pin }
         else if (existing.pin) updated.pin = existing.pin
+        if (photo !== undefined) { if (photo) updated.photo = photo }
+        else if (existing.photo) updated.photo = existing.photo
         players[idx] = updated
         writeJSON('players.json', players)
         return sendJSON(res, 200, players)

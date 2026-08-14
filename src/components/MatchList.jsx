@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Loader2, Pencil, Save, Search, Swords, Trophy, Trash2, X } from 'lucide-react'
 import ConfirmDialog from './ConfirmDialog'
+import Avatar from './Avatar'
 
 const MODES = [
   { key: 'today', label: 'Today' },
@@ -44,6 +45,20 @@ function PlayerSelect({ value, onChange, options, placeholder }) {
 }
 
 const pairKey = (a, b) => [a, b].sort().join('|')
+
+function TeamNames({ names, align, photoByName }) {
+  return (
+    <div className={`flex-1 flex items-center gap-1 flex-wrap ${align === 'right' ? 'justify-end' : 'justify-start'}`}>
+      {names.map((n, i) => (
+        <span key={n} className="inline-flex items-center gap-1">
+          {i === 1 && <span className="text-slate-400 text-xs">&</span>}
+          <Avatar name={n} photo={photoByName[n]} size="xs" />
+          <span>{n}</span>
+        </span>
+      ))}
+    </div>
+  )
+}
 
 function EditScoreForm({ match, players, onSave, onCancel }) {
   const [s1, setS1] = useState(String(match.score1))
@@ -96,7 +111,7 @@ function EditScoreForm({ match, players, onSave, onCancel }) {
   )
 }
 
-export default function MatchList({ matches, players, onDelete, onUpdate, onLogMatch, isAdmin, isSuperAdmin }) {
+export default function MatchList({ matches, players, onDelete, onUpdate, onLogMatch, isAdmin, isSuperAdmin, photoByName = {} }) {
   const [mode, setMode] = useState('today')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
@@ -234,24 +249,24 @@ export default function MatchList({ matches, players, onDelete, onUpdate, onLogM
               {items.map((m) => {
                 const team1Won = m.score1 > m.score2
                 const isEditing = editingId === m.id
-                const canModify = isAdmin && (isSuperAdmin || m.date === todayISO())
+                const canModify = isSuperAdmin
                 return (
                   <div key={m.id} className="border dark:border-slate-700 rounded-xl px-3 py-2.5 hover:border-orange-200 dark:hover:border-orange-800 transition">
                     <div className="flex items-center gap-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 text-sm">
-                          <div className={`text-right flex-1 ${team1Won ? 'font-bold text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
-                            {team1Won && <Trophy size={12} className="inline mb-0.5 mr-1 text-orange-500" />}
-                            {m.team1.join(' & ')}
+                          <div className={`flex items-center justify-end gap-1 flex-1 ${team1Won ? 'font-bold text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
+                            {team1Won && <Trophy size={12} className="shrink-0 text-orange-500" />}
+                            <TeamNames names={m.team1} align="right" photoByName={photoByName} />
                           </div>
                           <div className="flex items-center gap-1 font-bold bg-slate-50 dark:bg-slate-700 rounded-lg px-2 py-1 shrink-0">
                             <span className={team1Won ? 'text-orange-600' : 'text-slate-400 dark:text-slate-500'}>{m.score1}</span>
                             <span className="text-slate-300 dark:text-slate-600">-</span>
                             <span className={!team1Won ? 'text-orange-600' : 'text-slate-400 dark:text-slate-500'}>{m.score2}</span>
                           </div>
-                          <div className={`flex-1 ${!team1Won ? 'font-bold text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
-                            {m.team2.join(' & ')}
-                            {!team1Won && <Trophy size={12} className="inline mb-0.5 ml-1 text-orange-500" />}
+                          <div className={`flex items-center gap-1 flex-1 ${!team1Won ? 'font-bold text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
+                            <TeamNames names={m.team2} align="left" photoByName={photoByName} />
+                            {!team1Won && <Trophy size={12} className="shrink-0 text-orange-500" />}
                           </div>
                         </div>
                         {m.comment && <p className="text-xs text-slate-400 italic mt-1">"{m.comment}"</p>}

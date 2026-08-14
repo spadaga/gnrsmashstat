@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import * as api from './lib/api'
-import { playerNames } from './lib/admins'
+import { playerNames, photoMap } from './lib/admins'
 import Header from './components/Header'
 import Dashboard from './pages/Dashboard'
 import LogMatch from './pages/LogMatch'
@@ -88,6 +88,7 @@ export default function App() {
 
   const isAdmin = !!adminName
   const names = playerNames(data.players)
+  const photoByName = photoMap(data.players)
   // PIN-2669 admin (Suresh Padaga) gets elevated rights: view history, edit/delete matches from any day.
   const isSuperAdmin = data.players.some((p) => p.name === adminName && p.pin === '2669')
 
@@ -135,19 +136,19 @@ export default function App() {
 
       <main className="flex-1 max-w-6xl w-full mx-auto px-3 py-3">
         {page === 'dashboard' && (
-          <Dashboard data={{ ...data, players: names }} actions={actions} onNavigate={setPage} onImport={handleImport} isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} />
+          <Dashboard data={{ ...data, players: names }} actions={actions} onNavigate={setPage} onImport={handleImport} isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} photoByName={photoByName} />
         )}
         {page === 'log' && isAdmin && (
-          <LogMatch players={names} actions={actions} onNavigate={setPage} />
+          <LogMatch players={names} actions={actions} onNavigate={setPage} isSuperAdmin={isSuperAdmin} />
         )}
         {page === 'players' && (
-          <Players players={data.players} actions={actions} isAdmin={isAdmin} />
+          <Players players={data.players} actions={actions} isAdmin={isSuperAdmin} />
         )}
         {page === 'slots' && (
-          <Slots slots={data.slots} actions={actions} isAdmin={isAdmin} />
+          <Slots slots={data.slots} actions={actions} isAdmin={isSuperAdmin} />
         )}
         {page === 'report' && (
-          <Report data={{ matches: data.matches, players: names }} />
+          <Report data={{ matches: data.matches, players: names }} photoByName={photoByName} />
         )}
       </main>
 

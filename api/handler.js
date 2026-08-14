@@ -220,10 +220,10 @@ export default async function handler(req, res) {
 
     if (resource === 'players') {
       if (req.method === 'POST') {
-        const { name, pin } = req.body || {}
+        const { name, pin, photo } = req.body || {}
         if (name && !state.players.find((p) => p.name === name)) {
           await snapshotState(state)
-          state.players.push(pin ? { name, pin } : { name })
+          state.players.push({ name, ...(pin && { pin }), ...(photo && { photo }) })
           await writeState(state)
         }
         return res.status(200).json(state.players)
@@ -235,7 +235,7 @@ export default async function handler(req, res) {
         return res.status(200).json(state.players)
       }
       if (req.method === 'PUT') {
-        const { name: newName, pin } = req.body || {}
+        const { name: newName, pin, photo } = req.body || {}
         const idx = state.players.findIndex((p) => p.name === param)
         if (idx === -1) return res.status(404).json({ error: 'Player not found' })
         await snapshotState(state)
@@ -243,6 +243,8 @@ export default async function handler(req, res) {
         const updated = { name: newName || param }
         if (pin !== undefined) { if (pin) updated.pin = pin }
         else if (existing.pin) updated.pin = existing.pin
+        if (photo !== undefined) { if (photo) updated.photo = photo }
+        else if (existing.photo) updated.photo = existing.photo
         state.players[idx] = updated
         await writeState(state)
         return res.status(200).json(state.players)

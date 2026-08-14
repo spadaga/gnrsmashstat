@@ -118,21 +118,42 @@ export function filterByPeriod(matches, period) {
 }
 
 // Head-to-head duo report: given two players, how they do together vs. how
-// `a` does when paired with anyone other than `b`.
+// `a` does when paired with anyone other than `b`. Also returns the
+// underlying matches per bucket so the UI can show "what made up this number".
 export function computeDuoStats(matches, a, b) {
-  let togetherWins = 0, togetherLosses = 0
-  let aWithoutBWins = 0, aWithoutBLosses = 0
+  const togetherWins = [], togetherLosses = []
+  const aWithoutBWins = [], aWithoutBLosses = []
   for (const m of matches) {
     const team1Won = m.score1 > m.score2
     ;[m.team1, m.team2].forEach((team, ti) => {
       if (!team.includes(a)) return
       const won = ti === 0 ? team1Won : !team1Won
-      if (team.includes(b)) { won ? togetherWins++ : togetherLosses++ }
-      else { won ? aWithoutBWins++ : aWithoutBLosses++ }
+      if (team.includes(b)) { (won ? togetherWins : togetherLosses).push(m) }
+      else { (won ? aWithoutBWins : aWithoutBLosses).push(m) }
     })
   }
   return {
-    togetherWins, togetherLosses, togetherPlayed: togetherWins + togetherLosses,
-    aWithoutBWins, aWithoutBLosses, aWithoutBPlayed: aWithoutBWins + aWithoutBLosses,
+    togetherWins: togetherWins.length, togetherLosses: togetherLosses.length,
+    togetherPlayed: togetherWins.length + togetherLosses.length,
+    aWithoutBWins: aWithoutBWins.length, aWithoutBLosses: aWithoutBLosses.length,
+    aWithoutBPlayed: aWithoutBWins.length + aWithoutBLosses.length,
+    matches: { togetherWins, togetherLosses, aWithoutBWins, aWithoutBLosses },
   }
+}
+
+// Individual head-to-head, any partner: how a and b fare when directly
+// opposing each other, regardless of who else is on either team. Distinct
+// from computeDuoStats' aWithoutBWins, which is a's overall record without b
+// as a teammate — b might not even be in that match at all.
+export function computeHeadToHead(matches, a, b) {
+  const aWins = [], bWins = []
+  for (const m of matches) {
+    const aTeam = m.team1.includes(a) ? 1 : m.team2.includes(a) ? 2 : 0
+    const bTeam = m.team1.includes(b) ? 1 : m.team2.includes(b) ? 2 : 0
+    if (!aTeam || !bTeam || aTeam === bTeam) continue
+    const team1Won = m.score1 > m.score2
+    const aWon = (aTeam === 1) === team1Won
+    ;(aWon ? aWins : bWins).push(m)
+  }
+  return { aWins: aWins.length, bWins: bWins.length, played: aWins.length + bWins.length, matches: { aWins, bWins } }
 }

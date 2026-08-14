@@ -21,3 +21,9 @@ export function findAdminByPin(players, pin) {
 export function playerNames(players) {
   return players.map((p) => (typeof p === 'string' ? p : p.name))
 }
+
+// name -> photo (dataUrl) lookup, for components that only carry name
+// strings (rankings, match lists) but still need to render an Avatar.
+export function photoMap(players) {
+  return Object.fromEntries(players.filter((p) => typeof p === 'object' && p.photo).map((p) => [p.name, p.photo]))
+}
