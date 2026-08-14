@@ -244,10 +244,13 @@ export default function MatchList({ matches, players, onDelete, onUpdate, onLogM
                             {team1Won && <Trophy size={12} className="inline mb-0.5 mr-1 text-orange-500" />}
                             {m.team1.join(' & ')}
                           </div>
-                          <div className="flex items-center gap-1 font-bold bg-slate-50 dark:bg-slate-700 rounded-lg px-2 py-1 shrink-0">
-                            <span className={team1Won ? 'text-orange-600' : 'text-slate-400 dark:text-slate-500'}>{m.score1}</span>
-                            <span className="text-slate-300 dark:text-slate-600">-</span>
-                            <span className={!team1Won ? 'text-orange-600' : 'text-slate-400 dark:text-slate-500'}>{m.score2}</span>
+                          <div className="flex flex-col items-center shrink-0">
+                            <div className="flex items-center gap-1 font-bold bg-slate-50 dark:bg-slate-700 rounded-lg px-2 py-1">
+                              <span className={team1Won ? 'text-orange-600' : 'text-slate-400 dark:text-slate-500'}>{m.score1}</span>
+                              <span className="text-slate-300 dark:text-slate-600">-</span>
+                              <span className={!team1Won ? 'text-orange-600' : 'text-slate-400 dark:text-slate-500'}>{m.score2}</span>
+                            </div>
+                            <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 mt-0.5">+{Math.abs(m.score1 - m.score2)}</span>
                           </div>
                           <div className={`flex-1 ${!team1Won ? 'font-bold text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
                             {m.team2.join(' & ')}

@@ -3,11 +3,14 @@ const MIN_RANKED_MATCHES = 4
 
 // Ranking: count wins/losses and total point difference per player across
 // all doubles matches they played in.
-// Qualified (played >= 4): sorted by Win% -> Wins -> fewer Losses.
-// Partial (1-3 played): sorted the same way, but always ranked below qualified.
+// Qualified (played >= minMatches): sorted by Win% -> Wins -> fewer Losses.
+// Partial (1..minMatches-1 played): sorted the same way, but always ranked below qualified.
 // 0 played: unranked (qualified: false, played: 0), listed last.
 // players may be an array of { name, pin? } objects or plain strings.
-export function computeStats(matches, players) {
+// minMatches defaults to the standard 4-match qualify rule; pass 1 (e.g. for a
+// single day's Leaderboard) to rank everyone who's played at all, with no
+// partial/needs-more bucket.
+export function computeStats(matches, players, minMatches = MIN_RANKED_MATCHES) {
   const names = players.map((p) => (typeof p === 'string' ? p : p.name))
   const stats = Object.fromEntries(
     names.map((name) => [name, { name, played: 0, wins: 0, losses: 0, pointDiff: 0 }])
@@ -37,8 +40,8 @@ export function computeStats(matches, players) {
 
   const byRankRule = (a, b) => b.winRate - a.winRate || b.wins - a.wins || a.losses - b.losses
 
-  const qualified = all.filter((s) => s.played >= MIN_RANKED_MATCHES).sort(byRankRule).map((s) => ({ ...s, qualified: true }))
-  const partial = all.filter((s) => s.played > 0 && s.played < MIN_RANKED_MATCHES).sort(byRankRule).map((s) => ({ ...s, qualified: false }))
+  const qualified = all.filter((s) => s.played >= minMatches).sort(byRankRule).map((s) => ({ ...s, qualified: true }))
+  const partial = all.filter((s) => s.played > 0 && s.played < minMatches).sort(byRankRule).map((s) => ({ ...s, qualified: false }))
   const unranked = all.filter((s) => s.played === 0).map((s) => ({ ...s, qualified: false }))
 
   return [...qualified, ...partial, ...unranked]
@@ -64,15 +67,17 @@ export function computePairStats(matches) {
 }
 
 // Pair ranking for "Top Seed" style displays: win rate first, then wins, then
-// fewer losses, with the same min-4-games qualify rule as computeStats — so a
-// pair that just played (and won) 1 match can't outrank a proven 100%-vs-67%
-// record. computePairStats sorts by raw win count instead; that's kept as-is
-// for Report.jsx's wins-based Pair Rankings tab.
-export function computeTopPairs(matches) {
+// fewer losses, with the same min-4-games qualify rule as computeStats (by
+// default) — so a pair that just played (and won) 1 match can't outrank a
+// proven 100%-vs-67% record. Pass minMatches=1 (e.g. for a single day's
+// Leaderboard) to rank every pair that's played at all. computePairStats
+// sorts by raw win count instead; that's kept as-is for Report.jsx's
+// wins-based Pair Rankings tab.
+export function computeTopPairs(matches, minMatches = MIN_RANKED_MATCHES) {
   const byRankRule = (a, b) => b.winRate - a.winRate || b.wins - a.wins || a.losses - b.losses
   const pairs = computePairStats(matches)
-  const qualified = pairs.filter((p) => p.played >= MIN_RANKED_MATCHES).sort(byRankRule).map((p) => ({ ...p, qualified: true }))
-  const partial = pairs.filter((p) => p.played < MIN_RANKED_MATCHES).sort(byRankRule).map((p) => ({ ...p, qualified: false }))
+  const qualified = pairs.filter((p) => p.played >= minMatches).sort(byRankRule).map((p) => ({ ...p, qualified: true }))
+  const partial = pairs.filter((p) => p.played < minMatches).sort(byRankRule).map((p) => ({ ...p, qualified: false }))
   return [...qualified, ...partial]
 }
 

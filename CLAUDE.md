@@ -146,9 +146,12 @@ The `VersionsModal` is wired into Header (desktop: History button; mobile: hambu
 ## Ranking
 
 `src/lib/ranking.js`:
-- `computeStats(matches, players)` — wins/losses/pointDiff/winRate/played, plus `qualified: boolean`.
-  Minimum-4-matches rule: players with `played >= 4` are "qualified" and sorted Win% → Wins → fewer Losses;
-  players with 1–3 played are sorted the same way but always listed below qualified players; 0 played = unranked, listed last.
+- `computeStats(matches, players, minMatches = 4)` — wins/losses/pointDiff/winRate/played, plus
+  `qualified: boolean`. Players with `played >= minMatches` are "qualified" and sorted Win% → Wins →
+  fewer Losses; players below that (but > 0 played) are sorted the same way but always listed below
+  qualified players; 0 played = unranked, listed last. `minMatches` defaults to 4 for callers that want
+  the standard qualify rule (`Report.jsx`'s Individual Rankings); `Leaderboard` passes `1` instead so a
+  single-day view doesn't leave everyone stuck in "needs N more" — see its section below.
 - `filterByPeriod(matches, period)` — keys: `'all'` / `'today'` / `'year'` / `'month'` / `'week'`
 - `filterByWeek(matches, which)` — keys: `'current'` / `'last'`. Week starts Sunday. Used by `TopSeeds`.
 - `computeDuoStats(matches, a, b)` — **teammate** head-to-head: `togetherWins`/`togetherLosses` (a & b on
@@ -163,12 +166,13 @@ The `VersionsModal` is wired into Header (desktop: History button; mobile: hambu
   teammate — `b` might not even be in that match. Used by the Report page's Duo Head-to-Head tab
   alongside `computeDuoStats` (teammate stats and any-partner opponent stats are shown together, not
   as alternatives).
-- `computeTopPairs(matches)` — pair ranking for `TopSeeds` **and** `Leaderboard`'s Doubles tab: win rate →
-  wins → fewer losses, with the same min-4-games qualify rule as `computeStats` (pairs below 4 games are
-  listed after qualified ones). Each entry carries a `qualified: boolean` just like `computeStats`, so the
-  same 1-2-2-4 tie-aware rank computation works unmodified against either. `computePairStats` sorts by raw
-  win count instead and has no qualify gate — kept as-is for `Report.jsx`'s wins-based Pair Rankings/Player
-  Combos tabs.
+- `computeTopPairs(matches, minMatches = 4)` — pair ranking for `TopSeeds` **and** `Leaderboard`'s Doubles
+  tab: win rate → wins → fewer losses, with the same configurable qualify rule as `computeStats` (pairs
+  below `minMatches` games are listed after qualified ones). `TopSeeds` uses the default 4; `Leaderboard`
+  passes `1`. Each entry carries a `qualified: boolean` just like `computeStats`, so the same 1-2-2-4
+  tie-aware rank computation works unmodified against either. `computePairStats` sorts by raw win count
+  instead and has no qualify gate — kept as-is for `Report.jsx`'s wins-based Pair Rankings/Player Combos
+  tabs.
 - `matchesForPlayer(matches, name)` / `matchesForPair(matches, [a, b])` — filter a match list down to the
   ones a given player (either team) or pair (both on the same team, either side) actually appears in. Used
   throughout `Report.jsx` to drill down from a ranking row/stat tile to the matches behind that number.
@@ -294,9 +298,14 @@ button visibility is likewise based on the all-time pair count, not the current 
 **Two top-level tabs: Singles / Doubles**, each with its own **Today / Weekly / Monthly / Yearly /
 Overall** period pills (`filterByPeriod`), **defaulting to Today**. Receives raw `matches`/`players` and
 computes stats internally, independent of the Dashboard's FilterBar period.
-- **Singles**: `computeStats` — qualified/partial/unranked ordering (min-4-matches rule), one row per player.
-- **Doubles**: `computeTopPairs` — qualified/partial ordering (same min-4-games rule, no unranked bucket
-  since a pair only exists in the list if it's actually played), one row per pair.
+- **No minimum-matches gate here**: calls `computeStats(filtered, players, 1)` / `computeTopPairs(filtered,
+  1)` — passing `minMatches=1` instead of the library default of 4, so every player/pair that's played at
+  least once this period is ranked ("qualified") straight away. Without this, short periods like Today
+  would leave nearly the whole list stuck showing "–" / "Needs N more" since almost nothing reaches 4
+  games in a single day. The "Unranked" subtitle still applies to players with 0 matches in the period
+  (Singles only — a pair simply doesn't exist in the Doubles list if it hasn't played).
+- **Singles**: `computeStats` — one row per player.
+- **Doubles**: `computeTopPairs` — one row per pair.
 - **Standard competition ranking (1-2-2-4)** for both: rows tied on win rate share the same rank badge,
   and the next distinct rank skips the tied count (shared `computeRanks()` helper — works unmodified
   against either mode since both `computeStats` and `computeTopPairs` rows carry `qualified`/`winRate`/
@@ -324,6 +333,8 @@ computes stats internally, independent of the Dashboard's FilterBar period.
 - **Head-to-Head filter**: 4 player dropdowns (Player 1 & 2 vs Player 3 & 4, all unique). When all 4 are
   chosen, the list narrows to matches between that exact pair matchup (team sides ignored) and a summary
   banner shows the record, e.g. "A & B lead C & D 3–1" (or tied / no matches yet). `Clear` resets it.
+- Score box shows the point differential (`+{Math.abs(score1 - score2)}`) beneath the score, e.g. "21-17"
+  with "+4" underneath — same for every match row across all three modes.
 
 ### `src/components/VideoSection.jsx` / `PhotoGallery.jsx`
 Carousel (default) ↔ Manage (**super admin only** — `isAdmin` prop fed `isSuperAdmin` from `Dashboard.jsx`).

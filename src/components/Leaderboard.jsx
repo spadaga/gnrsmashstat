@@ -32,7 +32,10 @@ export default function Leaderboard({ matches, players }) {
   const [mode, setMode] = useState('singles')
   const [period, setPeriod] = useState('today')
   const filtered = filterByPeriod(matches, period)
-  const rows = mode === 'singles' ? computeStats(filtered, players) : computeTopPairs(filtered)
+  // minMatches=1: rank everyone/every pair that's played at all, no "needs N
+  // more games" gate — a period like Today would otherwise leave the whole
+  // list unranked since almost nothing hits the standard 4-match threshold.
+  const rows = mode === 'singles' ? computeStats(filtered, players, 1) : computeTopPairs(filtered, 1)
   const ranks = computeRanks(rows)
 
   return (
@@ -77,7 +80,7 @@ export default function Leaderboard({ matches, players }) {
               <div className="text-right">
                 <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{s.winRate}%</p>
                 <p className="text-[10px] uppercase tracking-wide text-slate-400 dark:text-slate-500">
-                  {s.qualified ? 'Win Rate' : s.played > 0 ? `Needs ${4 - s.played} more` : 'Unranked'}
+                  {s.qualified ? 'Win Rate' : 'Unranked'}
                 </p>
               </div>
             </div>
