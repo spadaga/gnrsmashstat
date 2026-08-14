@@ -1,14 +1,13 @@
 import { useState } from 'react'
 import { Trophy, X } from 'lucide-react'
 import { computeTopPairs, filterByWeek } from '../lib/ranking'
-import Avatar from './Avatar'
 
 const WEEKS = [
   { key: 'current', label: 'This Week' },
   { key: 'last',    label: 'Last Week' },
 ]
 
-function PairAllModal({ matches, onClose, photoByName }) {
+function PairAllModal({ matches, onClose }) {
   const pairs = computeTopPairs(matches)
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -28,9 +27,6 @@ function PairAllModal({ matches, onClose, photoByName }) {
               <div key={p.players.join('&')} className="flex items-center justify-between px-3 py-2 rounded-xl border dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-800 transition">
                 <div className="flex items-center gap-2.5">
                   <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${i === 0 ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>{i + 1}</span>
-                  <div className="flex -space-x-1.5 shrink-0">
-                    {p.players.map((n) => <Avatar key={n} name={n} photo={photoByName[n]} className="ring-2 ring-white dark:ring-slate-800" />)}
-                  </div>
                   <div>
                     <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{p.players.join(' & ')}</p>
                     <p className="text-xs text-slate-400 dark:text-slate-500">{p.wins}W – {p.losses}L · {p.played} played</p>
@@ -46,7 +42,7 @@ function PairAllModal({ matches, onClose, photoByName }) {
   )
 }
 
-export default function TopSeeds({ matches, photoByName = {} }) {
+export default function TopSeeds({ matches }) {
   const [showAll, setShowAll] = useState(false)
   const [week, setWeek] = useState('current')
   const weekMatches = filterByWeek(matches, week)
@@ -94,15 +90,12 @@ export default function TopSeeds({ matches, photoByName = {} }) {
               </span>
             </div>
             <Trophy size={56} className={`absolute -bottom-2 -right-2 ${i === 0 ? 'text-white/10' : 'text-slate-100 dark:text-slate-700'}`} />
-            <div className="flex -space-x-1.5 relative mb-1">
-              {p.players.map((n) => <Avatar key={n} name={n} photo={photoByName[n]} className={`ring-2 ${i === 0 ? 'ring-orange-600' : 'ring-white dark:ring-slate-800'}`} />)}
-            </div>
             <p className={`font-bold text-sm relative leading-tight ${i !== 0 ? 'text-slate-900 dark:text-white' : ''}`}>{p.players.join(' & ')}</p>
             <p className={`text-xs relative mt-0.5 ${i === 0 ? 'text-orange-100' : 'text-slate-500 dark:text-slate-400'}`}>{p.wins}W – {p.losses}L</p>
           </div>
         ))}
       </div>
-      {showAll && <PairAllModal matches={matches} onClose={() => setShowAll(false)} photoByName={photoByName} />}
+      {showAll && <PairAllModal matches={matches} onClose={() => setShowAll(false)} />}
     </div>
   )
 }

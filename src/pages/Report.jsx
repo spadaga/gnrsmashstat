@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { BarChart3 } from 'lucide-react'
 import { computeStats, computePairStats, computeDuoStats, computeHeadToHead, filterByPeriod, matchesForPlayer, matchesForPair } from '../lib/ranking'
-import Avatar from '../components/Avatar'
 
 const TABS = [
   { key: 'duo',        label: 'Duo Head-to-Head' },
@@ -74,43 +73,38 @@ function StatTile({ value, label, color = 'text-orange-600', onClick, active }) 
   )
 }
 
-function MatchRow({ m, photoByName }) {
+function MatchRow({ m }) {
   const team1Won = m.score1 > m.score2
-  const side = (names, won) => (
-    <span className={`flex-1 flex items-center gap-1 flex-wrap ${won ? 'font-bold text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
-      {names.map((n) => (
-        <span key={n} className="inline-flex items-center gap-1">
-          <Avatar name={n} photo={photoByName[n]} size="xs" />{n}
-        </span>
-      ))}
-    </span>
-  )
   return (
     <div className="flex items-center gap-2 px-3 py-2 rounded-lg border dark:border-slate-700 text-xs">
       <span className="text-slate-400 w-16 shrink-0">{m.date}</span>
-      <span className="flex-1 flex justify-end">{side(m.team1, team1Won)}</span>
+      <span className={`flex-1 text-right ${team1Won ? 'font-bold text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
+        {m.team1.join(' & ')}
+      </span>
       <span className="font-bold shrink-0 bg-slate-50 dark:bg-slate-700 rounded px-1.5 py-0.5">
         <span className={team1Won ? 'text-orange-600' : ''}>{m.score1}</span>-<span className={!team1Won ? 'text-orange-600' : ''}>{m.score2}</span>
       </span>
-      {side(m.team2, !team1Won)}
+      <span className={`flex-1 ${!team1Won ? 'font-bold text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
+        {m.team2.join(' & ')}
+      </span>
     </div>
   )
 }
 
-function MatchResultsPanel({ title, matches, photoByName }) {
+function MatchResultsPanel({ title, matches }) {
   return (
     <div className="mt-4 border-t dark:border-slate-700 pt-4">
       <h4 className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">{title} ({matches.length})</h4>
       {matches.length === 0 ? <p className="text-slate-400 text-sm">No matches.</p> : (
         <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1">
-          {matches.map((m) => <MatchRow key={m.id} m={m} photoByName={photoByName} />)}
+          {matches.map((m) => <MatchRow key={m.id} m={m} />)}
         </div>
       )}
     </div>
   )
 }
 
-function DuoSection({ matches, players, photoByName }) {
+function DuoSection({ matches, players }) {
   const [a, setA] = useState(players[0] || '')
   const [b, setB] = useState(players[1] || '')
   const [selected, setSelected] = useState(null)
@@ -179,14 +173,14 @@ function DuoSection({ matches, players, photoByName }) {
             </>
           )}
 
-          {activePanel && <MatchResultsPanel title={activePanel.title} matches={activePanel.list} photoByName={photoByName} />}
+          {activePanel && <MatchResultsPanel title={activePanel.title} matches={activePanel.list} />}
         </>
       )}
     </div>
   )
 }
 
-function CombosSection({ matches, players, photoByName }) {
+function CombosSection({ matches, players }) {
   const [p, setP] = useState(players[0] || '')
   const [selected, setSelected] = useState(null)
   const pairs = computePairStats(matches).filter((x) => x.players.includes(p))
@@ -230,21 +224,21 @@ function CombosSection({ matches, players, photoByName }) {
                     selected === key ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-800'
                   }`}>
                   <span className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
-                    <Avatar name={partner} photo={photoByName[partner]} size="xs" /> w/ {partner}
+                    w/ {partner}
                   </span>
                   <span className="text-slate-500 dark:text-slate-400">{x.played} played · <span className="text-orange-600 font-bold">{x.wins}W</span> – {x.losses}L · {x.winRate}%</span>
                 </button>
               )
             })}
           </div>
-          {panelTitle && <MatchResultsPanel title={panelTitle} matches={panelMatches} photoByName={photoByName} />}
+          {panelTitle && <MatchResultsPanel title={panelTitle} matches={panelMatches} />}
         </>
       )}
     </div>
   )
 }
 
-function IndividualSection({ matches, players, photoByName }) {
+function IndividualSection({ matches, players }) {
   const [period, setPeriod] = useState('week')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
@@ -270,21 +264,19 @@ function IndividualSection({ matches, players, photoByName }) {
                 className={`w-full flex items-center justify-between text-xs px-3 py-2 rounded-lg border transition ${
                   selected === s.name ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-800'
                 }`}>
-                <span className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
-                  {i + 1}. <Avatar name={s.name} photo={photoByName[s.name]} size="xs" /> {s.name}
-                </span>
+                <span className="font-semibold text-slate-700 dark:text-slate-200">{i + 1}. {s.name}</span>
                 <span className="text-slate-500 dark:text-slate-400">{s.played} played · <span className="text-orange-600 font-bold">{s.wins}W</span> – {s.losses}L · {s.winRate}%</span>
               </button>
             ))}
           </div>
-          {selected && <MatchResultsPanel title={`${selected}'s matches`} matches={matchesForPlayer(filtered, selected)} photoByName={photoByName} />}
+          {selected && <MatchResultsPanel title={`${selected}'s matches`} matches={matchesForPlayer(filtered, selected)} />}
         </>
       )}
     </div>
   )
 }
 
-function PairsSection({ matches, photoByName }) {
+function PairsSection({ matches }) {
   const [period, setPeriod] = useState('week')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
@@ -313,22 +305,20 @@ function PairsSection({ matches, photoByName }) {
                   className={`w-full flex items-center justify-between text-xs px-3 py-2 rounded-lg border transition ${
                     selected === key ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-800'
                   }`}>
-                  <span className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
-                    {i + 1}. <span className="flex -space-x-1">{p.players.map((n) => <Avatar key={n} name={n} photo={photoByName[n]} size="xs" className="ring-1 ring-white dark:ring-slate-800" />)}</span> {p.players.join(' & ')}
-                  </span>
+                  <span className="font-semibold text-slate-700 dark:text-slate-200">{i + 1}. {p.players.join(' & ')}</span>
                   <span className="text-slate-500 dark:text-slate-400">{p.played} played · <span className="text-orange-600 font-bold">{p.wins}W</span> – {p.losses}L · {p.winRate}%</span>
                 </button>
               )
             })}
           </div>
-          {selectedPair && <MatchResultsPanel title={`${selectedPair.players.join(' & ')} matches`} matches={matchesForPair(filtered, selectedPair.players)} photoByName={photoByName} />}
+          {selectedPair && <MatchResultsPanel title={`${selectedPair.players.join(' & ')} matches`} matches={matchesForPair(filtered, selectedPair.players)} />}
         </>
       )}
     </div>
   )
 }
 
-export default function Report({ data, photoByName = {} }) {
+export default function Report({ data }) {
   const [tab, setTab] = useState('duo')
   const players = data.players
   const matches = data.matches
@@ -348,10 +338,10 @@ export default function Report({ data, photoByName = {} }) {
       </div>
       {players.length < 2 ? <p className="text-slate-400 text-sm">Add at least 2 players first.</p> : (
         <>
-          {tab === 'duo' && <DuoSection matches={matches} players={players} photoByName={photoByName} />}
-          {tab === 'combos' && <CombosSection matches={matches} players={players} photoByName={photoByName} />}
-          {tab === 'individual' && <IndividualSection matches={matches} players={players} photoByName={photoByName} />}
-          {tab === 'pairs' && <PairsSection matches={matches} photoByName={photoByName} />}
+          {tab === 'duo' && <DuoSection matches={matches} players={players} />}
+          {tab === 'combos' && <CombosSection matches={matches} players={players} />}
+          {tab === 'individual' && <IndividualSection matches={matches} players={players} />}
+          {tab === 'pairs' && <PairsSection matches={matches} />}
         </>
       )}
     </div>

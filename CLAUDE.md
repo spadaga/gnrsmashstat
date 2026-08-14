@@ -178,26 +178,23 @@ The `VersionsModal` is wired into Header (desktop: History button; mobile: hambu
 - `src/components/Avatar.jsx` — `<Avatar name photo size className />`. Renders the player's `photo` if
   set, else a colored circle with initials (color deterministically hashed from the name, so a given
   player always gets the same fallback color across sessions/components). Sizes: `xs`/`sm`/`md`/`lg`/`xl`.
-- `src/lib/admins.js`'s `photoMap(players)` builds a `{ [name]: photo }` lookup. Needed because most
-  components downstream of `App.jsx` only carry plain name strings (via `playerNames()`), not full player
-  objects — `photoByName` is threaded as a prop everywhere an `Avatar` needs to be rendered next to a
-  bare name: `App.jsx` computes it once and passes it to `Dashboard` and `Report`; `Dashboard.jsx` passes
-  it on to `MatchList`, `Leaderboard`, `TopSeeds`.
-- Rendered next to every player name across the app: `Leaderboard` rows, `TopSeeds` headline cards + "View
-  All" modal, `MatchList` team rows (via a local `TeamNames` sub-component), `Report.jsx`'s Duo/Combos/
-  Individual/Pairs sections and its match-result rows, and the `Players.jsx` list itself.
+- **`Avatar` circles are scoped to the Log Match dropdowns only** — nowhere else in the app renders one.
+  `Leaderboard`, `TopSeeds`, `MatchList`, `Report.jsx` (all four tabs, including match drill-down rows),
+  and the `Players.jsx` list all show plain name text, matching how they looked before avatars existed.
+- `src/lib/admins.js`'s `photoMap(players)` builds a `{ [name]: photo }` lookup, computed once in `App.jsx`
+  and passed only to `LogMatch` → `MatchForm` → `PlayerPicker` — no other component receives it.
 - `src/components/PlayerPicker.jsx` — an avatar-aware replacement for a native `<select>` of player names
   (plain `<option>`s can't render an inline `<img>`). A button showing the selected player's `Avatar` +
   name opens a custom listbox of the same for each option; closes on selection or on an outside click.
-  Used for `MatchForm`'s 4 team-slot pickers only (the "Log Match" flow this was built for) — `MatchList`'s
-  H2H filter/edit-score dropdowns and `Report.jsx`'s player selects are still plain `<select>`s, since only
-  the log-match dropdowns were asked for.
-- Upload/clear control lives only in `Players.jsx` (`PlayerAvatarPicker`, super-admin only, consistent
-  with the write-access lockdown above): hovering a player's avatar reveals a camera icon (click to pick a
-  file) and, if a photo is set, a small red × to clear it back to initials. `prepareAvatar(file)` downscales
-  to `MAX_AVATAR_DIMENSION = 300`px and recompresses JPEG down through quality steps until under
+  Used for `MatchForm`'s 4 team-slot pickers only — `MatchList`'s H2H filter/edit-score dropdowns and
+  `Report.jsx`'s player selects are still plain `<select>`s.
+- Upload/clear control lives only in `Players.jsx` (`PhotoControl`, super-admin only, consistent with the
+  write-access lockdown above) — deliberately **icon-only, no avatar/circle preview**: a camera icon next
+  to each player's name (turns orange once a photo is set, as the only visual hint) opens a file picker,
+  and an × appears next to it to clear the photo back to no-photo. `prepareAvatar(file)` downscales to
+  `MAX_AVATAR_DIMENSION = 300`px and recompresses JPEG down through quality steps until under
   `MAX_AVATAR_BYTES = 150KB` — same technique as `PhotoGallery`'s `prepareUpload`, just tuned much smaller
-  since this only ever renders as a small circle.
+  since the only place this photo is ever actually rendered is the Log Match dropdown avatars.
 
 ## Structure
 
@@ -234,8 +231,6 @@ Sticky footer: `© {year} GNR SmashStats. All rights reserved. | 🏸 GNR Team �
 ### `src/pages/Dashboard.jsx`
 SlotsTicker → FilterBar → StatCards → TopSeeds → [Leaderboard | MatchList] → [VideoSection | PhotoGallery].
 `Leaderboard` gets raw `data.matches`/`data.players` (not pre-filtered) — it owns its own period tabs, independent of the FilterBar period which only drives StatCards/TopSeeds context.
-Receives `photoByName` from `App.jsx` and passes it on to `TopSeeds`, `MatchList`, and `Leaderboard` (see
-Player avatars above).
 
 ### `src/pages/LogMatch.jsx`
 Wraps `MatchForm.jsx`, navigates back to Dashboard on save.
@@ -250,8 +245,8 @@ chart lib) + text list:
     summary line. Hidden (replaced by a "haven't faced each other" message) if they've never been direct
     opponents.
   - Every stat tile in both sub-sections is clickable (`StatTile`'s `onClick`/`active` props) — clicking
-    toggles a `MatchResultsPanel` below showing the actual matches behind that number (date, teams with
-    avatars, score), via `MatchRow`. Click the same tile again to collapse.
+    toggles a `MatchResultsPanel` below showing the actual matches behind that number (date, teams, score),
+    via `MatchRow`. Click the same tile again to collapse.
 - **Player Combos**: pick one player → every partner combination they've played, played/wins/losses
   per combo (`computePairStats` filtered to pairs containing that player). "Total matches"/"Overall
   record" tiles and each partner row are clickable — drills down to that player's full match list or
@@ -266,8 +261,8 @@ chart lib) + text list:
 ### `src/pages/Players.jsx`
 Add/remove/edit players — **super admin only** (`isAdmin` prop here is fed `isSuperAdmin` from `App.jsx`,
 not plain `isAdmin`). Regular admins and guests get the read-only list. Shows **Admin** badge for players
-with a PIN. Each row's `Avatar` is wrapped in `PlayerAvatarPicker` (super-admin only) — see Player avatars
-above for the upload/clear behavior.
+with a PIN. Each row has an icon-only `PhotoControl` (super-admin only) — see Player avatars above for
+the upload/clear behavior; there's no avatar/circle preview here, by design.
 
 ### `src/pages/Slots.jsx`
 Court slots table. **Super admin only**: inline editable cells + add/delete. Everyone else: read-only.
@@ -294,18 +289,14 @@ independent of the Dashboard period filter, always receives full `data.matches`.
 **Seed #2 card is hidden on mobile** (`hidden sm:block`) — only Top Seed #1 shows below the `sm` breakpoint.
 "View All →" modal lists all pair combos **across all-time matches** (not scoped to the selected week) —
 button visibility is likewise based on the all-time pair count, not the current week's. Dark mode supported.
-Renders each pair as overlapping `Avatar`s (via `photoByName` prop) next to the names, in both the
-headline cards and the modal.
 
 ### `src/components/Leaderboard.jsx`
 **Two top-level tabs: Singles / Doubles**, each with its own **Today / Weekly / Monthly / Yearly /
 Overall** period pills (`filterByPeriod`), **defaulting to Today**. Receives raw `matches`/`players` and
 computes stats internally, independent of the Dashboard's FilterBar period.
-- **Singles**: `computeStats` — qualified/partial/unranked ordering (min-4-matches rule), one row per
-  player, single `Avatar`.
+- **Singles**: `computeStats` — qualified/partial/unranked ordering (min-4-matches rule), one row per player.
 - **Doubles**: `computeTopPairs` — qualified/partial ordering (same min-4-games rule, no unranked bucket
-  since a pair only exists in the list if it's actually played), one row per pair, two overlapping
-  `Avatar`s.
+  since a pair only exists in the list if it's actually played), one row per pair.
 - **Standard competition ranking (1-2-2-4)** for both: rows tied on win rate share the same rank badge,
   and the next distinct rank skips the tied count (shared `computeRanks()` helper — works unmodified
   against either mode since both `computeStats` and `computeTopPairs` rows carry `qualified`/`winRate`/
@@ -333,8 +324,6 @@ computes stats internally, independent of the Dashboard's FilterBar period.
 - **Head-to-Head filter**: 4 player dropdowns (Player 1 & 2 vs Player 3 & 4, all unique). When all 4 are
   chosen, the list narrows to matches between that exact pair matchup (team sides ignored) and a summary
   banner shows the record, e.g. "A & B lead C & D 3–1" (or tied / no matches yet). `Clear` resets it.
-- Each team's names are rendered via a local `TeamNames` sub-component — `Avatar` (via `photoByName` prop)
-  + name per player, with "&" between the two — instead of a plain `team.join(' & ')` string.
 
 ### `src/components/VideoSection.jsx` / `PhotoGallery.jsx`
 Carousel (default) ↔ Manage (**super admin only** — `isAdmin` prop fed `isSuperAdmin` from `Dashboard.jsx`).

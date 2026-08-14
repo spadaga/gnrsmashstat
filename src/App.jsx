@@ -136,7 +136,7 @@ export default function App() {
 
       <main className="flex-1 max-w-6xl w-full mx-auto px-3 py-3">
         {page === 'dashboard' && (
-          <Dashboard data={{ ...data, players: names }} actions={actions} onNavigate={setPage} onImport={handleImport} isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} photoByName={photoByName} />
+          <Dashboard data={{ ...data, players: names }} actions={actions} onNavigate={setPage} onImport={handleImport} isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} />
         )}
         {page === 'log' && isAdmin && (
           <LogMatch players={names} actions={actions} onNavigate={setPage} isSuperAdmin={isSuperAdmin} photoByName={photoByName} />
@@ -148,7 +148,7 @@ export default function App() {
           <Slots slots={data.slots} actions={actions} isAdmin={isSuperAdmin} />
         )}
         {page === 'report' && (
-          <Report data={{ matches: data.matches, players: names }} photoByName={photoByName} />
+          <Report data={{ matches: data.matches, players: names }} />
         )}
       </main>
 

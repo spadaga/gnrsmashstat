@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Medal } from 'lucide-react'
 import { computeStats, computeTopPairs, filterByPeriod } from '../lib/ranking'
-import Avatar from './Avatar'
 
 const MODES = [
   { key: 'singles', label: 'Singles' },
@@ -29,7 +28,7 @@ function computeRanks(rows) {
   return ranks
 }
 
-export default function Leaderboard({ matches, players, photoByName = {} }) {
+export default function Leaderboard({ matches, players }) {
   const [mode, setMode] = useState('singles')
   const [period, setPeriod] = useState('today')
   const filtered = filterByPeriod(matches, period)
@@ -62,7 +61,6 @@ export default function Leaderboard({ matches, players, photoByName = {} }) {
       <div className="space-y-1">
         {rows.map((s, i) => {
           const rank = ranks[i]
-          const names = mode === 'singles' ? [s.name] : s.players
           const label = mode === 'singles' ? s.name : s.players.join(' & ')
           const key = mode === 'singles' ? s.name : s.players.join('|')
           return (
@@ -71,11 +69,6 @@ export default function Leaderboard({ matches, players, photoByName = {} }) {
                 <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${rank === 1 ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
                   {rank ?? '–'}
                 </span>
-                <div className="flex -space-x-1.5 shrink-0">
-                  {names.map((n) => (
-                    <Avatar key={n} name={n} photo={photoByName[n]} className={names.length > 1 ? 'ring-2 ring-white dark:ring-slate-800' : ''} />
-                  ))}
-                </div>
                 <div>
                   <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{label}</p>
                   <p className="text-xs text-slate-400 dark:text-slate-500">{s.wins}W - {s.losses}L · {s.played} played</p>
