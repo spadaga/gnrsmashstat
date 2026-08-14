@@ -71,9 +71,20 @@ export function computePairStats(matches) {
 export function computeTopPairs(matches) {
   const byRankRule = (a, b) => b.winRate - a.winRate || b.wins - a.wins || a.losses - b.losses
   const pairs = computePairStats(matches)
-  const qualified = pairs.filter((p) => p.played >= MIN_RANKED_MATCHES).sort(byRankRule)
-  const partial = pairs.filter((p) => p.played < MIN_RANKED_MATCHES).sort(byRankRule)
+  const qualified = pairs.filter((p) => p.played >= MIN_RANKED_MATCHES).sort(byRankRule).map((p) => ({ ...p, qualified: true }))
+  const partial = pairs.filter((p) => p.played < MIN_RANKED_MATCHES).sort(byRankRule).map((p) => ({ ...p, qualified: false }))
   return [...qualified, ...partial]
+}
+
+// All matches a given player appears in, on either team — used to drill down
+// from a ranking row/stat number to the matches behind it.
+export function matchesForPlayer(matches, name) {
+  return matches.filter((m) => m.team1.includes(name) || m.team2.includes(name))
+}
+
+// All matches a given pair played together (on the same team, either side).
+export function matchesForPair(matches, players) {
+  return matches.filter((m) => players.every((p) => m.team1.includes(p)) || players.every((p) => m.team2.includes(p)))
 }
 
 // which: 'current' | 'last'. Week starts Sunday, matching filterByPeriod('week').

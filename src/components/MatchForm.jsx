@@ -1,11 +1,12 @@
 import { useState } from 'react'
+import PlayerPicker from './PlayerPicker'
 
 const today = () => new Date().toISOString().slice(0, 10)
 const MAX_SCORE = 30
 
 const empty = () => ({ date: today(), p1: '', p2: '', p3: '', p4: '', score1: '', score2: '', comment: '' })
 
-export default function MatchForm({ players, onAddMatch, isSuperAdmin = false }) {
+export default function MatchForm({ players, onAddMatch, isSuperAdmin = false, photoByName = {} }) {
   const [form, setForm] = useState(empty())
   const [error, setError] = useState('')
 
@@ -63,8 +64,8 @@ export default function MatchForm({ players, onAddMatch, isSuperAdmin = false })
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <fieldset className="space-y-2">
           <legend className="text-sm font-medium text-slate-600 dark:text-slate-400">Team 1</legend>
-          <PlayerSelect value={form.p1} onChange={(v) => set('p1', v)} options={availableFor('p1')} label="Player 1" />
-          <PlayerSelect value={form.p2} onChange={(v) => set('p2', v)} options={availableFor('p2')} label="Player 2" />
+          <PlayerPicker value={form.p1} onChange={(v) => set('p1', v)} options={availableFor('p1')} photoByName={photoByName} placeholder="Player 1" />
+          <PlayerPicker value={form.p2} onChange={(v) => set('p2', v)} options={availableFor('p2')} photoByName={photoByName} placeholder="Player 2" />
           <input type="number" min={0} max={MAX_SCORE} value={form.score1}
             onChange={(e) => set('score1', e.target.value)}
             placeholder={`Score (0-${MAX_SCORE})`} className={inputCls} required />
@@ -72,8 +73,8 @@ export default function MatchForm({ players, onAddMatch, isSuperAdmin = false })
 
         <fieldset className="space-y-2">
           <legend className="text-sm font-medium text-slate-600 dark:text-slate-400">Team 2</legend>
-          <PlayerSelect value={form.p3} onChange={(v) => set('p3', v)} options={availableFor('p3')} label="Player 3" />
-          <PlayerSelect value={form.p4} onChange={(v) => set('p4', v)} options={availableFor('p4')} label="Player 4" />
+          <PlayerPicker value={form.p3} onChange={(v) => set('p3', v)} options={availableFor('p3')} photoByName={photoByName} placeholder="Player 3" />
+          <PlayerPicker value={form.p4} onChange={(v) => set('p4', v)} options={availableFor('p4')} photoByName={photoByName} placeholder="Player 4" />
           <input type="number" min={0} max={MAX_SCORE} value={form.score2}
             onChange={(e) => set('score2', e.target.value)}
             placeholder={`Score (0-${MAX_SCORE})`} className={inputCls} required />
@@ -96,15 +97,5 @@ export default function MatchForm({ players, onAddMatch, isSuperAdmin = false })
         Save Match
       </button>
     </form>
-  )
-}
-
-function PlayerSelect({ value, onChange, options, label }) {
-  return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} required
-      className="w-full border dark:border-slate-600 rounded-lg px-3 py-2 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-400">
-      <option value="">{label}</option>
-      {options.map((p) => <option key={p} value={p}>{p}</option>)}
-    </select>
   )
 }

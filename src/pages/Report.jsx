@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { BarChart3 } from 'lucide-react'
-import { computeStats, computePairStats, computeDuoStats, computeHeadToHead, filterByPeriod } from '../lib/ranking'
+import { computeStats, computePairStats, computeDuoStats, computeHeadToHead, filterByPeriod, matchesForPlayer, matchesForPair } from '../lib/ranking'
 import Avatar from '../components/Avatar'
 
 const TABS = [
@@ -188,36 +188,56 @@ function DuoSection({ matches, players, photoByName }) {
 
 function CombosSection({ matches, players, photoByName }) {
   const [p, setP] = useState(players[0] || '')
+  const [selected, setSelected] = useState(null)
   const pairs = computePairStats(matches).filter((x) => x.players.includes(p))
   const partnerOf = (pair) => pair.players.find((n) => n !== p)
   const overall = pairs.reduce((acc, x) => ({ played: acc.played + x.played, wins: acc.wins + x.wins, losses: acc.losses + x.losses }), { played: 0, wins: 0, losses: 0 })
   const max = Math.max(1, ...pairs.map((x) => x.played))
 
+  function pick(key, e) { e.target.blur(); setSelected((cur) => (cur === key ? null : key)) }
+  function selectPlayer(v) { setP(v); setSelected(null) }
+
+  let panelTitle = null, panelMatches = []
+  if (selected === 'total') { panelTitle = `All of ${p}'s matches`; panelMatches = matchesForPlayer(matches, p) }
+  else if (selected?.startsWith('partner:')) {
+    const partner = selected.slice('partner:'.length)
+    panelTitle = `${p} & ${partner} together`
+    panelMatches = matchesForPair(matches, [p, partner])
+  }
+
   return (
     <div>
-      <select value={p} onChange={(e) => setP(e.target.value)} className={`${selectCls} mb-4`}>
+      <select value={p} onChange={(e) => selectPlayer(e.target.value)} className={`${selectCls} mb-4`}>
         {players.map((name) => <option key={name} value={name}>{name}</option>)}
       </select>
       {pairs.length === 0 ? <p className="text-slate-400 text-sm">No matches for {p} yet.</p> : (
         <>
           <div className="grid grid-cols-3 gap-3 mb-5">
             <StatTile value={pairs.length} label="Combinations played" />
-            <StatTile value={overall.played} label="Total matches" />
-            <StatTile value={`${overall.wins}W – ${overall.losses}L`} label="Overall record" />
+            <StatTile value={overall.played} label="Total matches" onClick={(e) => pick('total', e)} active={selected === 'total'} />
+            <StatTile value={`${overall.wins}W – ${overall.losses}L`} label="Overall record" onClick={(e) => pick('total', e)} active={selected === 'total'} />
           </div>
           <div className="space-y-2 mb-5">
             {pairs.map((x) => <Bar key={x.players.join('|')} label={`w/ ${partnerOf(x)}`} value={x.played} max={max} />)}
           </div>
           <div className="space-y-1.5">
-            {pairs.map((x) => (
-              <div key={x.players.join('|')} className="flex items-center justify-between text-xs px-3 py-2 rounded-lg border dark:border-slate-700">
-                <span className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
-                  <Avatar name={partnerOf(x)} photo={photoByName[partnerOf(x)]} size="xs" /> w/ {partnerOf(x)}
-                </span>
-                <span className="text-slate-500 dark:text-slate-400">{x.played} played · <span className="text-orange-600 font-bold">{x.wins}W</span> – {x.losses}L · {x.winRate}%</span>
-              </div>
-            ))}
+            {pairs.map((x) => {
+              const partner = partnerOf(x)
+              const key = `partner:${partner}`
+              return (
+                <button key={x.players.join('|')} type="button" onClick={(e) => pick(key, e)}
+                  className={`w-full flex items-center justify-between text-xs px-3 py-2 rounded-lg border transition ${
+                    selected === key ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-800'
+                  }`}>
+                  <span className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
+                    <Avatar name={partner} photo={photoByName[partner]} size="xs" /> w/ {partner}
+                  </span>
+                  <span className="text-slate-500 dark:text-slate-400">{x.played} played · <span className="text-orange-600 font-bold">{x.wins}W</span> – {x.losses}L · {x.winRate}%</span>
+                </button>
+              )
+            })}
           </div>
+          {panelTitle && <MatchResultsPanel title={panelTitle} matches={panelMatches} photoByName={photoByName} />}
         </>
       )}
     </div>
@@ -228,13 +248,17 @@ function IndividualSection({ matches, players, photoByName }) {
   const [period, setPeriod] = useState('week')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
+  const [selected, setSelected] = useState(null)
   const filtered = applyPeriod(matches, period, from, to)
   const stats = computeStats(filtered, players).filter((s) => s.played > 0).slice(0, 10)
   const max = Math.max(1, ...stats.map((s) => s.wins))
 
+  function pick(name, e) { e.target.blur(); setSelected((cur) => (cur === name ? null : name)) }
+  function changePeriod(v) { setPeriod(v); setSelected(null) }
+
   return (
     <div>
-      <PeriodTabs period={period} onPeriod={setPeriod} from={from} to={to} onFrom={setFrom} onTo={setTo} />
+      <PeriodTabs period={period} onPeriod={changePeriod} from={from} to={to} onFrom={setFrom} onTo={setTo} />
       {stats.length === 0 ? <p className="text-slate-400 text-sm">No matches in this range.</p> : (
         <>
           <div className="space-y-2 mb-5">
@@ -242,14 +266,18 @@ function IndividualSection({ matches, players, photoByName }) {
           </div>
           <div className="space-y-1.5">
             {stats.map((s, i) => (
-              <div key={s.name} className="flex items-center justify-between text-xs px-3 py-2 rounded-lg border dark:border-slate-700">
+              <button key={s.name} type="button" onClick={(e) => pick(s.name, e)}
+                className={`w-full flex items-center justify-between text-xs px-3 py-2 rounded-lg border transition ${
+                  selected === s.name ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-800'
+                }`}>
                 <span className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
                   {i + 1}. <Avatar name={s.name} photo={photoByName[s.name]} size="xs" /> {s.name}
                 </span>
                 <span className="text-slate-500 dark:text-slate-400">{s.played} played · <span className="text-orange-600 font-bold">{s.wins}W</span> – {s.losses}L · {s.winRate}%</span>
-              </div>
+              </button>
             ))}
           </div>
+          {selected && <MatchResultsPanel title={`${selected}'s matches`} matches={matchesForPlayer(filtered, selected)} photoByName={photoByName} />}
         </>
       )}
     </div>
@@ -260,28 +288,40 @@ function PairsSection({ matches, photoByName }) {
   const [period, setPeriod] = useState('week')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
+  const [selected, setSelected] = useState(null)
   const filtered = applyPeriod(matches, period, from, to)
   const pairs = computePairStats(filtered).slice(0, 10)
   const max = Math.max(1, ...pairs.map((p) => p.wins))
 
+  function pick(key, e) { e.target.blur(); setSelected((cur) => (cur === key ? null : key)) }
+  function changePeriod(v) { setPeriod(v); setSelected(null) }
+  const selectedPair = selected ? pairs.find((p) => p.players.join('|') === selected) : null
+
   return (
     <div>
-      <PeriodTabs period={period} onPeriod={setPeriod} from={from} to={to} onFrom={setFrom} onTo={setTo} />
+      <PeriodTabs period={period} onPeriod={changePeriod} from={from} to={to} onFrom={setFrom} onTo={setTo} />
       {pairs.length === 0 ? <p className="text-slate-400 text-sm">No matches in this range.</p> : (
         <>
           <div className="space-y-2 mb-5">
             {pairs.map((p) => <Bar key={p.players.join('|')} label={p.players.join(' & ')} value={p.wins} max={max} />)}
           </div>
           <div className="space-y-1.5">
-            {pairs.map((p, i) => (
-              <div key={p.players.join('|')} className="flex items-center justify-between text-xs px-3 py-2 rounded-lg border dark:border-slate-700">
-                <span className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
-                  {i + 1}. <span className="flex -space-x-1">{p.players.map((n) => <Avatar key={n} name={n} photo={photoByName[n]} size="xs" className="ring-1 ring-white dark:ring-slate-800" />)}</span> {p.players.join(' & ')}
-                </span>
-                <span className="text-slate-500 dark:text-slate-400">{p.played} played · <span className="text-orange-600 font-bold">{p.wins}W</span> – {p.losses}L · {p.winRate}%</span>
-              </div>
-            ))}
+            {pairs.map((p, i) => {
+              const key = p.players.join('|')
+              return (
+                <button key={key} type="button" onClick={(e) => pick(key, e)}
+                  className={`w-full flex items-center justify-between text-xs px-3 py-2 rounded-lg border transition ${
+                    selected === key ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-800'
+                  }`}>
+                  <span className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
+                    {i + 1}. <span className="flex -space-x-1">{p.players.map((n) => <Avatar key={n} name={n} photo={photoByName[n]} size="xs" className="ring-1 ring-white dark:ring-slate-800" />)}</span> {p.players.join(' & ')}
+                  </span>
+                  <span className="text-slate-500 dark:text-slate-400">{p.played} played · <span className="text-orange-600 font-bold">{p.wins}W</span> – {p.losses}L · {p.winRate}%</span>
+                </button>
+              )
+            })}
           </div>
+          {selectedPair && <MatchResultsPanel title={`${selectedPair.players.join(' & ')} matches`} matches={matchesForPair(filtered, selectedPair.players)} photoByName={photoByName} />}
         </>
       )}
     </div>

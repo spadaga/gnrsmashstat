@@ -139,7 +139,7 @@ export default function App() {
           <Dashboard data={{ ...data, players: names }} actions={actions} onNavigate={setPage} onImport={handleImport} isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} photoByName={photoByName} />
         )}
         {page === 'log' && isAdmin && (
-          <LogMatch players={names} actions={actions} onNavigate={setPage} isSuperAdmin={isSuperAdmin} />
+          <LogMatch players={names} actions={actions} onNavigate={setPage} isSuperAdmin={isSuperAdmin} photoByName={photoByName} />
         )}
         {page === 'players' && (
           <Players players={data.players} actions={actions} isAdmin={isSuperAdmin} />

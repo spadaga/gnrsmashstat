@@ -21,10 +21,10 @@ const STATE_PATH = 'state/data.json'
 // Those with a pin are admins; others are read-only.
 const DEFAULT_PLAYERS = [
   { name: 'Sanjeev Kumar',    pin: '2682' },
-  { name: 'Nayeem Abdhullah', pin: '0492' },
+  { name: 'Abdhulla',        pin: '0492' },
   { name: 'Srinivas Padaga',  pin: '0556' },
   { name: 'Suresh Padaga',    pin: '2669' },
-  { name: 'Pradeep Raghav',   pin: '8220' },
+  { name: 'HR',               pin: '8220' },
   { name: 'Narendra',         pin: '1484' },
   { name: 'Manikyam',         pin: '7158' },
   { name: 'Diwakar',          pin: '8610' },
@@ -240,12 +240,21 @@ export default async function handler(req, res) {
         if (idx === -1) return res.status(404).json({ error: 'Player not found' })
         await snapshotState(state)
         const existing = state.players[idx]
-        const updated = { name: newName || param }
+        const finalName = newName || param
+        const updated = { name: finalName }
         if (pin !== undefined) { if (pin) updated.pin = pin }
         else if (existing.pin) updated.pin = existing.pin
         if (photo !== undefined) { if (photo) updated.photo = photo }
         else if (existing.photo) updated.photo = existing.photo
         state.players[idx] = updated
+        // Cascade the rename into every match's team1/team2 so historical
+        // stats stay attributed to this player instead of splitting into an
+        // orphaned "old name" ghost entry (computeStats/computePairStats key
+        // purely off the name strings stored on each match).
+        if (finalName !== param) {
+          const rn = (arr) => arr.map((n) => (n === param ? finalName : n))
+          state.matches = state.matches.map((m) => ({ ...m, team1: rn(m.team1), team2: rn(m.team2) }))
+        }
         await writeState(state)
         return res.status(200).json(state.players)
       }

@@ -25,10 +25,10 @@ npm run lint     # oxlint
 ```json
 [
   { "name": "Sanjeev Kumar",    "pin": "2682" },
-  { "name": "Nayeem Abdhullah", "pin": "0492" },
+  { "name": "Abdhulla",         "pin": "0492" },
   { "name": "Srinivas Padaga",  "pin": "0556" },
   { "name": "Suresh Padaga",    "pin": "2669" },
-  { "name": "Pradeep Raghav",   "pin": "8220" },
+  { "name": "HR",               "pin": "8220" },
   { "name": "Narendra",         "pin": "1484" },
   { "name": "Manikyam",         "pin": "7158" },
   { "name": "Diwakar",          "pin": "8610" }
@@ -46,6 +46,16 @@ npm run lint     # oxlint
   players array stays small. `PUT /api/players/:name` accepts `photo` the same way it accepts `pin`:
   omit to keep the existing photo, pass a data URL to set it, pass `""` to clear it back to the
   initials-circle fallback. `POST /api/players` also accepts an initial `photo`.
+- **Renaming a player cascades into match history**: `PUT /api/players/:name` with a new `name` doesn't
+  just rename the player entry — both backends also rewrite every match's `team1`/`team2` array, replacing
+  the old name with the new one. Without this, `computeStats`/`computePairStats` (which key purely off the
+  name strings stored on each match, not player IDs) would keep the old name alive as an orphaned "ghost"
+  player with its own separate stats, split off from the renamed player's history. `Nayeem Abdhullah` →
+  `Abdhulla` and `Pradeep Raghav` → `HR` were renamed this way (matching the short names those two already
+  went by in `Court Slots`); `DEFAULT_PLAYERS` in both backends was updated to seed the new names too, but
+  that only affects a *fresh* deploy/first load — an already-seeded Vercel Blob still has the old names
+  baked in and needs the same rename done once via the live Players page (logged in as the super admin) to
+  pick up this cascade fix.
 
 ## Admin auth (PIN-first login)
 
@@ -153,10 +163,15 @@ The `VersionsModal` is wired into Header (desktop: History button; mobile: hambu
   teammate — `b` might not even be in that match. Used by the Report page's Duo Head-to-Head tab
   alongside `computeDuoStats` (teammate stats and any-partner opponent stats are shown together, not
   as alternatives).
-- `computeTopPairs(matches)` — pair ranking for `TopSeeds`: win rate → wins → fewer losses, with the
-  same min-4-games qualify rule as `computeStats` (pairs below 4 games are listed after qualified ones).
-  `computePairStats` sorts by raw win count instead and has no qualify gate — kept as-is for
-  `Report.jsx`'s wins-based Pair Rankings/Player Combos tabs.
+- `computeTopPairs(matches)` — pair ranking for `TopSeeds` **and** `Leaderboard`'s Doubles tab: win rate →
+  wins → fewer losses, with the same min-4-games qualify rule as `computeStats` (pairs below 4 games are
+  listed after qualified ones). Each entry carries a `qualified: boolean` just like `computeStats`, so the
+  same 1-2-2-4 tie-aware rank computation works unmodified against either. `computePairStats` sorts by raw
+  win count instead and has no qualify gate — kept as-is for `Report.jsx`'s wins-based Pair Rankings/Player
+  Combos tabs.
+- `matchesForPlayer(matches, name)` / `matchesForPair(matches, [a, b])` — filter a match list down to the
+  ones a given player (either team) or pair (both on the same team, either side) actually appears in. Used
+  throughout `Report.jsx` to drill down from a ranking row/stat tile to the matches behind that number.
 
 ## Player avatars
 
@@ -170,9 +185,13 @@ The `VersionsModal` is wired into Header (desktop: History button; mobile: hambu
   it on to `MatchList`, `Leaderboard`, `TopSeeds`.
 - Rendered next to every player name across the app: `Leaderboard` rows, `TopSeeds` headline cards + "View
   All" modal, `MatchList` team rows (via a local `TeamNames` sub-component), `Report.jsx`'s Duo/Combos/
-  Individual/Pairs sections and its match-result rows, and the `Players.jsx` list itself. Native `<select>`
-  dropdowns (player pickers in `MatchForm`, `Report`, `MatchList`'s H2H/edit forms) can't show inline
-  images, so those stay text-only by necessity.
+  Individual/Pairs sections and its match-result rows, and the `Players.jsx` list itself.
+- `src/components/PlayerPicker.jsx` — an avatar-aware replacement for a native `<select>` of player names
+  (plain `<option>`s can't render an inline `<img>`). A button showing the selected player's `Avatar` +
+  name opens a custom listbox of the same for each option; closes on selection or on an outside click.
+  Used for `MatchForm`'s 4 team-slot pickers only (the "Log Match" flow this was built for) — `MatchList`'s
+  H2H filter/edit-score dropdowns and `Report.jsx`'s player selects are still plain `<select>`s, since only
+  the log-match dropdowns were asked for.
 - Upload/clear control lives only in `Players.jsx` (`PlayerAvatarPicker`, super-admin only, consistent
   with the write-access lockdown above): hovering a player's avatar reveals a camera icon (click to pick a
   file) and, if a photo is set, a small red × to clear it back to initials. `prepareAvatar(file)` downscales
@@ -234,9 +253,15 @@ chart lib) + text list:
     toggles a `MatchResultsPanel` below showing the actual matches behind that number (date, teams with
     avatars, score), via `MatchRow`. Click the same tile again to collapse.
 - **Player Combos**: pick one player → every partner combination they've played, played/wins/losses
-  per combo (`computePairStats` filtered to pairs containing that player).
-- **Individual Rankings**: `computeStats` ranked by wins, period-filterable (Day/Week/Month/Year/Custom Range).
-- **Pair Rankings**: `computePairStats` ranked by wins, same period filter options.
+  per combo (`computePairStats` filtered to pairs containing that player). "Total matches"/"Overall
+  record" tiles and each partner row are clickable — drills down to that player's full match list or
+  just the matches with that specific partner (`matchesForPlayer`/`matchesForPair`).
+- **Individual Rankings**: `computeStats` ranked by wins, period-filterable (Day/Week/Month/Year/Custom
+  Range). Each row is clickable — drills down to that player's matches within the current period filter.
+- **Pair Rankings**: `computePairStats` ranked by wins, same period filter options. Each row is clickable —
+  drills down to that pair's matches within the current period filter.
+- All four tabs' drill-downs render via the shared `StatTile` (clickable variant)/`MatchResultsPanel`/
+  `MatchRow` helpers built for Duo Head-to-Head — same toggle-to-collapse behavior throughout.
 
 ### `src/pages/Players.jsx`
 Add/remove/edit players — **super admin only** (`isAdmin` prop here is fed `isSuperAdmin` from `App.jsx`,
@@ -250,9 +275,9 @@ Rows within 10 days of `endDate` highlight red. Sorted by `endDate` ascending.
 **Time column hidden on mobile** (`hidden sm:table-cell`) to save width; visible from `sm` breakpoint up.
 
 ### `src/components/MatchForm.jsx`
-**Select dropdowns** (not free text) for all 4 players sourced from the players list.
-Each dropdown filters out already-selected players so all 4 are always unique.
-Scores: 0–30, no ties. Comment optional.
+**`PlayerPicker` dropdowns** (avatar + name, not free text or a plain `<select>`) for all 4 players
+sourced from the players list — see Player avatars above. Each dropdown filters out already-selected
+players so all 4 are always unique. Scores: 0–30, no ties. Comment optional.
 **Date field is super-admin-only** — regular admins get it locked to today (`disabled`, value forced to
 `today()`, helper text "Only today's date can be logged") and `handleSubmit` overrides the date to
 today regardless of form state when `!isSuperAdmin`; the super admin can pick any past date up to
@@ -273,16 +298,19 @@ Renders each pair as overlapping `Avatar`s (via `photoByName` prop) next to the 
 headline cards and the modal.
 
 ### `src/components/Leaderboard.jsx`
-Owns its own period tabs — **Today / Weekly / Monthly / Yearly / Overall** (`filterByPeriod`), **defaults
-to Today** — receives raw `matches`/`players` and computes stats internally, independent of the
-Dashboard's FilterBar period. Ranked using `computeStats`'s qualified/partial/unranked ordering
-(min-4-matches rule).
-**Standard competition ranking (1-2-2-4)**: qualified players tied on win rate share the same rank
-badge, and the next distinct rank skips the tied count (computed as a `ranks[]` array alongside `stats`,
-comparing each row to the previous row's `winRate` since the list is already sorted).
-Rank badge only shown for qualified players (others show "–"). Shows an `Avatar` (via `photoByName` prop),
-W-L, and **played count** per player; subtitle reads "Needs N more" (partial) or "Unranked" (0 played) for
-non-qualified rows.
+**Two top-level tabs: Singles / Doubles**, each with its own **Today / Weekly / Monthly / Yearly /
+Overall** period pills (`filterByPeriod`), **defaulting to Today**. Receives raw `matches`/`players` and
+computes stats internally, independent of the Dashboard's FilterBar period.
+- **Singles**: `computeStats` — qualified/partial/unranked ordering (min-4-matches rule), one row per
+  player, single `Avatar`.
+- **Doubles**: `computeTopPairs` — qualified/partial ordering (same min-4-games rule, no unranked bucket
+  since a pair only exists in the list if it's actually played), one row per pair, two overlapping
+  `Avatar`s.
+- **Standard competition ranking (1-2-2-4)** for both: rows tied on win rate share the same rank badge,
+  and the next distinct rank skips the tied count (shared `computeRanks()` helper — works unmodified
+  against either mode since both `computeStats` and `computeTopPairs` rows carry `qualified`/`winRate`/
+  `wins`/`losses`). Rank badge only shown for qualified rows (others show "–"). Shows W-L and **played
+  count**; subtitle reads "Needs N more" (partial) or "Unranked" (0 played, Singles only) otherwise.
 
 ### `src/components/MatchList.jsx`
 - **Search box sits above the "Recent Matches" heading.**

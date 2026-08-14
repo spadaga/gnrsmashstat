@@ -1,7 +1,12 @@
 import { useState } from 'react'
 import { Medal } from 'lucide-react'
-import { computeStats, filterByPeriod } from '../lib/ranking'
+import { computeStats, computeTopPairs, filterByPeriod } from '../lib/ranking'
 import Avatar from './Avatar'
+
+const MODES = [
+  { key: 'singles', label: 'Singles' },
+  { key: 'doubles', label: 'Doubles' },
+]
 
 const PERIODS = [
   { key: 'today', label: 'Today' },
@@ -11,16 +16,25 @@ const PERIODS = [
   { key: 'all',   label: 'Overall' },
 ]
 
-export default function Leaderboard({ matches, players, photoByName = {} }) {
-  const [period, setPeriod] = useState('today')
-  const stats = computeStats(filterByPeriod(matches, period), players)
-  // Standard competition ranking (1-2-2-4): players tied on win rate share a
-  // rank, and the next distinct rank skips the tied count.
+// Standard competition ranking (1-2-2-4): rows tied on win rate share a rank,
+// and the next distinct rank skips the tied count. Shared by both Singles
+// (computeStats) and Doubles (computeTopPairs) — both already sort
+// qualified-first and carry the same qualified/winRate/wins/losses shape.
+function computeRanks(rows) {
   const ranks = []
-  stats.forEach((s, i) => {
+  rows.forEach((s, i) => {
     if (!s.qualified) { ranks.push(null); return }
-    ranks.push(i > 0 && stats[i - 1].qualified && stats[i - 1].winRate === s.winRate ? ranks[i - 1] : i + 1)
+    ranks.push(i > 0 && rows[i - 1].qualified && rows[i - 1].winRate === s.winRate ? ranks[i - 1] : i + 1)
   })
+  return ranks
+}
+
+export default function Leaderboard({ matches, players, photoByName = {} }) {
+  const [mode, setMode] = useState('singles')
+  const [period, setPeriod] = useState('today')
+  const filtered = filterByPeriod(matches, period)
+  const rows = mode === 'singles' ? computeStats(filtered, players) : computeTopPairs(filtered)
+  const ranks = computeRanks(rows)
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-4">
@@ -29,26 +43,41 @@ export default function Leaderboard({ matches, players, photoByName = {} }) {
           <Medal size={16} className="text-orange-600" /> Leaderboard
         </h2>
         <div className="flex gap-1 bg-slate-100 dark:bg-slate-700 rounded-full p-1">
-          {PERIODS.map((p) => (
-            <button key={p.key} onClick={() => setPeriod(p.key)}
+          {MODES.map((m) => (
+            <button key={m.key} onClick={() => setMode(m.key)}
               className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide transition ${
-                period === p.key ? 'bg-slate-900 dark:bg-orange-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-              }`}>{p.label}</button>
+                mode === m.key ? 'bg-slate-900 dark:bg-orange-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              }`}>{m.label}</button>
           ))}
         </div>
       </div>
+      <div className="flex gap-1 bg-slate-100 dark:bg-slate-700 rounded-full p-1 mb-3 w-fit flex-wrap">
+        {PERIODS.map((p) => (
+          <button key={p.key} onClick={() => setPeriod(p.key)}
+            className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide transition ${
+              period === p.key ? 'bg-slate-900 dark:bg-orange-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+            }`}>{p.label}</button>
+        ))}
+      </div>
       <div className="space-y-1">
-        {stats.map((s, i) => {
+        {rows.map((s, i) => {
           const rank = ranks[i]
+          const names = mode === 'singles' ? [s.name] : s.players
+          const label = mode === 'singles' ? s.name : s.players.join(' & ')
+          const key = mode === 'singles' ? s.name : s.players.join('|')
           return (
-            <div key={s.name} className="flex items-center justify-between px-2 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700">
+            <div key={key} className="flex items-center justify-between px-2 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700">
               <div className="flex items-center gap-3">
-                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${rank === 1 ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
+                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${rank === 1 ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
                   {rank ?? '–'}
                 </span>
-                <Avatar name={s.name} photo={photoByName[s.name]} />
+                <div className="flex -space-x-1.5 shrink-0">
+                  {names.map((n) => (
+                    <Avatar key={n} name={n} photo={photoByName[n]} className={names.length > 1 ? 'ring-2 ring-white dark:ring-slate-800' : ''} />
+                  ))}
+                </div>
                 <div>
-                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{s.name}</p>
+                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{label}</p>
                   <p className="text-xs text-slate-400 dark:text-slate-500">{s.wins}W - {s.losses}L · {s.played} played</p>
                 </div>
               </div>
@@ -61,7 +90,7 @@ export default function Leaderboard({ matches, players, photoByName = {} }) {
             </div>
           )
         })}
-        {stats.length === 0 && <p className="text-slate-400 text-center py-4 text-sm">No matches yet.</p>}
+        {rows.length === 0 && <p className="text-slate-400 text-center py-4 text-sm">No matches yet.</p>}
       </div>
     </div>
   )
