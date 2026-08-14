@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Camera, Pencil, Save, ShieldCheck, Trash2, UserPlus, X } from 'lucide-react'
 import ConfirmDialog from '../components/ConfirmDialog'
+import Avatar from '../components/Avatar'
 
 const MAX_AVATAR_DIMENSION = 300 // px, longest side
 const MAX_AVATAR_BYTES = 150 * 1024
@@ -15,7 +16,7 @@ function readAsDataURL(file) {
 }
 
 // Same downscale-then-recompress approach as PhotoGallery's prepareUpload, just
-// tuned much smaller since this only feeds the Log Match dropdown avatars.
+// tuned much smaller since it's only ever shown as a small avatar circle.
 async function prepareAvatar(file) {
   let bitmap
   try {
@@ -38,26 +39,28 @@ async function prepareAvatar(file) {
   return canvas.toDataURL('image/jpeg', 0.5)
 }
 
-// Icon-only photo control — no avatar/circle preview here (that only shows in
-// the Log Match player dropdown). Camera icon turns orange once a photo is set
-// so admins still have a hint, without rendering the photo itself.
-function PhotoControl({ photo, onChange, onClear }) {
+// Avatar circle doubling as the upload target: shows the player's photo or an
+// initials circle, with a hover camera overlay (admin only) to change it and
+// a small red x to clear it back to initials.
+function PlayerAvatarPicker({ name, photo, isAdmin, onChange, onClear }) {
   async function handleFile(e) {
     const file = e.target.files[0]
     e.target.value = ''
     if (!file) return
     onChange(await prepareAvatar(file))
   }
+  if (!isAdmin) return <Avatar name={name} photo={photo} size="md" />
   return (
-    <div className="flex items-center gap-1 shrink-0">
-      <label className={`p-1.5 rounded-lg cursor-pointer transition hover:bg-orange-50 dark:hover:bg-orange-900/30 ${photo ? 'text-orange-500' : 'text-slate-300 hover:text-orange-500'}`}
-        title={photo ? 'Change photo' : 'Add photo'}>
-        <Camera size={13} />
+    <div className="relative group shrink-0">
+      <Avatar name={name} photo={photo} size="md" />
+      <label className="absolute inset-0 rounded-full flex items-center justify-center cursor-pointer bg-black/0 group-hover:bg-black/40 transition" title="Change photo">
+        <Camera size={13} className="text-white opacity-0 group-hover:opacity-100 transition" />
         <input type="file" accept="image/*" onChange={handleFile} className="hidden" />
       </label>
       {photo && (
-        <button type="button" onClick={onClear} title="Remove photo" className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition">
-          <X size={13} />
+        <button type="button" onClick={onClear} title="Remove photo"
+          className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] leading-none flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+          <X size={10} />
         </button>
       )}
     </div>
@@ -133,11 +136,9 @@ export default function Players({ players, actions, isAdmin }) {
               <div key={playerName} className="px-2 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {isAdmin && (
-                      <PhotoControl photo={playerPhoto}
-                        onChange={(photo) => actions.updatePlayer(playerName, { photo })}
-                        onClear={() => actions.updatePlayer(playerName, { photo: '' })} />
-                    )}
+                    <PlayerAvatarPicker name={playerName} photo={playerPhoto} isAdmin={isAdmin}
+                      onChange={(photo) => actions.updatePlayer(playerName, { photo })}
+                      onClear={() => actions.updatePlayer(playerName, { photo: '' })} />
                     <span className="text-sm font-medium text-slate-800 dark:text-slate-100">{playerName}</span>
                     {isAdminPlayer && (
                       <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800 px-1.5 py-0.5 rounded-full">

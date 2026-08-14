@@ -182,23 +182,24 @@ The `VersionsModal` is wired into Header (desktop: History button; mobile: hambu
 - `src/components/Avatar.jsx` — `<Avatar name photo size className />`. Renders the player's `photo` if
   set, else a colored circle with initials (color deterministically hashed from the name, so a given
   player always gets the same fallback color across sessions/components). Sizes: `xs`/`sm`/`md`/`lg`/`xl`.
-- **`Avatar` circles are scoped to the Log Match dropdowns only** — nowhere else in the app renders one.
-  `Leaderboard`, `TopSeeds`, `MatchList`, `Report.jsx` (all four tabs, including match drill-down rows),
-  and the `Players.jsx` list all show plain name text, matching how they looked before avatars existed.
+- **`Avatar` circles appear in exactly two places: `Players.jsx` and the Log Match dropdowns.**
+  `Leaderboard`, `TopSeeds`, `MatchList`, and `Report.jsx` (all four tabs, including match drill-down rows)
+  show plain name text only — no avatar, matching how they looked before avatars existed.
 - `src/lib/admins.js`'s `photoMap(players)` builds a `{ [name]: photo }` lookup, computed once in `App.jsx`
-  and passed only to `LogMatch` → `MatchForm` → `PlayerPicker` — no other component receives it.
+  and passed only to `LogMatch` → `MatchForm` → `PlayerPicker` (`Players.jsx` gets full player objects
+  directly, so it doesn't need this lookup — it reads `p.photo` straight off each player).
 - `src/components/PlayerPicker.jsx` — an avatar-aware replacement for a native `<select>` of player names
   (plain `<option>`s can't render an inline `<img>`). A button showing the selected player's `Avatar` +
   name opens a custom listbox of the same for each option; closes on selection or on an outside click.
   Used for `MatchForm`'s 4 team-slot pickers only — `MatchList`'s H2H filter/edit-score dropdowns and
   `Report.jsx`'s player selects are still plain `<select>`s.
-- Upload/clear control lives only in `Players.jsx` (`PhotoControl`, super-admin only, consistent with the
-  write-access lockdown above) — deliberately **icon-only, no avatar/circle preview**: a camera icon next
-  to each player's name (turns orange once a photo is set, as the only visual hint) opens a file picker,
-  and an × appears next to it to clear the photo back to no-photo. `prepareAvatar(file)` downscales to
+- `Players.jsx`'s `PlayerAvatarPicker` doubles the avatar as the upload target (super-admin only, consistent
+  with the write-access lockdown above): hovering a player's avatar reveals a camera icon overlay (click to
+  pick a file) and, if a photo is set, a small red × to clear it back to the initials circle. Guests/regular
+  admins just see the plain `Avatar` (read-only). `prepareAvatar(file)` downscales to
   `MAX_AVATAR_DIMENSION = 300`px and recompresses JPEG down through quality steps until under
   `MAX_AVATAR_BYTES = 150KB` — same technique as `PhotoGallery`'s `prepareUpload`, just tuned much smaller
-  since the only place this photo is ever actually rendered is the Log Match dropdown avatars.
+  since it only ever renders as a small circle.
 
 ## Structure
 
@@ -265,8 +266,8 @@ chart lib) + text list:
 ### `src/pages/Players.jsx`
 Add/remove/edit players — **super admin only** (`isAdmin` prop here is fed `isSuperAdmin` from `App.jsx`,
 not plain `isAdmin`). Regular admins and guests get the read-only list. Shows **Admin** badge for players
-with a PIN. Each row has an icon-only `PhotoControl` (super-admin only) — see Player avatars above for
-the upload/clear behavior; there's no avatar/circle preview here, by design.
+with a PIN. Each row shows an `Avatar` via `PlayerAvatarPicker` — super-admin only for the hover upload/
+clear overlay, see Player avatars above; everyone else just sees the plain avatar/initials circle.
 
 ### `src/pages/Slots.jsx`
 Court slots table. **Super admin only**: inline editable cells + add/delete. Everyone else: read-only.
