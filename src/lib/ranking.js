@@ -63,6 +63,19 @@ export function computePairStats(matches) {
     .sort((a, b) => b.wins - a.wins || b.winRate - a.winRate)
 }
 
+// Pair ranking for "Top Seed" style displays: win rate first, then wins, then
+// fewer losses, with the same min-4-games qualify rule as computeStats — so a
+// pair that just played (and won) 1 match can't outrank a proven 100%-vs-67%
+// record. computePairStats sorts by raw win count instead; that's kept as-is
+// for Report.jsx's wins-based Pair Rankings tab.
+export function computeTopPairs(matches) {
+  const byRankRule = (a, b) => b.winRate - a.winRate || b.wins - a.wins || a.losses - b.losses
+  const pairs = computePairStats(matches)
+  const qualified = pairs.filter((p) => p.played >= MIN_RANKED_MATCHES).sort(byRankRule)
+  const partial = pairs.filter((p) => p.played < MIN_RANKED_MATCHES).sort(byRankRule)
+  return [...qualified, ...partial]
+}
+
 // which: 'current' | 'last'. Week starts Sunday, matching filterByPeriod('week').
 export function filterByWeek(matches, which) {
   const now = new Date()

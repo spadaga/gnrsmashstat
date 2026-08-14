@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Trophy, X } from 'lucide-react'
-import { computePairStats, filterByWeek } from '../lib/ranking'
+import { computeTopPairs, filterByWeek } from '../lib/ranking'
 
 const WEEKS = [
   { key: 'current', label: 'This Week' },
@@ -8,7 +8,7 @@ const WEEKS = [
 ]
 
 function PairAllModal({ matches, onClose }) {
-  const pairs = computePairStats(matches)
+  const pairs = computeTopPairs(matches)
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
@@ -46,7 +46,7 @@ export default function TopSeeds({ matches }) {
   const [showAll, setShowAll] = useState(false)
   const [week, setWeek] = useState('current')
   const weekMatches = filterByWeek(matches, week)
-  const pairs = computePairStats(weekMatches)
+  const pairs = computeTopPairs(weekMatches)
   const top2 = pairs.slice(0, 2)
 
   return (

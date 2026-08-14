@@ -133,6 +133,10 @@ The `VersionsModal` is wired into Header (desktop: History button; mobile: hambu
 - `computeDuoStats(matches, a, b)` — head-to-head: `togetherWins`/`togetherLosses` (a & b on the same
   team) plus `aWithoutBWins`/`aWithoutBLosses` (a's record when partnered with anyone but b). Used by
   the Report page's Duo Head-to-Head tab.
+- `computeTopPairs(matches)` — pair ranking for `TopSeeds`: win rate → wins → fewer losses, with the
+  same min-4-games qualify rule as `computeStats` (pairs below 4 games are listed after qualified ones).
+  `computePairStats` sorts by raw win count instead and has no qualify gate — kept as-is for
+  `Report.jsx`'s wins-based Pair Rankings/Player Combos tabs.
 
 ## Structure
 
@@ -201,7 +205,8 @@ Single orange card showing **Total Matches** and **Total Players** side by side 
 Responds to period filter.
 
 ### `src/components/TopSeeds.jsx`
-Top pair(s) by win rate, scoped to a week via **This Week / Last Week** toggle (`filterByWeek`) —
+Top pair(s) by win rate (`computeTopPairs` — min 4 games to qualify, unlike Report's wins-first
+`computePairStats`), scoped to a week via **This Week / Last Week** toggle (`filterByWeek`) —
 independent of the Dashboard period filter, always receives full `data.matches`. Seed #1 = orange card.
 **Seed #2 card is hidden on mobile** (`hidden sm:block`) — only Top Seed #1 shows below the `sm` breakpoint.
 "View All →" modal lists all pair combos for the selected week. Dark mode supported.
