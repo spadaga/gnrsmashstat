@@ -73,29 +73,29 @@ export default function Leaderboard({ matches, players, photoByName = {}, onView
           const rowMatches = mode === 'singles' ? matchesForPlayer(filtered, s.name) : matchesForPair(filtered, s.players)
           return (
             <div key={key} className="flex items-center justify-between px-2 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700">
-              {/* Left: avatar/circle + name always leftmost. Mobile: avatar sits to the
-                  right of the name (order-2); desktop keeps it before the name (sm:order-1). */}
+              {/* Left: avatar/circle always first, then name — same order on mobile and desktop. */}
               <button type="button"
                 onClick={() => mode === 'singles' && onViewProfile?.(s.name)}
                 className={`flex items-center gap-3 text-left ${mode === 'singles' ? 'cursor-pointer' : 'cursor-default'}`}>
                 {mode === 'singles' ? (
-                  <Avatar name={s.name} photo={photoByName[s.name]} size="sm" className="order-2 sm:order-1" />
+                  <Avatar name={s.name} photo={photoByName[s.name]} size="sm" />
                 ) : (
-                  <span className="order-2 sm:order-1 flex -space-x-2 shrink-0">
+                  <span className="flex -space-x-2 shrink-0">
                     {s.players.map((n) => <Avatar key={n} name={n} photo={photoByName[n]} size="sm" className="ring-2 ring-white dark:ring-slate-800" />)}
                   </span>
                 )}
-                <div className="order-1 sm:order-2">
+                <div>
                   <p className={`text-sm font-semibold text-slate-800 dark:text-slate-100 ${mode === 'singles' ? 'hover:text-orange-600 dark:hover:text-orange-400' : ''}`}>{label}</p>
                   <p className="text-xs text-slate-400 dark:text-slate-500">{s.wins}W - {s.losses}L · {s.played} played</p>
                 </div>
               </button>
-              {/* Right: win % first, rank right after it (below) — no separate rank badge on the left. */}
-              <button type="button" onClick={() => setDrilldown({ title: `${label}'s matches`, list: rowMatches })} className="text-right hover:opacity-75 transition shrink-0">
+              {/* Right: win % on top, rank as a highlighted circle badge below it. */}
+              <button type="button" onClick={() => setDrilldown({ title: `${label}'s matches`, list: rowMatches })}
+                className="flex flex-col items-end gap-1 hover:opacity-75 transition shrink-0">
                 <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{s.winRate}%</p>
-                <p className={`text-[10px] font-bold uppercase tracking-wide ${rank === 1 ? 'text-orange-600' : 'text-slate-400 dark:text-slate-500'}`}>
-                  {rank ? `Rank ${rank}` : 'NA'}
-                </p>
+                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${rank === 1 ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
+                  {rank ?? 'NA'}
+                </span>
               </button>
             </div>
           )

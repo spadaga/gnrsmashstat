@@ -366,10 +366,11 @@ Dashboard's FilterBar period.
   `computeStats`/`computeTopPairs` — Today ranks everyone/every pair that's played at least once (nothing
   realistically reaches 4 games in a single day), every other period requires the standard 4-game minimum
   before a rank is awarded. Unqualified/no-rank rows show **NA** for rank rather than a bare dash.
-- **Row layout, same in every mode/tab**: avatar/circle + name on the **left**; win % and rank on the
-  **right**, rank shown right after (below) the percentage — no separate rank badge on the left anymore.
-  Right side reads `{winRate}%` then `Rank {n}` (or `NA` if unqualified/unranked), with the `Rank 1` line
-  in orange to keep a visual "top of the board" cue that the old left-side badge used to carry.
+- **Row layout, identical in every mode/tab and at every breakpoint**: avatar/circle **always** comes
+  first (leftmost), then the name — no responsive reordering between mobile/desktop. On the right: win %
+  on top, and a small circular rank badge below it (number, or `NA` if unqualified/unranked) — orange fill
+  for rank 1, matching the "top of the board" treatment the badge always had, just moved under the
+  percentage instead of appearing as its own column to the left of the avatar.
 - **Singles**: `computeStats` — one row per player, with an `Avatar` (from `photoByName`). Clicking the
   avatar or name calls `onViewProfile(name)`, opening `PlayerProfile`.
 - **Doubles**: `computeTopPairs` — one row per pair, with two overlapping avatars (no click-through to a
