@@ -41,13 +41,17 @@ export default function MatchesModal({ title, matches, onClose }) {
                     const abandoned = isAbandoned(m)
                     return (
                       <div key={m.id} className={`px-3 py-2 rounded-xl border text-xs ${abandoned ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20' : 'dark:border-slate-700'}`}>
-                        <p className="leading-snug">
-                          <span className={team1Won ? 'font-bold text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}>{m.team1.join(' & ')}</span>
-                          {' '}
-                          <span className="font-bold text-orange-600">{m.score1}-{m.score2}</span>
-                          {' '}
-                          <span className={!team1Won ? 'font-bold text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}>{m.team2.join(' & ')}</span>
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <span className={`flex-1 text-right ${team1Won ? 'font-bold text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
+                            {m.team1.join(' & ')}
+                          </span>
+                          <span className="font-bold shrink-0 bg-white dark:bg-slate-700 rounded px-1.5 py-0.5">
+                            <span className={team1Won ? 'text-orange-600' : ''}>{m.score1}</span>-<span className={!team1Won ? 'text-orange-600' : ''}>{m.score2}</span>
+                          </span>
+                          <span className={`flex-1 ${!team1Won ? 'font-bold text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
+                            {m.team2.join(' & ')}
+                          </span>
+                        </div>
                         {abandoned && (
                           <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-amber-700 dark:text-amber-400 mt-1">
                             <AlertTriangle size={10} /> Abandoned

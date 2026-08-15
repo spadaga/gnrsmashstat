@@ -73,29 +73,28 @@ export default function Leaderboard({ matches, players, photoByName = {}, onView
           const rowMatches = mode === 'singles' ? matchesForPlayer(filtered, s.name) : matchesForPair(filtered, s.players)
           return (
             <div key={key} className="flex items-center justify-between px-2 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700">
+              {/* Left: avatar/circle + name always leftmost. Mobile: avatar sits to the
+                  right of the name (order-2); desktop keeps it before the name (sm:order-1). */}
               <button type="button"
                 onClick={() => mode === 'singles' && onViewProfile?.(s.name)}
                 className={`flex items-center gap-3 text-left ${mode === 'singles' ? 'cursor-pointer' : 'cursor-default'}`}>
-                <span className={`order-1 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${rank === 1 ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
-                  {rank ?? 'NA'}
-                </span>
-                {/* Mobile: avatar sits to the right of the name (order-3); desktop keeps it before the name (sm:order-2). */}
                 {mode === 'singles' ? (
-                  <Avatar name={s.name} photo={photoByName[s.name]} size="sm" className="order-3 sm:order-2" />
+                  <Avatar name={s.name} photo={photoByName[s.name]} size="sm" className="order-2 sm:order-1" />
                 ) : (
-                  <span className="order-3 sm:order-2 flex -space-x-2 shrink-0">
+                  <span className="order-2 sm:order-1 flex -space-x-2 shrink-0">
                     {s.players.map((n) => <Avatar key={n} name={n} photo={photoByName[n]} size="sm" className="ring-2 ring-white dark:ring-slate-800" />)}
                   </span>
                 )}
-                <div className="order-2 sm:order-3">
+                <div className="order-1 sm:order-2">
                   <p className={`text-sm font-semibold text-slate-800 dark:text-slate-100 ${mode === 'singles' ? 'hover:text-orange-600 dark:hover:text-orange-400' : ''}`}>{label}</p>
                   <p className="text-xs text-slate-400 dark:text-slate-500">{s.wins}W - {s.losses}L · {s.played} played</p>
                 </div>
               </button>
-              <button type="button" onClick={() => setDrilldown({ title: `${label}'s matches`, list: rowMatches })} className="text-right hover:opacity-75 transition">
+              {/* Right: win % first, rank right after it (below) — no separate rank badge on the left. */}
+              <button type="button" onClick={() => setDrilldown({ title: `${label}'s matches`, list: rowMatches })} className="text-right hover:opacity-75 transition shrink-0">
                 <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{s.winRate}%</p>
-                <p className="text-[10px] uppercase tracking-wide text-slate-400 dark:text-slate-500">
-                  {s.qualified ? 'Win Rate' : 'Unranked'}
+                <p className={`text-[10px] font-bold uppercase tracking-wide ${rank === 1 ? 'text-orange-600' : 'text-slate-400 dark:text-slate-500'}`}>
+                  {rank ? `Rank ${rank}` : 'NA'}
                 </p>
               </button>
             </div>

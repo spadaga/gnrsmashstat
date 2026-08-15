@@ -365,21 +365,23 @@ Dashboard's FilterBar period.
 - **Qualify rule matches `TopSeeds`**: `minMatches = period === 'today' ? 1 : 4` passed to
   `computeStats`/`computeTopPairs` — Today ranks everyone/every pair that's played at least once (nothing
   realistically reaches 4 games in a single day), every other period requires the standard 4-game minimum
-  before a rank is awarded. The "Unranked" subtitle still applies to players with 0 matches in the period
-  (Singles only — a pair simply doesn't exist in the Doubles list if it hasn't played). Unqualified/no-rank
-  rows show **NA** in the rank badge (not qualified for a numeric rank yet), rather than a bare dash.
+  before a rank is awarded. Unqualified/no-rank rows show **NA** for rank rather than a bare dash.
+- **Row layout, same in every mode/tab**: avatar/circle + name on the **left**; win % and rank on the
+  **right**, rank shown right after (below) the percentage — no separate rank badge on the left anymore.
+  Right side reads `{winRate}%` then `Rank {n}` (or `NA` if unqualified/unranked), with the `Rank 1` line
+  in orange to keep a visual "top of the board" cue that the old left-side badge used to carry.
 - **Singles**: `computeStats` — one row per player, with an `Avatar` (from `photoByName`). Clicking the
   avatar or name calls `onViewProfile(name)`, opening `PlayerProfile`.
 - **Doubles**: `computeTopPairs` — one row per pair, with two overlapping avatars (no click-through to a
   profile — a pair isn't a single player).
-- Clicking the win-rate/record side of any row (singles or doubles) opens `MatchesModal` with that
+- Clicking the win-rate/rank side of any row (singles or doubles) opens `MatchesModal` with that
   player's/pair's matches in the current filtered period (`matchesForPlayer`/`matchesForPair`) — this is
   separate from the avatar/name click, which only exists for Singles.
-- **Standard competition ranking (1-2-2-4)** for both: rows tied on win rate share the same rank badge,
-  and the next distinct rank skips the tied count (shared `computeRanks()` helper — works unmodified
-  against either mode since both `computeStats` and `computeTopPairs` rows carry `qualified`/`winRate`/
-  `wins`/`losses`). Shows W-L and **played count**; subtitle reads "Needs N more" (partial) or "Unranked"
-  (0 played, Singles only) otherwise.
+- **Standard competition ranking (1-2-2-4)** for both: rows tied on win rate share the same rank, and the
+  next distinct rank skips the tied count (shared `computeRanks()` helper — works unmodified against
+  either mode since both `computeStats` and `computeTopPairs` rows carry `qualified`/`winRate`/`wins`/
+  `losses`). Shows W-L and **played count** under the name; subtitle under rank reads `NA` for
+  partial/unranked rows the same way as everywhere else.
 
 ### `src/components/MatchList.jsx`
 - **Search box sits above the "Recent Matches" heading.** Input text is bold (`font-bold text-sm
@@ -425,13 +427,19 @@ Period pills: **Today / This Week / This Month / This Year / Overall** (`all`, t
 Import + Export visible to the **super admin only** (`isAdmin` prop fed `isSuperAdmin` from `Dashboard.jsx`).
 
 ### `src/components/MatchesModal.jsx`
-Shared "here's what's behind that number" modal — takes `{ title, matches, onClose }` and renders a
-scrollable list (date, both teams, score), with the same abandoned-match amber highlight/badge and
-comment display as `MatchList`. Used by `StatCards` (Total Matches), `TopSeeds` (each Top Seed card), and
-`Leaderboard` (each row's win-rate/record side) so every "click a number, see its matches" drill-down
-outside the Report page looks and behaves the same. Report's own drill-downs keep using their existing
-inline `StatTile`/`MatchResultsPanel` pattern rather than this modal, since those need to stay inline
-under the tile instead of overlaying the page.
+Shared "here's what's behind that number" modal — takes `{ title, matches, onClose }`. Groups matches by
+date (newest date first, via `sortMatchesDesc`), one date header (with a match count) per group, and below
+it each match as **team1 · score · team2** using equal-width `flex-1` columns on either side of a
+fixed-size score badge — the same alignment pattern as `MatchList`/`Report`'s `MatchRow`. This keeps the
+score badge at a consistent horizontal position across every row regardless of how long either team's
+names are (an earlier single-line-text version let the score drift row to row since it sized to content
+instead of splitting the row into equal columns — "zig-zag," not a professional scoreboard look). Same
+abandoned-match amber highlight/badge and comment display as `MatchList`. Used by `StatCards` (Total
+Matches), `TopSeeds` (each Top Seed card), `Leaderboard` (each row's win-rate/rank side), and
+`PlayerProfile` (every stat tile and Activity Breakdown card) so every "click a number, see its matches"
+drill-down outside the Report page looks and behaves the same. Report's own drill-downs keep using their
+existing inline `StatTile`/`MatchResultsPanel` pattern rather than this modal, since those need to stay
+inline under the tile instead of overlaying the page.
 
 ### `src/pages/PlayerProfile.jsx`
 A per-player dashboard, reached by clicking a name/avatar in `Leaderboard` (Singles) or `Players.jsx`.
