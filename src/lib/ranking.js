@@ -81,10 +81,19 @@ export function computeTopPairs(matches, minMatches = MIN_RANKED_MATCHES) {
   return [...qualified, ...partial]
 }
 
+// Newest-first by date — every match list surfaced in the UI (drill-downs,
+// modals, report tabs) should read this way, so callers throughout ranking.js
+// route their return arrays through this instead of leaving them in
+// whatever order they were filtered/collected in (usually oldest-first,
+// matching data/matches.json's append order).
+export function sortMatchesDesc(matches) {
+  return matches.slice().sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
+}
+
 // All matches a given player appears in, on either team — used to drill down
 // from a ranking row/stat number to the matches behind it.
 export function matchesForPlayer(matches, name) {
-  return matches.filter((m) => m.team1.includes(name) || m.team2.includes(name))
+  return sortMatchesDesc(matches.filter((m) => m.team1.includes(name) || m.team2.includes(name)))
 }
 
 // A match is "abandoned" when neither side reached the normal 21-point
@@ -97,12 +106,12 @@ export function isAbandoned(m) {
 // Abandoned matches across the whole match list, newest first — backs the
 // Report page's Abandoned Matches tab.
 export function computeAbandonedMatches(matches) {
-  return matches.filter(isAbandoned).slice().sort((a, b) => (a.date < b.date ? 1 : -1))
+  return sortMatchesDesc(matches.filter(isAbandoned))
 }
 
 // All matches a given pair played together (on the same team, either side).
 export function matchesForPair(matches, players) {
-  return matches.filter((m) => players.every((p) => m.team1.includes(p)) || players.every((p) => m.team2.includes(p)))
+  return sortMatchesDesc(matches.filter((m) => players.every((p) => m.team1.includes(p)) || players.every((p) => m.team2.includes(p))))
 }
 
 // which: 'current' | 'last'. Week starts Sunday, matching filterByPeriod('week').
@@ -166,7 +175,10 @@ export function computeDuoStats(matches, a, b) {
     togetherPlayed: togetherWins.length + togetherLosses.length,
     aWithoutBWins: aWithoutBWins.length, aWithoutBLosses: aWithoutBLosses.length,
     aWithoutBPlayed: aWithoutBWins.length + aWithoutBLosses.length,
-    matches: { togetherWins, togetherLosses, aWithoutBWins, aWithoutBLosses },
+    matches: {
+      togetherWins: sortMatchesDesc(togetherWins), togetherLosses: sortMatchesDesc(togetherLosses),
+      aWithoutBWins: sortMatchesDesc(aWithoutBWins), aWithoutBLosses: sortMatchesDesc(aWithoutBLosses),
+    },
   }
 }
 
@@ -184,5 +196,8 @@ export function computeHeadToHead(matches, a, b) {
     const aWon = (aTeam === 1) === team1Won
     ;(aWon ? aWins : bWins).push(m)
   }
-  return { aWins: aWins.length, bWins: bWins.length, played: aWins.length + bWins.length, matches: { aWins, bWins } }
+  return {
+    aWins: aWins.length, bWins: bWins.length, played: aWins.length + bWins.length,
+    matches: { aWins: sortMatchesDesc(aWins), bWins: sortMatchesDesc(bWins) },
+  }
 }

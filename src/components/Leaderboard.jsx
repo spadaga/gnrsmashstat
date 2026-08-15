@@ -76,17 +76,18 @@ export default function Leaderboard({ matches, players, photoByName = {}, onView
               <button type="button"
                 onClick={() => mode === 'singles' && onViewProfile?.(s.name)}
                 className={`flex items-center gap-3 text-left ${mode === 'singles' ? 'cursor-pointer' : 'cursor-default'}`}>
-                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${rank === 1 ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
+                <span className={`order-1 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${rank === 1 ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
                   {rank ?? 'NA'}
                 </span>
+                {/* Mobile: avatar sits to the right of the name (order-3); desktop keeps it before the name (sm:order-2). */}
                 {mode === 'singles' ? (
-                  <Avatar name={s.name} photo={photoByName[s.name]} size="sm" />
+                  <Avatar name={s.name} photo={photoByName[s.name]} size="sm" className="order-3 sm:order-2" />
                 ) : (
-                  <span className="flex -space-x-2 shrink-0">
+                  <span className="order-3 sm:order-2 flex -space-x-2 shrink-0">
                     {s.players.map((n) => <Avatar key={n} name={n} photo={photoByName[n]} size="sm" className="ring-2 ring-white dark:ring-slate-800" />)}
                   </span>
                 )}
-                <div>
+                <div className="order-2 sm:order-3">
                   <p className={`text-sm font-semibold text-slate-800 dark:text-slate-100 ${mode === 'singles' ? 'hover:text-orange-600 dark:hover:text-orange-400' : ''}`}>{label}</p>
                   <p className="text-xs text-slate-400 dark:text-slate-500">{s.wins}W - {s.losses}L · {s.played} played</p>
                 </div>

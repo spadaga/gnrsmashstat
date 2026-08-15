@@ -1,7 +1,15 @@
+import { useState } from 'react'
 import { AlertTriangle, ArrowLeft, CalendarClock, ShieldCheck, Trophy } from 'lucide-react'
 import Avatar from '../components/Avatar'
+import MatchesModal from '../components/MatchesModal'
 import { SUPER_ADMIN_NAME } from '../lib/admins'
 import { computeStats, filterByPeriod, isAbandoned, matchesForPlayer } from '../lib/ranking'
+
+function wonFor(m, name) {
+  const onTeam1 = m.team1.includes(name)
+  const team1Won = m.score1 > m.score2
+  return onTeam1 ? team1Won : !team1Won
+}
 
 const PERIOD_CARDS = [
   { key: 'today', label: 'Today' },
@@ -24,25 +32,28 @@ function recordFor(matches, name) {
   return { played, wins, losses }
 }
 
-function StatTile({ value, label, color = 'text-orange-600' }) {
+function StatTile({ value, label, color = 'text-orange-600', onClick }) {
+  const Tag = onClick ? 'button' : 'div'
   return (
-    <div className="text-center rounded-xl py-3 px-2 bg-slate-50 dark:bg-slate-700/50">
+    <Tag type={onClick ? 'button' : undefined} onClick={onClick}
+      className={`text-center rounded-xl py-3 px-2 bg-slate-50 dark:bg-slate-700/50 w-full ${onClick ? 'cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/20 transition' : ''}`}>
       <p className={`text-2xl font-extrabold ${color}`}>{value}</p>
       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{label}</p>
-    </div>
+    </Tag>
   )
 }
 
-function PeriodCard({ label, rec }) {
+function PeriodCard({ label, rec, onClick }) {
   return (
-    <div className="rounded-xl border dark:border-slate-700 p-3">
+    <button type="button" onClick={onClick}
+      className="text-left rounded-xl border dark:border-slate-700 p-3 w-full cursor-pointer hover:border-orange-200 dark:hover:border-orange-800 hover:bg-orange-50 dark:hover:bg-orange-900/10 transition">
       <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">{label}</p>
       <p className="text-xl font-extrabold text-slate-800 dark:text-slate-100">{rec.played}</p>
       <p className="text-[11px] text-slate-400 dark:text-slate-500 mb-1">played</p>
       <p className="text-xs text-slate-600 dark:text-slate-300">
         <span className="text-emerald-600 dark:text-emerald-400 font-bold">{rec.wins}W</span> – <span className="text-red-500 dark:text-red-400 font-bold">{rec.losses}L</span>
       </p>
-    </div>
+    </button>
   )
 }
 
@@ -75,6 +86,7 @@ function MatchRow({ m, name }) {
 }
 
 export default function PlayerProfile({ playerName, players, matches, slots, onBack }) {
+  const [drilldown, setDrilldown] = useState(null)
   const playerObj = players.find((p) => (typeof p === 'string' ? p : p.name) === playerName)
   const photo = typeof playerObj === 'object' ? playerObj.photo : undefined
   const isSuperAdminPlayer = playerName === SUPER_ADMIN_NAME
@@ -127,17 +139,24 @@ export default function PlayerProfile({ playerName, players, matches, slots, onB
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
-          <StatTile value={overall.played} label="Total Played" color="text-slate-800 dark:text-slate-100" />
-          <StatTile value={overall.wins} label="Total Wins" color="text-emerald-600 dark:text-emerald-400" />
-          <StatTile value={overall.losses} label="Total Losses" color="text-red-500 dark:text-red-400" />
-          <StatTile value={`${winRate}%`} label="Win Rate" />
+          <StatTile value={overall.played} label="Total Played" color="text-slate-800 dark:text-slate-100"
+            onClick={() => setDrilldown({ title: `${playerName} — all matches`, list: playerMatches })} />
+          <StatTile value={overall.wins} label="Total Wins" color="text-emerald-600 dark:text-emerald-400"
+            onClick={() => setDrilldown({ title: `${playerName} — wins`, list: playerMatches.filter((m) => wonFor(m, playerName)) })} />
+          <StatTile value={overall.losses} label="Total Losses" color="text-red-500 dark:text-red-400"
+            onClick={() => setDrilldown({ title: `${playerName} — losses`, list: playerMatches.filter((m) => !wonFor(m, playerName)) })} />
+          <StatTile value={`${winRate}%`} label="Win Rate"
+            onClick={() => setDrilldown({ title: `${playerName} — all matches`, list: playerMatches })} />
         </div>
       </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-5">
         <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300 mb-3">Activity Breakdown</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {periodRecords.map((p) => <PeriodCard key={p.key} label={p.label} rec={p.rec} />)}
+          {periodRecords.map((p) => (
+            <PeriodCard key={p.key} label={p.label} rec={p.rec}
+              onClick={() => setDrilldown({ title: `${playerName} — ${p.label}`, list: matchesForPlayer(filterByPeriod(matches, p.key), playerName) })} />
+          ))}
         </div>
       </div>
 
@@ -155,6 +174,8 @@ export default function PlayerProfile({ playerName, players, matches, slots, onB
             recent.map((m) => <MatchRow key={m.id} m={m} name={playerName} />)}
         </div>
       </div>
+
+      {drilldown && <MatchesModal title={drilldown.title} matches={drilldown.list} onClose={() => setDrilldown(null)} />}
     </div>
   )
 }

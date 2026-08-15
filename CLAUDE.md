@@ -445,9 +445,13 @@ from the same `data` App.jsx already has in memory.
   so a slot only shows here if its name happens to match the player's name exactly (case-insensitively).
   Also shows their overall win rate if they're `qualified` (≥4 games) per `computeStats`.
 - **Stat tiles**: Total Played / Total Wins / Total Losses / Win Rate, computed directly off every match
-  the player appears in (not gated by the 4-game qualify rule — these are raw totals, not a rank).
+  the player appears in (not gated by the 4-game qualify rule — these are raw totals, not a rank). Each
+  is clickable, opening `MatchesModal` with the matching subset (all / wins-only / losses-only / all again
+  for Win Rate).
 - **Activity Breakdown**: Today / This Week / This Month / This Year cards, each with played/W/L for that
-  period alone (`filterByPeriod` + a local `recordFor()` tally).
+  period alone (`filterByPeriod` + a local `recordFor()` tally). Each card is clickable too — opens
+  `MatchesModal` with that player's matches in that specific period (`matchesForPlayer` +
+  `filterByPeriod`).
 - **Recent Matches**: up to the last 15 matches (newest-first), each tagged Won/Lost for this player, with
   the same abandoned-match highlight/badge and comment display used elsewhere, plus a header count of how
   many of the player's matches are abandoned.
