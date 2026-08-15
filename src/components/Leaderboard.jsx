@@ -89,13 +89,13 @@ export default function Leaderboard({ matches, players, photoByName = {}, onView
                   <p className="text-xs text-slate-400 dark:text-slate-500">{s.wins}W - {s.losses}L · {s.played} played</p>
                 </div>
               </button>
-              {/* Right: win % on top, rank as a highlighted circle badge below it. */}
+              {/* Right: rank circle badge on top, win % below it. */}
               <button type="button" onClick={() => setDrilldown({ title: `${label}'s matches`, list: rowMatches })}
                 className="flex flex-col items-end gap-1 hover:opacity-75 transition shrink-0">
-                <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{s.winRate}%</p>
                 <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${rank === 1 ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
                   {rank ?? 'NA'}
                 </span>
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{s.winRate}%</p>
               </button>
             </div>
           )

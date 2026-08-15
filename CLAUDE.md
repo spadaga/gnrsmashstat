@@ -367,10 +367,9 @@ Dashboard's FilterBar period.
   realistically reaches 4 games in a single day), every other period requires the standard 4-game minimum
   before a rank is awarded. Unqualified/no-rank rows show **NA** for rank rather than a bare dash.
 - **Row layout, identical in every mode/tab and at every breakpoint**: avatar/circle **always** comes
-  first (leftmost), then the name — no responsive reordering between mobile/desktop. On the right: win %
-  on top, and a small circular rank badge below it (number, or `NA` if unqualified/unranked) — orange fill
-  for rank 1, matching the "top of the board" treatment the badge always had, just moved under the
-  percentage instead of appearing as its own column to the left of the avatar.
+  first (leftmost), then the name — no responsive reordering between mobile/desktop. On the right: a
+  small circular rank badge on top (number, or `NA` if unqualified/unranked) — orange fill for rank 1 —
+  with win % below it.
 - **Singles**: `computeStats` — one row per player, with an `Avatar` (from `photoByName`). Clicking the
   avatar or name calls `onViewProfile(name)`, opening `PlayerProfile`.
 - **Doubles**: `computeTopPairs` — one row per pair, with two overlapping avatars (no click-through to a
