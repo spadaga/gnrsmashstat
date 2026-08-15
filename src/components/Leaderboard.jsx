@@ -86,16 +86,15 @@ export default function Leaderboard({ matches, players, photoByName = {}, onView
                 )}
                 <div>
                   <p className={`text-sm font-semibold text-slate-800 dark:text-slate-100 ${mode === 'singles' ? 'hover:text-orange-600 dark:hover:text-orange-400' : ''}`}>{label}</p>
-                  <p className="text-xs text-slate-400 dark:text-slate-500">{s.wins}W - {s.losses}L · {s.played} played</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500">{s.wins}W - {s.losses}L · {s.played} played · {s.winRate}%</p>
                 </div>
               </button>
-              {/* Right: rank circle badge on top, win % below it. */}
+              {/* Right: rank circle badge only — win % now lives under the name on the left. */}
               <button type="button" onClick={() => setDrilldown({ title: `${label}'s matches`, list: rowMatches })}
-                className="flex flex-col items-end gap-1 hover:opacity-75 transition shrink-0">
+                className="hover:opacity-75 transition shrink-0">
                 <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${rank === 1 ? 'bg-orange-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
                   {rank ?? 'NA'}
                 </span>
-                <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{s.winRate}%</p>
               </button>
             </div>
           )
