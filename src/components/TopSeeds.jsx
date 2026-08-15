@@ -1,10 +1,14 @@
 import { useState } from 'react'
 import { Trophy, X } from 'lucide-react'
-import { computeTopPairs, filterByWeek } from '../lib/ranking'
+import { computeTopPairs, filterByPeriod, matchesForPair } from '../lib/ranking'
+import MatchesModal from './MatchesModal'
 
-const WEEKS = [
-  { key: 'current', label: 'This Week' },
-  { key: 'last',    label: 'Last Week' },
+const PERIODS = [
+  { key: 'today', label: 'Today' },
+  { key: 'week',  label: 'This Week' },
+  { key: 'month', label: 'This Month' },
+  { key: 'year',  label: 'This Year' },
+  { key: 'all',   label: 'Overall' },
 ]
 
 function PairAllModal({ matches, onClose }) {
@@ -44,11 +48,16 @@ function PairAllModal({ matches, onClose }) {
 
 export default function TopSeeds({ matches }) {
   const [showAll, setShowAll] = useState(false)
-  const [week, setWeek] = useState('current')
-  const weekMatches = filterByWeek(matches, week)
-  const pairs = computeTopPairs(weekMatches)
+  const [period, setPeriod] = useState('all')
+  const [drilldown, setDrilldown] = useState(null)
+  const periodMatches = filterByPeriod(matches, period)
+  // Same qualify rule as Leaderboard: Today can't hit 4 games so everyone who
+  // played ranks; every other period needs the standard 4-match minimum.
+  const minMatches = period === 'today' ? 1 : 4
+  const pairs = computeTopPairs(periodMatches, minMatches).filter((p) => p.qualified)
   const top2 = pairs.slice(0, 2)
   const allTimePairs = computeTopPairs(matches)
+  const periodLabel = PERIODS.find((p) => p.key === period)?.label.toLowerCase()
 
   return (
     <div>
@@ -56,13 +65,13 @@ export default function TopSeeds({ matches }) {
         <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">
           <Trophy size={16} className="text-orange-600" /> Top Seeds
         </h2>
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1 bg-slate-100 dark:bg-slate-700 rounded-full p-1">
-            {WEEKS.map((w) => (
-              <button key={w.key} onClick={() => setWeek(w.key)}
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex gap-1 bg-slate-100 dark:bg-slate-700 rounded-full p-1 flex-wrap">
+            {PERIODS.map((p) => (
+              <button key={p.key} onClick={() => setPeriod(p.key)}
                 className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide transition ${
-                  week === w.key ? 'bg-slate-900 dark:bg-orange-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                }`}>{w.label}</button>
+                  period === p.key ? 'bg-slate-900 dark:bg-orange-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                }`}>{p.label}</button>
             ))}
           </div>
           {allTimePairs.length > 2 && (
@@ -74,12 +83,14 @@ export default function TopSeeds({ matches }) {
       </div>
       {top2.length === 0 && (
         <p className="text-slate-400 text-sm text-center py-6 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl">
-          No matches {week === 'current' ? 'this week' : 'last week'} yet.
+          No qualified pairs {periodLabel === 'overall' ? 'yet' : periodLabel} yet.
         </p>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {top2.map((p, i) => (
-          <div key={p.players.join('&')} className={`rounded-2xl p-3 relative overflow-hidden ${i === 1 ? 'hidden sm:block' : ''} ${i === 0 ? 'bg-orange-600 text-white' : 'bg-white dark:bg-slate-800 border dark:border-slate-700'}`}>
+          <button type="button" key={p.players.join('&')}
+            onClick={() => setDrilldown({ title: `${p.players.join(' & ')} matches`, list: matchesForPair(periodMatches, p.players) })}
+            className={`text-left rounded-2xl p-3 relative overflow-hidden transition hover:opacity-90 ${i === 1 ? 'hidden sm:block' : ''} ${i === 0 ? 'bg-orange-600 text-white' : 'bg-white dark:bg-slate-800 border dark:border-slate-700'}`}>
             <div className="flex items-center justify-between mb-2">
               <span className={`text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${i === 0 ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'}`}>
                 Top Seed #{i + 1}
@@ -92,10 +103,11 @@ export default function TopSeeds({ matches }) {
             <Trophy size={56} className={`absolute -bottom-2 -right-2 ${i === 0 ? 'text-white/10' : 'text-slate-100 dark:text-slate-700'}`} />
             <p className={`font-bold text-sm relative leading-tight ${i !== 0 ? 'text-slate-900 dark:text-white' : ''}`}>{p.players.join(' & ')}</p>
             <p className={`text-xs relative mt-0.5 ${i === 0 ? 'text-orange-100' : 'text-slate-500 dark:text-slate-400'}`}>{p.wins}W – {p.losses}L</p>
-          </div>
+          </button>
         ))}
       </div>
       {showAll && <PairAllModal matches={matches} onClose={() => setShowAll(false)} />}
+      {drilldown && <MatchesModal title={drilldown.title} matches={drilldown.list} onClose={() => setDrilldown(null)} />}
     </div>
   )
 }

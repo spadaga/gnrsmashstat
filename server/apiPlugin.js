@@ -214,7 +214,7 @@ async function handleApi(req, res) {
       }
       if (req.method === 'PUT') {
         const body = await readBody(req)
-        const { name: newName, pin, photo } = body
+        const { name: newName, pin, photo, role } = body
         const players = getPlayers()
         const idx = players.findIndex((p) => p.name === param)
         if (idx === -1) return sendJSON(res, 404, { error: 'Player not found' })
@@ -222,11 +222,16 @@ async function handleApi(req, res) {
         const existing = players[idx]
         const finalName = newName || param
         const updated = { name: finalName }
-        // Keep existing pin/photo if not explicitly changing it; allow clearing by passing '' / null
+        // Keep existing pin/photo/role if not explicitly changing it; allow clearing by passing '' / null
         if (pin !== undefined) { if (pin) updated.pin = pin }
         else if (existing.pin) updated.pin = existing.pin
         if (photo !== undefined) { if (photo) updated.photo = photo }
         else if (existing.photo) updated.photo = existing.photo
+        // 'role' is the super-admin-assignable Admin/Contributor badge shown on the
+        // Players page — separate from `pin` (which only governs login) and from the
+        // single fixed super admin (Suresh Padaga, see SUPER_ADMIN_NAME in admins.js).
+        if (role !== undefined) { if (role) updated.role = role }
+        else if (existing.role) updated.role = existing.role
         players[idx] = updated
         writeJSON('players.json', players)
         // Cascade the rename into every match's team1/team2 so historical

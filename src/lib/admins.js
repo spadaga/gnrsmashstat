@@ -2,6 +2,11 @@
 // Admin data lives in state.players as { name, pin? } objects —
 // players with a pin are admins, others are read-only.
 
+// The one player with write access to everything (see CLAUDE.md's Admin auth
+// section). Keyed on name, not PIN, since PINs are meant to be user-changeable —
+// keying on PIN would strip super-admin rights the moment they updated their own PIN.
+export const SUPER_ADMIN_NAME = 'Suresh Padaga'
+
 export function getAdmins(players) {
   return players.filter((p) => p.pin)
 }

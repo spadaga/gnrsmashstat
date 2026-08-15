@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Camera, Pencil, Save, ShieldCheck, Trash2, UserPlus, X } from 'lucide-react'
 import ConfirmDialog from '../components/ConfirmDialog'
 import Avatar from '../components/Avatar'
+import { SUPER_ADMIN_NAME } from '../lib/admins'
 
 const MAX_AVATAR_DIMENSION = 300 // px, longest side
 const MAX_AVATAR_BYTES = 150 * 1024
@@ -97,7 +98,7 @@ function EditPlayerForm({ player, onSave, onCancel }) {
   )
 }
 
-export default function Players({ players, actions, isAdmin }) {
+export default function Players({ players, actions, isAdmin, onViewProfile }) {
   const [name, setName] = useState('')
   const [confirm, setConfirm] = useState(null)
   const [editingName, setEditingName] = useState(null)
@@ -130,7 +131,12 @@ export default function Players({ players, actions, isAdmin }) {
           {players.map((p) => {
             const playerName = typeof p === 'string' ? p : p.name
             const playerPhoto = typeof p === 'object' ? p.photo : undefined
-            const isAdminPlayer = typeof p === 'object' && !!p.pin
+            const isSuperAdminPlayer = playerName === SUPER_ADMIN_NAME
+            // Suresh (the fixed super admin) always shows Admin. Everyone else defaults to
+            // Contributor unless Suresh has promoted them via the role toggle below — `role`
+            // is a display badge only, separate from `pin` (which just governs login).
+            const isPromotedAdmin = typeof p === 'object' && p.role === 'admin'
+            const showsAsAdmin = isSuperAdminPlayer || isPromotedAdmin
             const isEditing = editingName === playerName
             return (
               <div key={playerName} className="px-2 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700">
@@ -139,23 +145,39 @@ export default function Players({ players, actions, isAdmin }) {
                     <PlayerAvatarPicker name={playerName} photo={playerPhoto} isAdmin={isAdmin}
                       onChange={(photo) => actions.updatePlayer(playerName, { photo })}
                       onClear={() => actions.updatePlayer(playerName, { photo: '' })} />
-                    <span className="text-sm font-medium text-slate-800 dark:text-slate-100">{playerName}</span>
-                    {isAdminPlayer && (
+                    <button type="button" onClick={() => onViewProfile?.(playerName)}
+                      className="text-sm font-medium text-slate-800 dark:text-slate-100 hover:text-orange-600 dark:hover:text-orange-400 hover:underline transition">
+                      {playerName}
+                    </button>
+                    {showsAsAdmin ? (
                       <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800 px-1.5 py-0.5 rounded-full">
                         <ShieldCheck size={10} /> Admin
                       </span>
+                    ) : (
+                      <span className="text-[10px] font-bold uppercase tracking-wide bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-600 px-1.5 py-0.5 rounded-full">
+                        Contributor
+                      </span>
                     )}
                   </div>
-                  {isAdmin && !isEditing && (
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => setEditingName(playerName)} className="p-1.5 text-slate-300 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-lg transition" title="Edit player">
-                        <Pencil size={13} />
+                  <div className="flex items-center gap-1">
+                    {isAdmin && !isSuperAdminPlayer && (
+                      <button onClick={() => actions.updatePlayer(playerName, { role: isPromotedAdmin ? '' : 'admin' })}
+                        className="text-[10px] font-bold uppercase tracking-wide text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition px-1.5"
+                        title={isPromotedAdmin ? 'Demote to Contributor' : 'Promote to Admin'}>
+                        {isPromotedAdmin ? 'Demote' : 'Make Admin'}
                       </button>
-                      <button onClick={() => setConfirm(playerName)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition" title="Delete player">
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  )}
+                    )}
+                    {isAdmin && !isEditing && (
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => setEditingName(playerName)} className="p-1.5 text-slate-300 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-lg transition" title="Edit player">
+                          <Pencil size={13} />
+                        </button>
+                        <button onClick={() => setConfirm(playerName)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition" title="Delete player">
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 {isEditing && <EditPlayerForm player={p} onSave={handleSaveEdit} onCancel={() => setEditingName(null)} />}
               </div>

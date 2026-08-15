@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { BarChart3 } from 'lucide-react'
-import { computeStats, computePairStats, computeDuoStats, computeHeadToHead, filterByPeriod, matchesForPlayer, matchesForPair } from '../lib/ranking'
+import { AlertTriangle, BarChart3 } from 'lucide-react'
+import { computeStats, computePairStats, computeDuoStats, computeHeadToHead, computeAbandonedMatches, filterByPeriod, matchesForPlayer, matchesForPair } from '../lib/ranking'
 
 const TABS = [
   { key: 'duo',        label: 'Duo Head-to-Head' },
   { key: 'combos',     label: 'Player Combos' },
   { key: 'individual', label: 'Individual Rankings' },
   { key: 'pairs',      label: 'Pair Rankings' },
+  { key: 'abandoned',  label: 'Abandoned Matches' },
 ]
 
 const PERIODS = [
@@ -76,17 +77,20 @@ function StatTile({ value, label, color = 'text-orange-600', onClick, active }) 
 function MatchRow({ m }) {
   const team1Won = m.score1 > m.score2
   return (
-    <div className="flex items-center gap-2 px-3 py-2 rounded-lg border dark:border-slate-700 text-xs">
-      <span className="text-slate-400 w-16 shrink-0">{m.date}</span>
-      <span className={`flex-1 text-right ${team1Won ? 'font-bold text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
-        {m.team1.join(' & ')}
-      </span>
-      <span className="font-bold shrink-0 bg-slate-50 dark:bg-slate-700 rounded px-1.5 py-0.5">
-        <span className={team1Won ? 'text-orange-600' : ''}>{m.score1}</span>-<span className={!team1Won ? 'text-orange-600' : ''}>{m.score2}</span>
-      </span>
-      <span className={`flex-1 ${!team1Won ? 'font-bold text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
-        {m.team2.join(' & ')}
-      </span>
+    <div className="px-3 py-2 rounded-lg border dark:border-slate-700 text-xs">
+      <div className="flex items-center gap-2">
+        <span className="text-slate-400 w-16 shrink-0">{m.date}</span>
+        <span className={`flex-1 text-right ${team1Won ? 'font-bold text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
+          {m.team1.join(' & ')}
+        </span>
+        <span className="font-bold shrink-0 bg-slate-50 dark:bg-slate-700 rounded px-1.5 py-0.5">
+          <span className={team1Won ? 'text-orange-600' : ''}>{m.score1}</span>-<span className={!team1Won ? 'text-orange-600' : ''}>{m.score2}</span>
+        </span>
+        <span className={`flex-1 ${!team1Won ? 'font-bold text-slate-800 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
+          {m.team2.join(' & ')}
+        </span>
+      </div>
+      {m.comment && <p className="text-slate-600 dark:text-slate-300 italic font-medium mt-1">"{m.comment}"</p>}
     </div>
   )
 }
@@ -318,6 +322,37 @@ function PairsSection({ matches }) {
   )
 }
 
+function AbandonedSection({ matches }) {
+  const abandoned = computeAbandonedMatches(matches)
+  return (
+    <div>
+      <p className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-4">
+        <AlertTriangle size={13} className="text-amber-500" />
+        Matches where neither side reached 21 points — treated as abandoned (rain, injury, court time, etc).
+      </p>
+      {abandoned.length === 0 ? (
+        <p className="text-slate-400 text-sm">No abandoned matches recorded.</p>
+      ) : (
+        <div className="space-y-2">
+          {abandoned.map((m) => (
+            <div key={m.id} className="px-3 py-2 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="text-slate-400 dark:text-slate-500 w-16 shrink-0">{m.date}</span>
+                <span className="flex-1 text-right text-slate-700 dark:text-slate-200">{m.team1.join(' & ')}</span>
+                <span className="font-bold shrink-0 bg-white dark:bg-slate-700 rounded px-1.5 py-0.5 text-slate-700 dark:text-slate-200">
+                  {m.score1}-{m.score2}
+                </span>
+                <span className="flex-1 text-slate-700 dark:text-slate-200">{m.team2.join(' & ')}</span>
+              </div>
+              {m.comment && <p className="text-slate-600 dark:text-slate-300 italic font-medium mt-1">"{m.comment}"</p>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Report({ data }) {
   const [tab, setTab] = useState('duo')
   const players = data.players
@@ -342,6 +377,7 @@ export default function Report({ data }) {
           {tab === 'combos' && <CombosSection matches={matches} players={players} />}
           {tab === 'individual' && <IndividualSection matches={matches} players={players} />}
           {tab === 'pairs' && <PairsSection matches={matches} />}
+          {tab === 'abandoned' && <AbandonedSection matches={matches} />}
         </>
       )}
     </div>

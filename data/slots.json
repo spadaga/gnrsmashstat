@@ -1,74 +1,14 @@
 [
-  {
-    "id": "b1a1a111-0000-4000-8000-000000000001",
-    "name": "Abdhulla",
-    "time": "6 to 7",
-    "endDate": "2026-08-12"
-  },
-  {
-    "id": "b1a1a111-0000-4000-8000-000000000002",
-    "name": "HR",
-    "time": "6 to 7",
-    "endDate": "2026-09-01"
-  },
-  {
-    "id": "b1a1a111-0000-4000-8000-000000000003",
-    "name": "MURALI",
-    "time": "6 to 7",
-    "endDate": "2026-09-01"
-  },
-  {
-    "id": "b1a1a111-0000-4000-8000-000000000004",
-    "name": "Srinivas Padaga",
-    "time": "6 to 7",
-    "endDate": "2026-09-01"
-  },
-  {
-    "id": "b1a1a111-0000-4000-8000-000000000005",
-    "name": "CHAKRI",
-    "time": "6 to 7",
-    "endDate": "2026-10-03"
-  },
-  {
-    "id": "b1a1a111-0000-4000-8000-000000000006",
-    "name": "Manikyam",
-    "time": "6 to 7",
-    "endDate": "2026-10-07"
-  },
-  {
-    "id": "b1a1a111-0000-4000-8000-000000000007",
-    "name": "SANJEEV",
-    "time": "6 to 7",
-    "endDate": "2026-10-18"
-  },
-  {
-    "id": "b1a1a111-0000-4000-8000-000000000008",
-    "name": "Jittu",
-    "time": "6 to 7",
-    "endDate": "2026-10-19"
-  },
-  {
-    "id": "b1a1a111-0000-4000-8000-000000000009",
-    "name": "NARENDAR REDDY T",
-    "time": "6 to 7",
-    "endDate": "2026-10-22"
-  },
-  {
-    "id": "b1a1a111-0000-4000-8000-000000000010",
-    "name": "NARASIHA REDDY",
-    "time": "6 to 7",
-    "endDate": "2026-10-26"
-  },
-  {
-    "id": "b1a1a111-0000-4000-8000-000000000011",
-    "name": "Suresh Padaga",
-    "time": "6 to 7",
-    "endDate": "2026-11-01"
-  },
-  {
-    "id": "b1a1a111-0000-4000-8000-000000000012",
-    "name": "Vamsi",
-    "time": "6 to 7",
-    "endDate": "2026-09-05"
-  }
+  { "name": "Abdhulla", "time": "6 to 7", "endDate": "2026-08-12", "id": "7cd09032-a617-497c-bbc0-29852658a019" },
+  { "name": "HR", "time": "6 to 7", "endDate": "2026-09-01", "id": "7a3f0dfa-d81f-4241-862f-3b89b9d4d44d" },
+  { "name": "MURALI", "time": "6 to 7", "endDate": "2026-09-01", "id": "0c4e228e-bd59-4f67-9c13-ae634b599662" },
+  { "name": "Srinivas Padaga", "time": "6 to 7", "endDate": "2026-09-01", "id": "1d38f959-a5f1-472f-9be4-13cfef586bb6" },
+  { "name": "CHAKRI", "time": "6 to 7", "endDate": "2026-10-03", "id": "d1abf894-5570-4c9c-9168-f477a2cef041" },
+  { "name": "Manikyam", "time": "6 to 7", "endDate": "2026-10-07", "id": "90710dac-f18b-42c0-9762-cac967200504" },
+  { "name": "SANJEEV", "time": "6 to 7", "endDate": "2026-10-18", "id": "e1cf9336-4c87-4428-b84d-ca0b911f2a7f" },
+  { "name": "Jittu", "time": "6 to 7", "endDate": "2026-10-19", "id": "3b9c7ec5-f696-40e0-bd0b-5c922c6eb3f2" },
+  { "name": "NARENDAR REDDY T", "time": "6 to 7", "endDate": "2026-10-22", "id": "ad459e90-5edf-46fd-8c91-024b5294e49e" },
+  { "name": "NARASIHA REDDY", "time": "6 to 7", "endDate": "2026-10-26", "id": "251a257c-4768-4191-897d-bffdac53757d" },
+  { "name": "Suresh Padaga", "time": "6 to 7", "endDate": "2026-11-01", "id": "fc42d3bb-7be7-475e-ac3a-19cf14404176" },
+  { "name": "Vamsi", "time": "6 to 7", "endDate": "2026-09-05", "id": "4e65aa17-c819-4e38-9cf9-d2d757b71275" }
 ]

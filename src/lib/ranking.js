@@ -87,6 +87,19 @@ export function matchesForPlayer(matches, name) {
   return matches.filter((m) => m.team1.includes(name) || m.team2.includes(name))
 }
 
+// A match is "abandoned" when neither side reached the normal 21-point
+// finish (e.g. stopped early for rain/injury/court time running out).
+// Ties are already disallowed at entry, so the winning score is just the max.
+export function isAbandoned(m) {
+  return Math.max(m.score1, m.score2) < 21
+}
+
+// Abandoned matches across the whole match list, newest first — backs the
+// Report page's Abandoned Matches tab.
+export function computeAbandonedMatches(matches) {
+  return matches.filter(isAbandoned).slice().sort((a, b) => (a.date < b.date ? 1 : -1))
+}
+
 // All matches a given pair played together (on the same team, either side).
 export function matchesForPair(matches, players) {
   return matches.filter((m) => players.every((p) => m.team1.includes(p)) || players.every((p) => m.team2.includes(p)))

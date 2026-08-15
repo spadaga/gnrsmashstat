@@ -1,20 +1,1200 @@
 [
   {
-    "date": "2026-08-08",
+    "date": "2026-08-11",
     "team1": [
-      "Sanjeev Kumar",
-      "Abdhulla"
+      "Jittu",
+      "Narender"
+    ],
+    "team2": [
+      "Suresh Padaga",
+      "Srinivas Padaga"
+    ],
+    "score1": 21,
+    "score2": 17,
+    "comment": "",
+    "id": "1d7f2f33-56ab-4684-a053-32f8495dd60b"
+  },
+  {
+    "date": "2026-08-11",
+    "team1": [
+      "HR",
+      "Srinivas Padaga"
+    ],
+    "team2": [
+      "Narender",
+      "Suresh Padaga"
+    ],
+    "score1": 21,
+    "score2": 7,
+    "comment": "",
+    "id": "80728df2-40a3-4cba-b469-5cd34813f2b7"
+  },
+  {
+    "date": "2026-08-11",
+    "team1": [
+      "Narender",
+      "Suresh Padaga"
+    ],
+    "team2": [
+      "HR",
+      "Srinivas Padaga"
+    ],
+    "score1": 21,
+    "score2": 11,
+    "comment": "",
+    "id": "5810844e-4116-4c07-afb9-c4aa467ea1d6"
+  },
+  {
+    "date": "2026-08-11",
+    "team1": [
+      "Suresh Padaga",
+      "Narender"
+    ],
+    "team2": [
+      "Srinivas Padaga",
+      "HR"
+    ],
+    "score1": 19,
+    "score2": 21,
+    "comment": "",
+    "id": "acacbb2b-b29a-429b-92f4-89878ee5789a"
+  },
+  {
+    "date": "2026-08-11",
+    "team1": [
+      "Narender",
+      "HR"
     ],
     "team2": [
       "Srinivas Padaga",
       "Suresh Padaga"
     ],
-    "score1": 12,
-    "score2": 21,
-    "id": "fd091e58-5e16-4ba7-91fc-73ee104244ae"
+    "score1": 21,
+    "score2": 23,
+    "comment": "",
+    "id": "8ccf3aa4-d912-4223-81d4-5095cc44a0c3"
   },
   {
-    "date": "2026-08-08",
+    "date": "2026-08-11",
+    "team1": [
+      "HR",
+      "Narender"
+    ],
+    "team2": [
+      "Suresh Padaga",
+      "Srinivas Padaga"
+    ],
+    "score1": 17,
+    "score2": 21,
+    "comment": "",
+    "id": "57fe900c-e13d-4f51-9826-acf38b97e8ac"
+  },
+  {
+    "date": "2026-08-12",
+    "team1": [
+      "Suresh Padaga",
+      "Abdhulla"
+    ],
+    "team2": [
+      "HR",
+      "Manikyam"
+    ],
+    "score1": 15,
+    "score2": 21,
+    "comment": "",
+    "id": "12fbf1cd-a6bd-4ad3-8df9-69b10828db78",
+    "loggedAt": "2026-08-12T00:34:34.220Z"
+  },
+  {
+    "date": "2026-08-12",
+    "team1": [
+      "Suresh Padaga",
+      "Abdhulla"
+    ],
+    "team2": [
+      "Narender",
+      "HR"
+    ],
+    "score1": 21,
+    "score2": 23,
+    "comment": "",
+    "id": "79c17489-8a6c-497f-81db-95e6efd3dbed",
+    "loggedAt": "2026-08-12T00:44:17.428Z"
+  },
+  {
+    "date": "2026-08-12",
+    "team1": [
+      "Sanjeev Kumar",
+      "Manikyam"
+    ],
+    "team2": [
+      "Narender",
+      "Srinivas Padaga"
+    ],
+    "score1": 21,
+    "score2": 16,
+    "comment": "",
+    "id": "4a8648a6-0f20-42ed-9b30-ae08ce7e3216",
+    "loggedAt": "2026-08-12T00:49:34.360Z"
+  },
+  {
+    "date": "2026-08-12",
+    "team1": [
+      "Srinivas Padaga",
+      "Narender"
+    ],
+    "team2": [
+      "Sanjeev Kumar",
+      "Manikyam"
+    ],
+    "score1": 11,
+    "score2": 21,
+    "comment": "",
+    "id": "8b28ccf4-dcbe-4eb9-93cc-cd9d30a28030",
+    "loggedAt": "2026-08-12T00:55:41.300Z"
+  },
+  {
+    "date": "2026-08-12",
+    "team1": [
+      "Suresh Padaga",
+      "Narender"
+    ],
+    "team2": [
+      "Sanjeev Kumar",
+      "Abdhulla"
+    ],
+    "score1": 23,
+    "score2": 21,
+    "comment": "Pagilina Top seeds pots",
+    "id": "1cbb7b91-6782-4fb0-be3c-df8b5d64be8a",
+    "loggedAt": "2026-08-12T01:05:30.931Z"
+  },
+  {
+    "date": "2026-08-12",
+    "team1": [
+      "HR",
+      "Manikyam"
+    ],
+    "team2": [
+      "Suresh Padaga",
+      "Srinivas Padaga"
+    ],
+    "score1": 23,
+    "score2": 21,
+    "comment": "",
+    "id": "6231c870-5aec-46ca-a9b6-e742a17e5e48",
+    "loggedAt": "2026-08-12T01:27:43.518Z"
+  },
+  {
+    "date": "2026-08-12",
+    "team1": [
+      "Suresh Padaga",
+      "Srinivas Padaga"
+    ],
+    "team2": [
+      "Sanjeev Kumar",
+      "Abdhulla"
+    ],
+    "score1": 21,
+    "score2": 11,
+    "comment": "Maro sari puchcha pagala kottukunna POT SEEDS",
+    "id": "4841171f-1743-46fd-b497-2ca65fc67ca0",
+    "loggedAt": "2026-08-12T01:38:45.125Z"
+  },
+  {
+    "date": "2026-08-12",
+    "team1": [
+      "Sanjeev Kumar",
+      "Srinivas Padaga"
+    ],
+    "team2": [
+      "Murali",
+      "Ankit"
+    ],
+    "score1": 15,
+    "score2": 21,
+    "comment": "",
+    "id": "2bd26c7f-1fa7-41e2-a5f4-437168c615df",
+    "loggedAt": "2026-08-12T01:42:18.843Z"
+  },
+  {
+    "date": "2026-07-23",
+    "team1": [
+      "Suresh Padaga",
+      "Abdhulla"
+    ],
+    "team2": [
+      "Sanjeev Kumar",
+      "HR"
+    ],
+    "score1": 10,
+    "score2": 21,
+    "comment": "",
+    "id": "ca94aef9-27cd-460a-aed8-4a4583a65578",
+    "loggedAt": "2026-08-12T02:29:51.223Z"
+  },
+  {
+    "date": "2026-07-23",
+    "team1": [
+      "Suresh Padaga",
+      "Abdhulla"
+    ],
+    "team2": [
+      "Sanjeev Kumar",
+      "HR"
+    ],
+    "score1": 21,
+    "score2": 14,
+    "comment": "",
+    "id": "803d5a18-05fc-4ba7-a502-7ba39ebb777b",
+    "loggedAt": "2026-08-12T02:31:28.980Z"
+  },
+  {
+    "date": "2026-07-23",
+    "team1": [
+      "Suresh Padaga",
+      "Srinivas Padaga"
+    ],
+    "team2": [
+      "Sanjeev Kumar",
+      "Narender"
+    ],
+    "score1": 21,
+    "score2": 17,
+    "comment": "",
+    "id": "7609c854-3921-493e-9324-e4fa7abd0224",
+    "loggedAt": "2026-08-12T02:32:24.163Z"
+  },
+  {
+    "date": "2026-07-23",
+    "team1": [
+      "Srinivas Padaga",
+      "HR"
+    ],
+    "team2": [
+      "Narender",
+      "Manikyam"
+    ],
+    "score1": 21,
+    "score2": 11,
+    "comment": "",
+    "id": "a61219ac-aecb-4716-957a-dd4ed6740f1a",
+    "loggedAt": "2026-08-12T02:33:15.265Z"
+  },
+  {
+    "date": "2026-07-23",
+    "team1": [
+      "Abdhulla",
+      "Manikyam"
+    ],
+    "team2": [
+      "Suresh Padaga",
+      "Narender"
+    ],
+    "score1": 21,
+    "score2": 16,
+    "comment": "",
+    "id": "cf9173f7-1dce-4887-9368-f3817c9f71aa",
+    "loggedAt": "2026-08-12T02:34:10.148Z"
+  },
+  {
+    "date": "2026-07-23",
+    "team1": [
+      "Suresh Padaga",
+      "Srinivas Padaga"
+    ],
+    "team2": [
+      "HR",
+      "Manikyam"
+    ],
+    "score1": 21,
+    "score2": 14,
+    "comment": "",
+    "id": "53364897-8a12-456c-b9c8-6f8b1f79aaa7",
+    "loggedAt": "2026-08-12T02:34:57.222Z"
+  },
+  {
+    "date": "2026-07-23",
+    "team1": [
+      "Sanjeev Kumar",
+      "Abdhulla"
+    ],
+    "team2": [
+      "HR",
+      "Srinivas Padaga"
+    ],
+    "score1": 21,
+    "score2": 18,
+    "comment": "",
+    "id": "e6276df9-90a6-4643-9e14-d34173ce9701",
+    "loggedAt": "2026-08-12T02:35:58.122Z"
+  },
+  {
+    "date": "2026-07-23",
+    "team1": [
+      "Abdhulla",
+      "Sanjeev Kumar"
+    ],
+    "team2": [
+      "Suresh Padaga",
+      "Srinivas Padaga"
+    ],
+    "score1": 21,
+    "score2": 19,
+    "comment": "",
+    "id": "224249ac-459a-48a4-b89d-69ab31e137cc",
+    "loggedAt": "2026-08-12T02:37:29.522Z"
+  },
+  {
+    "date": "2026-07-24",
+    "team1": [
+      "Abdhulla",
+      "Suresh Padaga"
+    ],
+    "team2": [
+      "HR",
+      "Narender"
+    ],
+    "score1": 16,
+    "score2": 21,
+    "comment": "",
+    "id": "dd4e24c5-f761-4fd3-9ed4-a3cb18497399",
+    "loggedAt": "2026-08-12T03:10:30.601Z"
+  },
+  {
+    "date": "2026-07-24",
+    "team1": [
+      "Abdhulla",
+      "Suresh Padaga"
+    ],
+    "team2": [
+      "Sanjeev Kumar",
+      "HR"
+    ],
+    "score1": 22,
+    "score2": 24,
+    "comment": "",
+    "id": "19d78977-9839-45b7-807a-6b01af20ca03",
+    "loggedAt": "2026-08-12T03:12:23.428Z"
+  },
+  {
+    "date": "2026-07-24",
+    "team1": [
+      "Sanjeev Kumar",
+      "Narender"
+    ],
+    "team2": [
+      "Srinivas Padaga",
+      "Manikyam"
+    ],
+    "score1": 21,
+    "score2": 14,
+    "comment": "",
+    "id": "974a7062-36aa-4475-abca-237596d7cc02",
+    "loggedAt": "2026-08-12T03:13:19.942Z"
+  },
+  {
+    "date": "2026-07-24",
+    "team1": [
+      "Srinivas Padaga",
+      "Suresh Padaga"
+    ],
+    "team2": [
+      "Narender",
+      "Manikyam"
+    ],
+    "score1": 21,
+    "score2": 12,
+    "comment": "",
+    "id": "ef3008b2-0a39-49f0-a2c5-c848cfc50ee3",
+    "loggedAt": "2026-08-12T03:14:20.927Z"
+  },
+  {
+    "date": "2026-07-24",
+    "team1": [
+      "Abdhulla",
+      "Suresh Padaga"
+    ],
+    "team2": [
+      "Manikyam",
+      "HR"
+    ],
+    "score1": 17,
+    "score2": 21,
+    "comment": "",
+    "id": "3c5278d8-c5a1-4f08-80f1-cd7e3a92f824",
+    "loggedAt": "2026-08-12T03:15:30.240Z"
+  },
+  {
+    "date": "2026-07-24",
+    "team1": [
+      "Narender",
+      "Sanjeev Kumar"
+    ],
+    "team2": [
+      "Srinivas Padaga",
+      "Suresh Padaga"
+    ],
+    "score1": 23,
+    "score2": 21,
+    "comment": "",
+    "id": "d4bc7f12-4424-4448-8f6a-83976e23c8d4",
+    "loggedAt": "2026-08-12T03:17:52.116Z"
+  },
+  {
+    "date": "2026-07-24",
+    "team1": [
+      "Sanjeev Kumar",
+      "Abdhulla"
+    ],
+    "team2": [
+      "Suresh Padaga",
+      "Srinivas Padaga"
+    ],
+    "score1": 23,
+    "score2": 21,
+    "comment": "",
+    "id": "545e1da2-5296-4d3d-acc3-bb14d230dc77",
+    "loggedAt": "2026-08-12T03:19:35.328Z"
+  },
+  {
+    "date": "2026-07-24",
+    "team1": [
+      "Srinivas Padaga",
+      "Suresh Padaga"
+    ],
+    "team2": [
+      "Abdhulla",
+      "Manikyam"
+    ],
+    "score1": 21,
+    "score2": 18,
+    "comment": "",
+    "id": "55305fed-3817-4e03-98cf-b79fdae68839",
+    "loggedAt": "2026-08-12T03:23:27.951Z"
+  },
+  {
+    "date": "2026-07-25",
+    "team1": [
+      "Suresh Padaga",
+      "Abdhulla"
+    ],
+    "team2": [
+      "Venkat",
+      "HR"
+    ],
+    "score1": 11,
+    "score2": 21,
+    "comment": "",
+    "id": "d89b8c78-9666-4fc1-98b2-8784f4c050f7",
+    "loggedAt": "2026-08-12T03:33:41.046Z"
+  },
+  {
+    "date": "2026-07-25",
+    "team1": [
+      "Abdhulla",
+      "Suresh Padaga"
+    ],
+    "team2": [
+      "Srinivas Padaga",
+      "HR"
+    ],
+    "score1": 21,
+    "score2": 23,
+    "comment": "",
+    "id": "644fb729-7fd0-4c82-930a-ba7af9f25176",
+    "loggedAt": "2026-08-12T03:34:23.995Z"
+  },
+  {
+    "date": "2026-07-25",
+    "team1": [
+      "Abdhulla",
+      "Sanjeev Kumar"
+    ],
+    "team2": [
+      "Suresh Padaga",
+      "Srinivas Padaga"
+    ],
+    "score1": 13,
+    "score2": 21,
+    "comment": "",
+    "id": "aa21b8f6-ea83-4bf9-8c6f-22548c5558c6",
+    "loggedAt": "2026-08-12T03:35:19.985Z"
+  },
+  {
+    "date": "2026-07-25",
+    "team1": [
+      "HR",
+      "Sanjeev Kumar"
+    ],
+    "team2": [
+      "Abdhulla",
+      "Venkat"
+    ],
+    "score1": 21,
+    "score2": 17,
+    "comment": "",
+    "id": "7ef3d1a1-95bd-41e4-8d33-54bca852ca92",
+    "loggedAt": "2026-08-12T03:37:31.753Z"
+  },
+  {
+    "date": "2026-07-25",
+    "team1": [
+      "HR",
+      "Sanjeev Kumar"
+    ],
+    "team2": [
+      "Venkat",
+      "Suresh Padaga"
+    ],
+    "score1": 24,
+    "score2": 26,
+    "comment": "",
+    "id": "01705575-aaa6-4734-a014-b22058eda3e3",
+    "loggedAt": "2026-08-12T03:38:25.113Z"
+  },
+  {
+    "date": "2026-07-25",
+    "team1": [
+      "Abdhulla",
+      "Sanjeev Kumar"
+    ],
+    "team2": [
+      "Venkat",
+      "Suresh Padaga"
+    ],
+    "score1": 21,
+    "score2": 8,
+    "comment": "",
+    "id": "ec7067cc-e82b-4059-a18e-a5421fa72233",
+    "loggedAt": "2026-08-12T03:41:11.180Z"
+  },
+  {
+    "date": "2026-07-27",
+    "team1": [
+      "Abdhulla",
+      "Suresh Padaga"
+    ],
+    "team2": [
+      "Narender",
+      "HR"
+    ],
+    "score1": 21,
+    "score2": 23,
+    "comment": "",
+    "id": "f25a6e89-14d2-4ec5-ac0d-0cb2c6757823",
+    "loggedAt": "2026-08-12T16:16:21.039Z"
+  },
+  {
+    "date": "2026-07-27",
+    "team1": [
+      "Suresh Padaga",
+      "Srinivas Padaga"
+    ],
+    "team2": [
+      "Manikyam",
+      "HR"
+    ],
+    "score1": 21,
+    "score2": 18,
+    "comment": "",
+    "id": "eeda3162-e148-4b47-813c-db4d68dcb03c",
+    "loggedAt": "2026-08-12T16:41:32.830Z"
+  },
+  {
+    "date": "2026-07-27",
+    "team1": [
+      "Abdhulla",
+      "Narender"
+    ],
+    "team2": [
+      "Suresh Padaga",
+      "HR"
+    ],
+    "score1": 21,
+    "score2": 18,
+    "comment": "",
+    "id": "3141c7f9-ece0-4870-ba3b-7bb7809fedda",
+    "loggedAt": "2026-08-12T16:42:19.451Z"
+  },
+  {
+    "date": "2026-07-27",
+    "team1": [
+      "Suresh Padaga",
+      "Srinivas Padaga"
+    ],
+    "team2": [
+      "Narender",
+      "Manikyam"
+    ],
+    "score1": 12,
+    "score2": 21,
+    "comment": "",
+    "id": "866b28cb-1b5d-4e03-aa65-e69edcfaa6a8",
+    "loggedAt": "2026-08-12T16:43:05.978Z"
+  },
+  {
+    "date": "2026-07-27",
+    "team1": [
+      "Srinivas Padaga",
+      "Suresh Padaga"
+    ],
+    "team2": [
+      "Abdhulla",
+      "Narender"
+    ],
+    "score1": 21,
+    "score2": 12,
+    "comment": "",
+    "id": "a2435e01-6090-41aa-8350-17b537e9146a",
+    "loggedAt": "2026-08-12T16:43:59.433Z"
+  },
+  {
+    "date": "2026-07-28",
+    "team1": [
+      "Suresh Padaga",
+      "Abdhulla"
+    ],
+    "team2": [
+      "Narender",
+      "HR"
+    ],
+    "score1": 18,
+    "score2": 21,
+    "comment": "",
+    "id": "15943a90-0e57-47bd-bcb5-453fc9deefe1",
+    "loggedAt": "2026-08-12T16:46:01.872Z"
+  },
+  {
+    "date": "2026-07-28",
+    "team1": [
+      "HR",
+      "Narender"
+    ],
+    "team2": [
+      "Suresh Padaga",
+      "Manikyam"
+    ],
+    "score1": 19,
+    "score2": 21,
+    "comment": "",
+    "id": "902cab40-45f3-415b-9908-83a2d69a3133",
+    "loggedAt": "2026-08-12T16:48:41.920Z"
+  },
+  {
+    "date": "2026-07-28",
+    "team1": [
+      "Abdhulla",
+      "Sanjeev Kumar"
+    ],
+    "team2": [
+      "Narender",
+      "Manikyam"
+    ],
+    "score1": 21,
+    "score2": 19,
+    "comment": "",
+    "id": "20ea5e43-acf8-4531-a081-89fbe733f888",
+    "loggedAt": "2026-08-12T16:51:28.132Z"
+  },
+  {
+    "date": "2026-07-28",
+    "team1": [
+      "Srinivas Padaga",
+      "Suresh Padaga"
+    ],
+    "team2": [
+      "Narender",
+      "Manikyam"
+    ],
+    "score1": 9,
+    "score2": 21,
+    "comment": "",
+    "id": "ba77f6fb-e386-49ef-b23e-89a9cd48c085",
+    "loggedAt": "2026-08-12T16:52:19.596Z"
+  },
+  {
+    "date": "2026-07-28",
+    "team1": [
+      "Suresh Padaga",
+      "Srinivas Padaga"
+    ],
+    "team2": [
+      "Abdhulla",
+      "Manikyam"
+    ],
+    "score1": 12,
+    "score2": 21,
+    "comment": "",
+    "id": "3cb9200e-c20a-4853-92f4-84e65968aaa1",
+    "loggedAt": "2026-08-12T16:53:22.094Z"
+  },
+  {
+    "date": "2026-08-13",
+    "team1": [
+      "Sanjeev Kumar",
+      "Narender"
+    ],
+    "team2": [
+      "Suresh Padaga",
+      "Manikyam"
+    ],
+    "score1": 21,
+    "score2": 14,
+    "comment": "",
+    "id": "5015ba9f-de2a-4d11-8903-04c0d80801b4",
+    "loggedAt": "2026-08-13T00:32:13.760Z"
+  },
+  {
+    "date": "2026-08-13",
+    "team1": [
+      "Sanjeev Kumar",
+      "Narender"
+    ],
+    "team2": [
+      "Suresh Padaga",
+      "Manikyam"
+    ],
+    "score1": 21,
+    "score2": 14,
+    "comment": "",
+    "id": "6f2ad577-0ca8-4e1c-b148-c9db45c966af",
+    "loggedAt": "2026-08-13T00:42:51.213Z"
+  },
+  {
+    "date": "2026-08-13",
+    "team1": [
+      "Srinivas Padaga",
+      "Suresh Padaga"
+    ],
+    "team2": [
+      "Manikyam",
+      "Narender"
+    ],
+    "score1": 21,
+    "score2": 18,
+    "comment": "",
+    "id": "fa36e097-8492-4ff4-84b6-21612a9857f7",
+    "loggedAt": "2026-08-13T00:52:25.347Z"
+  },
+  {
+    "date": "2026-08-13",
+    "team1": [
+      "Ilaya",
+      "HR"
+    ],
+    "team2": [
+      "Murali",
+      "Abdhulla"
+    ],
+    "score1": 21,
+    "score2": 15,
+    "comment": "",
+    "id": "ab9027f2-4e4c-4b8c-8b1b-7b4044a5766f",
+    "loggedAt": "2026-08-13T00:59:44.439Z"
+  },
+  {
+    "date": "2026-08-13",
+    "team1": [
+      "Ilaya",
+      "HR"
+    ],
+    "team2": [
+      "Murali",
+      "Abdhulla"
+    ],
+    "score1": 21,
+    "score2": 17,
+    "comment": "",
+    "id": "cac0cd0c-3007-4138-8b17-a59e58af486e",
+    "loggedAt": "2026-08-13T01:00:18.261Z"
+  },
+  {
+    "date": "2026-08-13",
+    "team1": [
+      "Sanjeev Kumar",
+      "Manikyam"
+    ],
+    "team2": [
+      "Srinivas Padaga",
+      "Narender"
+    ],
+    "score1": 21,
+    "score2": 16,
+    "comment": "",
+    "id": "2c54dc03-b282-48b7-b375-6102cd3d18f7",
+    "loggedAt": "2026-08-13T01:02:31.577Z"
+  },
+  {
+    "date": "2026-08-13",
+    "team1": [
+      "Sanjeev Kumar",
+      "Abdhulla"
+    ],
+    "team2": [
+      "Manikyam",
+      "HR"
+    ],
+    "score1": 21,
+    "score2": 15,
+    "comment": "",
+    "id": "1c705097-e514-45d3-a667-449f2ecd85a5",
+    "loggedAt": "2026-08-13T01:17:15.348Z"
+  },
+  {
+    "date": "2026-08-13",
+    "team1": [
+      "Suresh Padaga",
+      "Ilaya"
+    ],
+    "team2": [
+      "Murali",
+      "Narender"
+    ],
+    "score1": 24,
+    "score2": 23,
+    "comment": "",
+    "id": "f305690c-149f-4e6d-a7d9-011820e319db",
+    "loggedAt": "2026-08-13T01:18:03.202Z"
+  },
+  {
+    "date": "2026-08-13",
+    "team1": [
+      "Abdhulla",
+      "Sanjeev Kumar"
+    ],
+    "team2": [
+      "Suresh Padaga",
+      "HR"
+    ],
+    "score1": 19,
+    "score2": 21,
+    "comment": "",
+    "id": "f9423286-973e-4071-8f32-f10cc94c97bf",
+    "loggedAt": "2026-08-13T01:37:24.997Z"
+  },
+  {
+    "date": "2026-08-13",
+    "team1": [
+      "Suresh Padaga",
+      "Srinivas Padaga"
+    ],
+    "team2": [
+      "Sanjeev Kumar",
+      "Abdhulla"
+    ],
+    "score1": 21,
+    "score2": 12,
+    "comment": "",
+    "id": "a2372df2-b0d2-4085-b839-84402c133063",
+    "loggedAt": "2026-08-13T01:46:50.583Z"
+  },
+  {
+    "date": "2026-08-13",
+    "team1": [
+      "Ilaya",
+      "Manikyam"
+    ],
+    "team2": [
+      "Sanjeev Kumar",
+      "Hemanth"
+    ],
+    "score1": 14,
+    "score2": 21,
+    "comment": "",
+    "id": "3dc9ed6d-71d0-4885-8cdd-1f7e0e0b250d",
+    "loggedAt": "2026-08-13T01:55:17.286Z"
+  },
+  {
+    "date": "2026-07-29",
+    "team1": [
+      "Abdhulla",
+      "Suresh Padaga"
+    ],
+    "team2": [
+      "HR",
+      "Sanjeev Kumar"
+    ],
+    "score1": 21,
+    "score2": 16,
+    "comment": "",
+    "id": "47885c81-4d77-4d63-9366-b6b27e35ced7",
+    "loggedAt": "2026-08-13T02:52:25.326Z"
+  },
+  {
+    "date": "2026-07-29",
+    "team1": [
+      "Srinivas Padaga",
+      "Suresh Padaga"
+    ],
+    "team2": [
+      "Sanjeev Kumar",
+      "Manikyam"
+    ],
+    "score1": 21,
+    "score2": 18,
+    "comment": "",
+    "id": "577d38f6-0c6f-4750-be3f-00efd93266b3",
+    "loggedAt": "2026-08-13T02:54:23.012Z"
+  },
+  {
+    "date": "2026-08-13",
+    "team1": [
+      "Manikyam",
+      "HR"
+    ],
+    "team2": [
+      "Abdhulla",
+      "Sanjeev Kumar"
+    ],
+    "score1": 23,
+    "score2": 21,
+    "comment": "",
+    "id": "8a19a250-3548-4ebc-bbcf-fe407775cfd0",
+    "loggedAt": "2026-08-13T02:55:02.533Z"
+  },
+  {
+    "date": "2026-07-29",
+    "team1": [
+      "Srinivas Padaga",
+      "Suresh Padaga"
+    ],
+    "team2": [
+      "Abdhulla",
+      "Sanjeev Kumar"
+    ],
+    "score1": 23,
+    "score2": 21,
+    "comment": "",
+    "id": "12de438d-0267-4a75-adf1-347c3aeedb5c",
+    "loggedAt": "2026-08-13T02:56:08.363Z"
+  },
+  {
+    "date": "2026-07-29",
+    "team1": [
+      "Suresh Padaga",
+      "Manikyam"
+    ],
+    "team2": [
+      "Abdhulla",
+      "Sanjeev Kumar"
+    ],
+    "score1": 19,
+    "score2": 21,
+    "comment": "",
+    "id": "3a22031e-2306-44f7-a3d0-ebba78475b1a",
+    "loggedAt": "2026-08-13T02:57:59.225Z"
+  },
+  {
+    "date": "2026-07-29",
+    "team1": [
+      "Suresh Padaga",
+      "Srinivas Padaga"
+    ],
+    "team2": [
+      "Abdhulla",
+      "Sanjeev Kumar"
+    ],
+    "score1": 21,
+    "score2": 11,
+    "comment": "",
+    "id": "6823a3e5-9391-4272-98e9-ee4ed0f208df",
+    "loggedAt": "2026-08-13T02:59:02.263Z"
+  },
+  {
+    "date": "2026-07-31",
+    "team1": [
+      "Manikyam",
+      "Narender"
+    ],
+    "team2": [
+      "Abdhulla",
+      "Sanjeev Kumar"
+    ],
+    "score1": 19,
+    "score2": 21,
+    "comment": "",
+    "id": "74061a37-df39-4293-bd6f-9ff178c62b0c",
+    "loggedAt": "2026-08-13T03:09:40.773Z"
+  },
+  {
+    "date": "2026-07-31",
+    "team1": [
+      "Abdhulla",
+      "Sanjeev Kumar"
+    ],
+    "team2": [
+      "Narender",
+      "HR"
+    ],
+    "score1": 21,
+    "score2": 14,
+    "comment": "",
+    "id": "1747ca2c-8b92-4684-b9c3-da67ebe87201",
+    "loggedAt": "2026-08-13T03:25:26.626Z"
+  },
+  {
+    "date": "2026-07-31",
+    "team1": [
+      "Manikyam",
+      "HR"
+    ],
+    "team2": [
+      "Abdhulla",
+      "Sanjeev Kumar"
+    ],
+    "score1": 21,
+    "score2": 18,
+    "comment": "",
+    "id": "1bf98adb-5577-4391-a1df-0baae53a2cac",
+    "loggedAt": "2026-08-13T03:26:01.449Z"
+  },
+  {
+    "date": "2026-08-01",
+    "team1": [
+      "HR",
+      "Narender"
+    ],
+    "team2": [
+      "Abdhulla",
+      "Suresh Padaga"
+    ],
+    "score1": 24,
+    "score2": 22,
+    "comment": "",
+    "id": "6972d330-6836-4cda-acf1-ff789b933062",
+    "loggedAt": "2026-08-13T03:37:49.993Z"
+  },
+  {
+    "date": "2026-08-01",
+    "team1": [
+      "Abdhulla",
+      "Sanjeev Kumar"
+    ],
+    "team2": [
+      "Srinivas Padaga",
+      "Suresh Padaga"
+    ],
+    "score1": 17,
+    "score2": 21,
+    "comment": "",
+    "id": "165da60f-ea3d-423b-aff1-b48f445f297b",
+    "loggedAt": "2026-08-13T03:38:29.372Z"
+  },
+  {
+    "date": "2026-08-01",
+    "team1": [
+      "Sanjeev Kumar",
+      "Narender"
+    ],
+    "team2": [
+      "Srinivas Padaga",
+      "HR"
+    ],
+    "score1": 21,
+    "score2": 4,
+    "comment": "",
+    "id": "b4981701-0f04-4183-8a0c-c7bed372c42c",
+    "loggedAt": "2026-08-13T03:39:10.238Z"
+  },
+  {
+    "date": "2026-08-01",
+    "team1": [
+      "HR",
+      "Narender"
+    ],
+    "team2": [
+      "Abdhulla",
+      "Suresh Padaga"
+    ],
+    "score1": 21,
+    "score2": 14,
+    "comment": "",
+    "id": "52874308-6c3a-489b-936b-af35a87f7bab",
+    "loggedAt": "2026-08-13T03:40:05.923Z"
+  },
+  {
+    "date": "2026-08-01",
+    "team1": [
+      "Sanjeev Kumar",
+      "Narender"
+    ],
+    "team2": [
+      "Suresh Padaga",
+      "Srinivas Padaga"
+    ],
+    "score1": 21,
+    "score2": 18,
+    "comment": "",
+    "id": "c056a7d4-da41-4195-b67d-f2dac571196d",
+    "loggedAt": "2026-08-13T03:40:47.549Z"
+  },
+  {
+    "date": "2026-08-01",
+    "team1": [
+      "Abdhulla",
+      "Sanjeev Kumar"
+    ],
+    "team2": [
+      "Suresh Padaga",
+      "Narender"
+    ],
+    "score1": 21,
+    "score2": 18,
+    "comment": "",
+    "id": "9d7e623b-4be8-4d10-a714-3193b962e9bb",
+    "loggedAt": "2026-08-13T03:42:01.674Z"
+  },
+  {
+    "date": "2026-08-02",
+    "team1": [
+      "Sanjeev Kumar",
+      "Manikyam"
+    ],
+    "team2": [
+      "Narender",
+      "Srinivas Padaga"
+    ],
+    "score1": 21,
+    "score2": 11,
+    "comment": "",
+    "id": "c6675ae5-2169-4171-854e-3f9fd586301b",
+    "loggedAt": "2026-08-13T03:45:22.714Z"
+  },
+  {
+    "date": "2026-08-02",
+    "team1": [
+      "Abdhulla",
+      "Narender"
+    ],
+    "team2": [
+      "Srinivas Padaga",
+      "Suresh Padaga"
+    ],
+    "score1": 14,
+    "score2": 21,
+    "comment": "",
+    "id": "00670010-7842-4907-8cea-23634dc97b2f",
+    "loggedAt": "2026-08-13T03:46:07.896Z"
+  },
+  {
+    "date": "2026-08-02",
+    "team1": [
+      "Sanjeev Kumar",
+      "Narender"
+    ],
+    "team2": [
+      "Manikyam",
+      "HR"
+    ],
+    "score1": 18,
+    "score2": 21,
+    "comment": "",
+    "id": "b9808c8d-b49a-4fc1-82d8-a2f8c3fac639",
+    "loggedAt": "2026-08-13T03:47:30.689Z"
+  },
+  {
+    "date": "2026-08-02",
     "team1": [
       "Sanjeev Kumar",
       "Abdhulla"
@@ -23,51 +1203,298 @@
       "Srinivas Padaga",
       "HR"
     ],
-    "score1": 19,
+    "score1": 18,
     "score2": 21,
-    "id": "3087cf9a-5064-4adf-8d47-f645f2100a8f"
+    "comment": "",
+    "id": "1d3610c5-3017-4721-9666-19c9e4356505",
+    "loggedAt": "2026-08-13T03:48:27.000Z"
   },
   {
-    "date": "2026-08-08",
-    "team1": [
-      "Sanjeev Kumar",
-      "Narendra"
-    ],
-    "team2": [
-      "Srinivas Padaga",
-      "Suresh Padaga"
-    ],
-    "score1": 21,
-    "score2": 16,
-    "id": "8edbbe28-f3b5-4858-ad62-00465b5cfefe"
-  },
-  {
-    "date": "2026-08-08",
+    "date": "2026-08-02",
     "team1": [
       "Abdhulla",
-      "Suresh Padaga"
+      "Sanjeev Kumar"
+    ],
+    "team2": [
+      "Suresh Padaga",
+      "Manikyam"
+    ],
+    "score1": 17,
+    "score2": 21,
+    "comment": "",
+    "id": "e0c1e6a2-6f49-4e17-b9a8-a5a27a8c4dc9",
+    "loggedAt": "2026-08-13T03:49:02.484Z"
+  },
+  {
+    "date": "2026-08-02",
+    "team1": [
+      "Abdhulla",
+      "Sanjeev Kumar"
+    ],
+    "team2": [
+      "Suresh Padaga",
+      "Manikyam"
+    ],
+    "score1": 19,
+    "score2": 21,
+    "comment": "",
+    "id": "3880cc49-68d3-47b1-8990-6ea6418685f3",
+    "loggedAt": "2026-08-13T03:50:02.361Z"
+  },
+  {
+    "date": "2026-08-06",
+    "team1": [
+      "Ilaya",
+      "Abdhulla"
+    ],
+    "team2": [
+      "Narender",
+      "Manikyam"
+    ],
+    "score1": 19,
+    "score2": 21,
+    "comment": "",
+    "id": "30405ba2-d8c5-472d-9147-2b05cca53f2b",
+    "loggedAt": "2026-08-13T13:28:29.345Z"
+  },
+  {
+    "date": "2026-08-06",
+    "team1": [
+      "Ilaya",
+      "Abdhulla"
+    ],
+    "team2": [
+      "Manikyam",
+      "Narender"
+    ],
+    "score1": 21,
+    "score2": 19,
+    "comment": "",
+    "id": "cf5dee84-41a4-441f-8407-9d60e20c6939",
+    "loggedAt": "2026-08-13T13:29:21.170Z"
+  },
+  {
+    "date": "2026-08-06",
+    "team1": [
+      "Ilaya",
+      "HR"
+    ],
+    "team2": [
+      "Sanjeev Kumar",
+      "Narender"
+    ],
+    "score1": 22,
+    "score2": 24,
+    "comment": "",
+    "id": "c7407678-1b7d-4857-bae8-1d8fabe2e72e",
+    "loggedAt": "2026-08-13T13:30:38.555Z"
+  },
+  {
+    "date": "2026-08-06",
+    "team1": [
+      "Ilaya",
+      "Sanjeev Kumar"
     ],
     "team2": [
       "HR",
-      "Narendra"
+      "Manikyam"
     ],
     "score1": 21,
     "score2": 16,
-    "id": "c8f3b721-cb60-4bb8-a454-51c6577d0077"
+    "comment": "",
+    "id": "cc0500a8-68b7-4fb3-8d53-d395435ccb7b",
+    "loggedAt": "2026-08-13T13:31:23.227Z"
   },
   {
-    "date": "2026-08-10",
+    "date": "2026-08-06",
     "team1": [
-      "Srinivas Padaga",
-      "Suresh Padaga"
+      "Narender",
+      "Manikyam"
+    ],
+    "team2": [
+      "Ilaya",
+      "HR"
+    ],
+    "score1": 15,
+    "score2": 21,
+    "comment": "",
+    "id": "d932354b-2a56-4c8b-84b7-5e7d4fc7b79a",
+    "loggedAt": "2026-08-13T13:32:45.441Z"
+  },
+  {
+    "date": "2026-08-13",
+    "team1": [
+      "Abdhulla",
+      "Ilaya"
+    ],
+    "team2": [
+      "Sanjeev Kumar",
+      "Narender"
+    ],
+    "score1": 23,
+    "score2": 21,
+    "comment": "",
+    "id": "b22df4e1-aee7-469b-8877-04273edabb30",
+    "loggedAt": "2026-08-13T13:34:10.262Z"
+  },
+  {
+    "date": "2026-08-14",
+    "team1": [
+      "Sanjeev Kumar",
+      "Narender"
+    ],
+    "team2": [
+      "Suresh Padaga",
+      "Murali"
+    ],
+    "score1": 18,
+    "score2": 15,
+    "comment": "Abandon",
+    "id": "460b34e3-6866-435a-9898-3f528b0aa490",
+    "loggedAt": "2026-08-14T00:42:42.294Z"
+  },
+  {
+    "date": "2026-08-14",
+    "team1": [
+      "Abdhulla",
+      "Srinivas Padaga"
+    ],
+    "team2": [
+      "HR",
+      "Manikyam"
+    ],
+    "score1": 25,
+    "score2": 23,
+    "comment": "",
+    "id": "df7e0497-2897-4398-a263-3714f9641aa2",
+    "loggedAt": "2026-08-14T00:51:04.019Z"
+  },
+  {
+    "date": "2026-08-14",
+    "team1": [
+      "Suresh Padaga",
+      "Narender"
     ],
     "team2": [
       "Sanjeev Kumar",
       "Abdhulla"
     ],
     "score1": 21,
-    "score2": 17,
+    "score2": 11,
     "comment": "",
-    "id": "cd7946eb-b91a-4351-b91d-57880f922753"
+    "id": "f1159634-a264-4b57-99c1-9416fa4d7c27",
+    "loggedAt": "2026-08-14T00:52:01.567Z"
+  },
+  {
+    "date": "2026-08-14",
+    "team1": [
+      "Abdhulla",
+      "Sanjeev Kumar"
+    ],
+    "team2": [
+      "Suresh Padaga",
+      "Narender"
+    ],
+    "score1": 20,
+    "score2": 22,
+    "comment": "",
+    "id": "f38b4d8a-ed2c-431c-91a9-993c005f6d39",
+    "loggedAt": "2026-08-14T01:11:49.204Z"
+  },
+  {
+    "date": "2026-08-14",
+    "team1": [
+      "Srinivas Padaga",
+      "Suresh Padaga"
+    ],
+    "team2": [
+      "HR",
+      "Manikyam"
+    ],
+    "score1": 21,
+    "score2": 18,
+    "comment": "",
+    "id": "982a6e12-8413-48e5-bce6-848759ab60b7",
+    "loggedAt": "2026-08-14T01:13:50.608Z"
+  },
+  {
+    "date": "2026-08-14",
+    "team1": [
+      "Abdhulla",
+      "Narender"
+    ],
+    "team2": [
+      "Manikyam",
+      "HR"
+    ],
+    "score1": 21,
+    "score2": 15,
+    "comment": "",
+    "id": "0b1b3ccc-12b4-4851-ada1-e013b95b715f",
+    "loggedAt": "2026-08-14T01:24:38.931Z"
+  },
+  {
+    "date": "2026-08-14",
+    "team1": [
+      "Srinivas Padaga",
+      "Suresh Padaga"
+    ],
+    "team2": [
+      "Narender",
+      "Sanjeev Kumar"
+    ],
+    "score1": 17,
+    "score2": 21,
+    "comment": "",
+    "id": "2bf6c7d0-fdd4-4df6-9e0f-1d6c30556e42",
+    "loggedAt": "2026-08-14T01:34:00.575Z"
+  },
+  {
+    "date": "2026-08-14",
+    "team1": [
+      "Sanjeev Kumar",
+      "Manikyam"
+    ],
+    "team2": [
+      "Abdhulla",
+      "Srinivas Padaga"
+    ],
+    "score1": 21,
+    "score2": 8,
+    "comment": "",
+    "id": "a4acc8a5-f459-43b9-93ae-9d9c0cc2eb0f",
+    "loggedAt": "2026-08-14T01:35:50.797Z"
+  },
+  {
+    "date": "2026-08-14",
+    "team1": [
+      "Ankit",
+      "Murali"
+    ],
+    "team2": [
+      "Hemanth",
+      "Srinivas Padaga"
+    ],
+    "score1": 21,
+    "score2": 18,
+    "comment": "",
+    "id": "441e04c4-5d91-4dfa-bda7-a750875c1305",
+    "loggedAt": "2026-08-14T01:50:34.904Z"
+  },
+  {
+    "date": "2026-08-14",
+    "team1": [
+      "Sanjeev Kumar",
+      "Hemanth"
+    ],
+    "team2": [
+      "Murali",
+      "Ankit"
+    ],
+    "score1": 22,
+    "score2": 24,
+    "comment": "",
+    "id": "c0f4e9f2-527e-4352-b98b-57a0f71b529c",
+    "loggedAt": "2026-08-14T01:52:40.482Z"
   }
 ]

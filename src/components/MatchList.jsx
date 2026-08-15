@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Loader2, Pencil, Save, Search, Swords, Trophy, Trash2, X } from 'lucide-react'
+import { AlertTriangle, Loader2, Pencil, Save, Search, Swords, Trophy, Trash2, X } from 'lucide-react'
 import ConfirmDialog from './ConfirmDialog'
+import { isAbandoned } from '../lib/ranking'
 
 const MODES = [
   { key: 'today', label: 'Today' },
@@ -168,7 +169,7 @@ export default function MatchList({ matches, players, onDelete, onUpdate, onLogM
         <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
         <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by player or comment…"
-          className={`${inputCls} w-full pl-7`} />
+          className={`${inputCls} w-full pl-7 font-bold text-sm text-slate-900 dark:text-white placeholder:font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500`} />
       </div>
 
       <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
@@ -235,8 +236,13 @@ export default function MatchList({ matches, players, onDelete, onUpdate, onLogM
                 const team1Won = m.score1 > m.score2
                 const isEditing = editingId === m.id
                 const canModify = isSuperAdmin
+                const abandoned = isAbandoned(m)
                 return (
-                  <div key={m.id} className="border dark:border-slate-700 rounded-xl px-3 py-2.5 hover:border-orange-200 dark:hover:border-orange-800 transition">
+                  <div key={m.id} className={`rounded-xl px-3 py-2.5 transition ${
+                    abandoned
+                      ? 'border-2 border-amber-400 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/20'
+                      : 'border dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-800'
+                  }`}>
                     <div className="flex items-center gap-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 text-sm">
@@ -257,7 +263,12 @@ export default function MatchList({ matches, players, onDelete, onUpdate, onLogM
                             {!team1Won && <Trophy size={12} className="inline mb-0.5 ml-1 text-orange-500" />}
                           </div>
                         </div>
-                        {m.comment && <p className="text-xs text-slate-400 italic mt-1">"{m.comment}"</p>}
+                        {abandoned && (
+                          <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-amber-700 dark:text-amber-400 mt-1">
+                            <AlertTriangle size={11} /> Abandoned — did not reach 21
+                          </p>
+                        )}
+                        {m.comment && <p className="text-xs text-slate-600 dark:text-slate-300 italic font-medium mt-1">"{m.comment}"</p>}
                         {isEditing && <EditScoreForm match={m} players={playerNames} onSave={(u) => handleSaveScore(m.id, u)} onCancel={() => setEditingId(null)} />}
                       </div>
                       {canModify && !isEditing && (

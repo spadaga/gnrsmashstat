@@ -235,7 +235,7 @@ export default async function handler(req, res) {
         return res.status(200).json(state.players)
       }
       if (req.method === 'PUT') {
-        const { name: newName, pin, photo } = req.body || {}
+        const { name: newName, pin, photo, role } = req.body || {}
         const idx = state.players.findIndex((p) => p.name === param)
         if (idx === -1) return res.status(404).json({ error: 'Player not found' })
         await snapshotState(state)
@@ -246,6 +246,11 @@ export default async function handler(req, res) {
         else if (existing.pin) updated.pin = existing.pin
         if (photo !== undefined) { if (photo) updated.photo = photo }
         else if (existing.photo) updated.photo = existing.photo
+        // 'role' is the super-admin-assignable Admin/Contributor badge shown on the
+        // Players page — separate from `pin` (which only governs login) and from the
+        // single fixed super admin (Suresh Padaga, see SUPER_ADMIN_NAME in admins.js).
+        if (role !== undefined) { if (role) updated.role = role }
+        else if (existing.role) updated.role = existing.role
         state.players[idx] = updated
         // Cascade the rename into every match's team1/team2 so historical
         // stats stay attributed to this player instead of splitting into an

@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import * as api from './lib/api'
-import { playerNames, photoMap } from './lib/admins'
+import { playerNames, photoMap, SUPER_ADMIN_NAME } from './lib/admins'
 import Header from './components/Header'
 import Dashboard from './pages/Dashboard'
 import LogMatch from './pages/LogMatch'
 import Players from './pages/Players'
 import Slots from './pages/Slots'
 import Report from './pages/Report'
+import PlayerProfile from './pages/PlayerProfile'
 import LoginModal from './components/LoginModal'
 import VersionsModal from './components/VersionsModal'
 import Footer from './components/Footer'
@@ -19,6 +20,8 @@ else document.documentElement.classList.remove('dark')
 
 export default function App() {
   const [page, setPage] = useState('dashboard')
+  const [profilePlayer, setProfilePlayer] = useState(null)
+  const [profileFrom, setProfileFrom] = useState('dashboard')
   const [data, setData] = useState(null)
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState(null)
@@ -72,6 +75,12 @@ export default function App() {
     setToast({ type: 'success', message: `Welcome, ${name}!` })
   }
 
+  function viewProfile(name) {
+    setProfileFrom(page)
+    setProfilePlayer(name)
+    setPage('profile')
+  }
+
   function handleLogout() {
     setAdminName(null)
     localStorage.removeItem('adminName')
@@ -89,8 +98,10 @@ export default function App() {
   const isAdmin = !!adminName
   const names = playerNames(data.players)
   const photoByName = photoMap(data.players)
-  // PIN-2669 admin (Suresh Padaga) gets elevated rights: view history, edit/delete matches from any day.
-  const isSuperAdmin = data.players.some((p) => p.name === adminName && p.pin === '2669')
+  // Suresh Padaga gets elevated rights: view history, edit/delete matches from any day.
+  // Keyed on name, not PIN — PINs are meant to be changeable, so a super admin who
+  // updates their own PIN must not lose access.
+  const isSuperAdmin = adminName === SUPER_ADMIN_NAME
 
   const actions = {
     addPlayer:    (name)          => withFeedback(api.addPlayer(name).then((players) => setData((d) => ({ ...d, players }))), 'Player added'),
@@ -136,19 +147,22 @@ export default function App() {
 
       <main className="flex-1 max-w-6xl w-full mx-auto px-3 py-3">
         {page === 'dashboard' && (
-          <Dashboard data={{ ...data, players: names }} actions={actions} onNavigate={setPage} onImport={handleImport} isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} />
+          <Dashboard data={{ ...data, players: names }} actions={actions} onNavigate={setPage} onImport={handleImport} isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} photoByName={photoByName} onViewProfile={viewProfile} />
         )}
         {page === 'log' && isAdmin && (
           <LogMatch players={names} actions={actions} onNavigate={setPage} isSuperAdmin={isSuperAdmin} photoByName={photoByName} />
         )}
         {page === 'players' && (
-          <Players players={data.players} actions={actions} isAdmin={isSuperAdmin} />
+          <Players players={data.players} actions={actions} isAdmin={isSuperAdmin} onViewProfile={viewProfile} />
         )}
         {page === 'slots' && (
           <Slots slots={data.slots} actions={actions} isAdmin={isSuperAdmin} />
         )}
         {page === 'report' && (
           <Report data={{ matches: data.matches, players: names }} />
+        )}
+        {page === 'profile' && profilePlayer && (
+          <PlayerProfile playerName={profilePlayer} players={data.players} matches={data.matches} slots={data.slots} onBack={() => setPage(profileFrom)} />
         )}
       </main>
 
