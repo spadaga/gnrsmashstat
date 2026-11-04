@@ -543,14 +543,23 @@ export default function MatchList({
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex-1">
-                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-0.5">
-                          {mode === "today"
-                            ? "Match #" + dayNo
-                            : "Match #" +
-                              dayNo +
-                              " · Overall #" +
-                              seqById.get(m.id)}
-                        </p>
+                        <div className="flex items-center justify-between gap-2 mb-0.5">
+                          <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                            {mode === "today"
+                              ? "Match #" + dayNo
+                              : "Match #" +
+                                dayNo +
+                                " · Overall #" +
+                                seqById.get(m.id)}
+                          </p>
+                          {(m.updatedBy || m.loggedBy) && (
+                            <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 truncate max-w-[14rem]">
+                              {m.updatedBy && m.loggedBy && m.updatedBy !== m.loggedBy
+                                ? `Updated by ${m.updatedBy}`
+                                : `Logged by ${m.loggedBy || m.updatedBy}`}
+                            </span>
+                          )}
+                        </div>
                         <div className="flex items-center gap-3 text-sm">
                           {/* Left side: Always winning team in green */}
                           <div className="text-right flex-1 font-bold text-emerald-600 dark:text-emerald-400">
