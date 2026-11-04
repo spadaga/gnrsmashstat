@@ -12,6 +12,10 @@ import {
   Clock,
   History,
   Search,
+  ArrowLeftRight,
+  Swords,
+  Trophy,
+  RotateCcw,
 } from "lucide-react";
 import YoutubeIcon from "../components/YoutubeIcon";
 import {
@@ -30,6 +34,7 @@ import {
 import ConfirmDialog from "../components/ConfirmDialog";
 
 const TABS = [
+  { key: "h2h", label: "Head-to-Head", shortLabel: "H2H" },
   { key: "duo", label: "Duo Head-to-Head", shortLabel: "Duo H2H" },
   { key: "combos", label: "Player Combos", shortLabel: "Combos" },
   { key: "individual", label: "Individual Rankings", shortLabel: "Individual" },
@@ -248,6 +253,334 @@ function MatchResultsPanel({ title, matches }) {
             <MatchRow key={m.id} m={m} />
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+
+function H2HPlayerSelect({ value, onChange, options, placeholder, inactives }) {
+  const sorted = sortPlayersByTier(options, inactives);
+  const activeOpts = sorted.filter(
+    (p) => !inactives.has(String(typeof p === "string" ? p : p.name).toLowerCase()),
+  );
+  const inactiveOpts = sorted.filter((p) =>
+    inactives.has(String(typeof p === "string" ? p : p.name).toLowerCase()),
+  );
+
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full border dark:border-slate-600 rounded-lg px-2.5 py-1.5 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:border-orange-400 focus:outline-none cursor-pointer font-medium"
+    >
+      <option value="">{placeholder}</option>
+      {activeOpts.map((p) => {
+        const name = typeof p === "string" ? p : p.name;
+        return (
+          <option key={name} value={name}>
+            {name}
+          </option>
+        );
+      })}
+      {inactiveOpts.map((p) => {
+        const name = typeof p === "string" ? p : p.name;
+        return (
+          <option key={name} value={name}>
+            {name} (Inactive)
+          </option>
+        );
+      })}
+    </select>
+  );
+}
+
+function HeadToHeadSection({ matches, players, photoByName = {} }) {
+  const playerNamesList = players.map((p) => (typeof p === "string" ? p : p.name));
+  const inactives = new Set(
+    players
+      .filter((p) => typeof p === "object" && p.inactive)
+      .map((p) => p.name.toLowerCase()),
+  );
+
+  const [period, setPeriod] = useState("all");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+
+  const [p1, setP1] = useState(playerNamesList[0] || "");
+  const [p2, setP2] = useState(playerNamesList[1] || "");
+  const [p3, setP3] = useState(playerNamesList[2] || "");
+  const [p4, setP4] = useState(playerNamesList[3] || "");
+
+  const filteredMatches = applyPeriod(matches, period, from, to);
+
+  const teamA = [p1, p2].filter(Boolean);
+  const teamB = [p3, p4].filter(Boolean);
+
+  const chosen = [p1, p2, p3, p4].filter(Boolean);
+
+  const optionsFor = (current) =>
+    playerNamesList.filter((p) => p === current || !chosen.includes(p));
+
+  function swapTeams() {
+    const oldP1 = p1, oldP2 = p2;
+    setP1(p3);
+    setP2(p4);
+    setP3(oldP1);
+    setP4(oldP2);
+  }
+
+  function clearAll() {
+    setP1("");
+    setP2("");
+    setP3("");
+    setP4("");
+  }
+
+  const ready = teamA.length > 0 && teamB.length > 0;
+  let directMatches = [];
+  let winsA = 0;
+  let winsB = 0;
+  let pointsA = 0;
+  let pointsB = 0;
+
+  if (ready) {
+    directMatches = filteredMatches.filter((m) => {
+      const t1HasA = teamA.every((p) => m.team1.includes(p));
+      const t2HasB = teamB.every((p) => m.team2.includes(p));
+      if (t1HasA && t2HasB) return true;
+
+      const t1HasB = teamB.every((p) => m.team1.includes(p));
+      const t2HasA = teamA.every((p) => m.team2.includes(p));
+      return t1HasB && t2HasA;
+    });
+
+    directMatches.forEach((m) => {
+      const team1Won = m.score1 > m.score2;
+      const t1HasA = teamA.every((p) => m.team1.includes(p));
+      if (t1HasA) {
+        pointsA += m.score1;
+        pointsB += m.score2;
+        if (team1Won) winsA++;
+        else winsB++;
+      } else {
+        pointsA += m.score2;
+        pointsB += m.score1;
+        if (!team1Won) winsA++;
+        else winsB++;
+      }
+    });
+  }
+
+  const played = directMatches.length;
+  const labelA = teamA.length > 0 ? teamA.join(" & ") : "Team 1";
+  const labelB = teamB.length > 0 ? teamB.join(" & ") : "Team 2";
+  const winRateA = played > 0 ? Math.round((winsA / played) * 100) : 0;
+  const winRateB = played > 0 ? Math.round((winsB / played) * 100) : 0;
+
+  return (
+    <div>
+      <PeriodTabs
+        period={period}
+        onPeriod={setPeriod}
+        from={from}
+        to={to}
+        onFrom={setFrom}
+        onTo={setTo}
+        periods={UPDATE_PERIODS}
+      />
+
+      {/* P1-P2 vs P3-P4 Selector Card */}
+      <div className="bg-slate-50 dark:bg-slate-700/40 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 mb-5">
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <Swords size={16} className="text-orange-600" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">
+              Head-to-Head Matchup Filter (P1 & P2 vs P3 & P4)
+            </h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={swapTeams}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border dark:border-slate-600 hover:text-orange-600 dark:hover:text-orange-400 transition shadow-xs"
+              title="Swap Team 1 and Team 2"
+            >
+              <ArrowLeftRight size={12} /> Swap
+            </button>
+            {chosen.length > 0 && (
+              <button
+                type="button"
+                onClick={clearAll}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-slate-400 hover:text-red-500 border dark:border-slate-600 transition shadow-xs"
+              >
+                <RotateCcw size={12} /> Clear
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-[1fr,auto,1fr] gap-3 items-center">
+          {/* Team 1 (P1 & P2) */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-3 border border-orange-200 dark:border-orange-900/50 shadow-xs">
+            <div className="flex items-center gap-2 mb-2.5 pb-2 border-b border-slate-100 dark:border-slate-700">
+              <span className="w-2.5 h-2.5 rounded-full bg-orange-600 shrink-0" />
+              <span className="text-xs font-bold uppercase tracking-wider text-orange-700 dark:text-orange-400">
+                Team 1 ({labelA})
+              </span>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                {p1 && <Avatar name={p1} photo={photoByName[p1]} size="xs" />}
+                <H2HPlayerSelect
+                  value={p1}
+                  onChange={setP1}
+                  options={optionsFor(p1)}
+                  placeholder="Player 1 (P1)"
+                  inactives={inactives}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                {p2 && <Avatar name={p2} photo={photoByName[p2]} size="xs" />}
+                <H2HPlayerSelect
+                  value={p2}
+                  onChange={setP2}
+                  options={optionsFor(p2)}
+                  placeholder="Player 2 (P2)"
+                  inactives={inactives}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* VS Badge */}
+          <div className="flex items-center justify-center py-1 md:py-0">
+            <span className="w-8 h-8 rounded-full bg-orange-600 text-white font-extrabold text-xs flex items-center justify-center shadow-md">
+              VS
+            </span>
+          </div>
+
+          {/* Team 2 (P3 & P4) */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-3 border border-slate-200 dark:border-slate-700 shadow-xs">
+            <div className="flex items-center gap-2 mb-2.5 pb-2 border-b border-slate-100 dark:border-slate-700">
+              <span className="w-2.5 h-2.5 rounded-full bg-slate-500 shrink-0" />
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                Team 2 ({labelB})
+              </span>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                {p3 && <Avatar name={p3} photo={photoByName[p3]} size="xs" />}
+                <H2HPlayerSelect
+                  value={p3}
+                  onChange={setP3}
+                  options={optionsFor(p3)}
+                  placeholder="Player 3 (P3)"
+                  inactives={inactives}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                {p4 && <Avatar name={p4} photo={photoByName[p4]} size="xs" />}
+                <H2HPlayerSelect
+                  value={p4}
+                  onChange={setP4}
+                  options={optionsFor(p4)}
+                  placeholder="Player 4 (P4)"
+                  inactives={inactives}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {!ready ? (
+        <p className="text-slate-400 text-sm text-center py-6">
+          Please select players for both Team 1 and Team 2 to view direct Head-to-Head statistics.
+        </p>
+      ) : (
+        <>
+          {/* Status / Outcome Banner */}
+          <div className="mb-4 px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-700/50 border dark:border-slate-700 flex items-center justify-center gap-2 text-center">
+            {played === 0 ? (
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                No direct matches found between {labelA} and {labelB} in this period.
+              </span>
+            ) : winsA === winsB ? (
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                <Trophy size={14} className="text-amber-500" />
+                Series is tied {winsA}–{winsB} across {played} {played === 1 ? "match" : "matches"}.
+              </span>
+            ) : winsA > winsB ? (
+              <span className="text-xs font-bold text-orange-600 dark:text-orange-400 flex items-center gap-1.5">
+                <Trophy size={14} className="text-amber-500" />
+                {labelA} leads {labelB} {winsA}–{winsB} ({winRateA}% win rate).
+              </span>
+            ) : (
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                <Trophy size={14} className="text-amber-500" />
+                {labelB} leads {labelA} {winsB}–{winsA} ({winRateB}% win rate).
+              </span>
+            )}
+          </div>
+
+          {/* Stat Tiles */}
+          <div className="grid grid-cols-3 gap-3 mb-5">
+            <StatTile
+              value={
+                <span className="whitespace-nowrap text-emerald-600 dark:text-emerald-400">
+                  {winsA}W {played > 0 && <span className="text-xs opacity-75 font-normal">({winRateA}%)</span>}
+                </span>
+              }
+              label={`${labelA} Wins`}
+            />
+            <StatTile
+              value={played}
+              label="Total Head-to-Head"
+              color="text-orange-600 dark:text-orange-400"
+            />
+            <StatTile
+              value={
+                <span className="whitespace-nowrap text-emerald-600 dark:text-emerald-400">
+                  {winsB}W {played > 0 && <span className="text-xs opacity-75 font-normal">({winRateB}%)</span>}
+                </span>
+              }
+              label={`${labelB} Wins`}
+            />
+          </div>
+
+          {played > 0 && (
+            <div className="mb-5 space-y-2">
+              <Bar label={labelA} value={winsA} max={Math.max(1, winsA, winsB)} color="bg-orange-600" />
+              <Bar
+                label={labelB}
+                value={winsB}
+                max={Math.max(1, winsA, winsB)}
+                color="bg-slate-400 dark:bg-slate-500"
+              />
+              <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                <span>Total Points: {pointsA} pts ({played > 0 ? (pointsA / played).toFixed(1) : 0} avg)</span>
+                <span>Total Points: {pointsB} pts ({played > 0 ? (pointsB / played).toFixed(1) : 0} avg)</span>
+              </div>
+            </div>
+          )}
+
+          {/* Direct Matches List */}
+          <div className="border-t dark:border-slate-700 pt-4">
+            <h4 className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">
+              Direct Matches ({played})
+            </h4>
+            {played === 0 ? (
+              <p className="text-slate-400 text-sm">No matches found.</p>
+            ) : (
+              <div className="space-y-1.5 max-h-96 overflow-y-auto pr-1">
+                {directMatches.map((m) => (
+                  <MatchRow key={m.id} m={m} />
+                ))}
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
@@ -1342,6 +1675,13 @@ export default function Report({ data, actions, isSuperAdmin, photoByName = {} }
         />
       ) : (
         <>
+          {tab === "h2h" && (
+            <HeadToHeadSection
+              matches={matches}
+              players={players}
+              photoByName={photoByName}
+            />
+          )}
           {tab === "duo" && <DuoSection matches={matches} players={players} />}
           {tab === "combos" && (
             <CombosSection matches={matches} players={players} />
