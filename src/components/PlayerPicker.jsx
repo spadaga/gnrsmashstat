@@ -53,13 +53,19 @@ export default function PlayerPicker({
     if (!open) return
     function onClickOutside(e) {
       if (ref.current && !ref.current.contains(e.target)) {
+        if (mode === 'guest') {
+          const suffix = guestText.slice(GUEST_PREFIX.length).trim();
+          if (suffix) {
+            onChange(formatAsGuest(suffix));
+          }
+        }
         setOpen(false)
         setQuery('')
       }
     }
     document.addEventListener('mousedown', onClickOutside)
     return () => document.removeEventListener('mousedown', onClickOutside)
-  }, [open])
+  }, [open, mode, guestText, onChange])
 
   // Build a set of inactive player names from players / inactivePlayers / options
   const inactiveSet = useMemo(() => {
@@ -108,6 +114,12 @@ export default function PlayerPicker({
       val = GUEST_PREFIX + suffix;
     }
     setGuestText(val);
+    const suffix = val.slice(GUEST_PREFIX.length).trim();
+    if (suffix) {
+      onChange(formatAsGuest(suffix));
+    } else {
+      onChange("");
+    }
   }
 
   function handleGuestKeyDown(e) {
@@ -126,7 +138,12 @@ export default function PlayerPicker({
     }
     if (e.key === "Enter") {
       e.preventDefault();
-      confirmGuest();
+      const suffix = guestText.slice(GUEST_PREFIX.length).trim();
+      if (suffix) {
+        select(formatAsGuest(suffix));
+      } else {
+        setOpen(false);
+      }
     }
     if (e.key === "Escape") {
       setOpen(false);
@@ -145,16 +162,14 @@ export default function PlayerPicker({
     return `${GUEST_PREFIX}${cleaned}`;
   }
 
-  function confirmGuest() {
-    const suffix = guestText.slice(GUEST_PREFIX.length).trim();
-    if (!suffix) return;
-    select(formatAsGuest(suffix));
-  }
-
   function switchToGuest(initialSuffix = "") {
     setMode('guest');
-    const full = initialSuffix ? `${GUEST_PREFIX}${initialSuffix.trim()}` : GUEST_PREFIX;
+    const full = initialSuffix ? formatAsGuest(initialSuffix) : GUEST_PREFIX;
     setGuestText(full);
+    const suffix = full.slice(GUEST_PREFIX.length).trim();
+    if (suffix) {
+      onChange(formatAsGuest(suffix));
+    }
     setTimeout(() => {
       if (guestInputRef.current) {
         guestInputRef.current.focus();
@@ -195,7 +210,7 @@ export default function PlayerPicker({
                     } else if (firstSelectable && filtered.length > 0) {
                       select(firstSelectable);
                     } else if (query.trim()) {
-                      switchToGuest(query.trim());
+                      select(formatAsGuest(query.trim()));
                     }
                   }
                 }}
@@ -204,9 +219,15 @@ export default function PlayerPicker({
               />
               <button
                 type="button"
-                onClick={() => switchToGuest(query.trim())}
+                onClick={() => {
+                  if (query.trim()) {
+                    select(formatAsGuest(query.trim()));
+                  } else {
+                    switchToGuest();
+                  }
+                }}
                 className="text-xs px-2 py-0.5 rounded font-bold text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/40 transition shrink-0 flex items-center gap-1 border border-orange-200 dark:border-orange-800/60"
-                title="Switch to Guest free-text mode"
+                title="Choose Guest"
               >
                 <UserPlus size={12} />
                 <span>Guest -</span>
@@ -214,7 +235,7 @@ export default function PlayerPicker({
               <ChevronDown size={14} className="text-slate-400 shrink-0" />
             </div>
           ) : (
-            <div className="flex items-center gap-1 px-2.5 py-1.5 bg-orange-50/50 dark:bg-orange-950/20">
+            <div className="flex items-center gap-1.5 px-2 py-1.5 bg-orange-50/50 dark:bg-orange-950/20">
               <button
                 type="button"
                 onClick={() => setMode('select')}
@@ -236,14 +257,6 @@ export default function PlayerPicker({
                   className="w-full text-sm font-medium bg-transparent text-slate-800 dark:text-slate-100 focus:outline-none"
                 />
               </div>
-              <button
-                type="button"
-                onClick={confirmGuest}
-                disabled={!guestText.slice(GUEST_PREFIX.length).trim()}
-                className="px-2.5 py-1 rounded-lg text-xs font-bold bg-orange-600 text-white hover:bg-orange-700 disabled:opacity-40 disabled:cursor-not-allowed transition shrink-0"
-              >
-                OK
-              </button>
             </div>
           )}
         </div>
