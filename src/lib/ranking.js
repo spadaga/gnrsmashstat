@@ -309,7 +309,13 @@ export function matchesForPlayer(matches, name) {
 // finish (e.g. stopped early for rain/injury/court time running out).
 // Ties are already disallowed at entry, so the winning score is just the max.
 export function isAbandoned(m) {
-  return Math.max(m.score1, m.score2) < 21;
+  if (!m) return false;
+  const s1 = Number(m.score1);
+  const s2 = Number(m.score2);
+  const max = Math.max(s1, s2);
+  const min = Math.min(s1, s2);
+  if (max === 11 && min === 0) return false;
+  return max < 21;
 }
 
 // Abandoned matches across the whole match list, newest first — backs the

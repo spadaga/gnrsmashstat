@@ -1027,7 +1027,7 @@ function AbandonedSection({ matches }) {
     <div>
       <p className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-4">
         <AlertTriangle size={13} className="text-amber-500" />
-        Matches where neither side reached 21 points — treated as abandoned
+        Matches where neither side reached 21 points (excluding 11-0 shutouts) — treated as abandoned
         (rain, injury, court time, etc).
       </p>
       {abandoned.length === 0 ? (

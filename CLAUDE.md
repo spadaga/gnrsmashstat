@@ -315,7 +315,7 @@ Blob objects during a full import, preventing damage to the original store.
 - `filterByWeek(matches, which)` — keys: `'current'` / `'last'`. Week starts Sunday.
   component (`TopSeeds` moved to the shared `filterByPeriod` tab set below) — kept as a ranking.js export
   in case a This-Week/Last-Week comparison view is added back later.
-- `isAbandoned(m)` — `true` when neither side's score reached 21 (`Math.max(m.score1, m.score2) < 21`),
+- `isAbandoned(m)` — `true` when neither side's score reached 21 (`Math.max(m.score1, m.score2) < 21`, except 11-0 shutouts which are complete matches),
   i.e. the match was cut short (rain, injury, court time running out, etc) rather than played to a normal
   finish. Ties are already disallowed at entry so the winning score is just the max of the two.
 - `computeAbandonedMatches(matches)` — every abandoned match, newest-first. Backs the Report page's
