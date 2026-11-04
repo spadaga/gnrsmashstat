@@ -1,6 +1,5 @@
 import { useState } from "react";
 import PlayerPicker from "./PlayerPicker";
-import UserAutocomplete from "./UserAutocomplete";
 import { useEffect } from "react";
 import ConfirmDialog from "./ConfirmDialog";
 import { localISODate } from "../lib/date";
@@ -172,27 +171,17 @@ export default function MatchForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
-            Date
-          </label>
-          <input
-            type="date"
-            value={form.date}
-            max={today()}
-            onChange={(e) => set("date", e.target.value)}
-            className={inputCls}
-            required
-          />
-        </div>
-        <UserAutocomplete
-          value={form.loggedBy}
-          onChange={(val) => set("loggedBy", val)}
-          players={players}
-          photoByName={photoByName}
-          placeholder="Select or enter your name..."
-          label="Logged By (User Name)"
+      <div>
+        <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
+          Date
+        </label>
+        <input
+          type="date"
+          value={form.date}
+          max={today()}
+          onChange={(e) => set("date", e.target.value)}
+          className={inputCls}
+          required
         />
       </div>
 
