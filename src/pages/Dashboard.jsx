@@ -22,6 +22,7 @@ export default function Dashboard({
   canEditVideo,
   photoByName,
   onViewProfile,
+  adminName,
 }) {
   const [period, setPeriod] = useState("all");
   const filtered = filterByPeriod(data.matches, period);
@@ -54,6 +55,7 @@ export default function Dashboard({
           canEditScore={canEditScore}
           canEditVideo={canEditVideo}
           photoByName={photoByName}
+          adminName={adminName}
         />
         <Leaderboard
           matches={data.matches}

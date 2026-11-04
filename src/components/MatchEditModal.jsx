@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Save, X } from "lucide-react";
 import PlayerPicker from "./PlayerPicker";
+import UserAutocomplete from "./UserAutocomplete";
 import YoutubeIcon from "./YoutubeIcon";
 import { formatYoutubeUrl, isValidYoutubeUrl } from "../lib/ranking";
 const MAX_SCORE = 30;
@@ -13,6 +14,7 @@ export default function MatchEditModal({
   onClose,
   photoByName = {},
   videoOnly = false,
+  adminName = "",
 }) {
   const [form, setForm] = useState({
     p1: match.team1[0] || "",
@@ -23,6 +25,7 @@ export default function MatchEditModal({
     score2: String(match.score2),
     comment: match.comment || "",
     youtubeUrl: match.youtubeUrl || "",
+    updatedBy: adminName || match.updatedBy || match.loggedBy || "",
   });
   const [error, setError] = useState("");
 
@@ -61,6 +64,7 @@ export default function MatchEditModal({
       // In video-only mode, only update the YouTube URL
       onSave(match.id, {
         youtubeUrl: rawYoutube ? formatYoutubeUrl(rawYoutube) : "",
+        updatedBy: (form.updatedBy || adminName || "").trim(),
       });
       return;
     }
@@ -110,6 +114,7 @@ export default function MatchEditModal({
       score2: s2,
       comment: comment.trim(),
       youtubeUrl: rawYoutube ? formatYoutubeUrl(rawYoutube) : "",
+      updatedBy: (form.updatedBy || adminName || "").trim(),
     });
   }
 
@@ -256,6 +261,15 @@ export default function MatchEditModal({
             </div>
           </>
         )}
+
+        <UserAutocomplete
+          value={form.updatedBy}
+          onChange={(val) => set("updatedBy", val)}
+          players={players}
+          photoByName={photoByName}
+          placeholder="Select or enter who is updating..."
+          label="Updated By (User Name)"
+        />
 
         {/* YouTube Link Field (Always editable) */}
         <div>

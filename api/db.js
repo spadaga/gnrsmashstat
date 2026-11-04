@@ -54,6 +54,9 @@ export function ensureSchema() {
       comment text NOT NULL DEFAULT '',
       youtube_url text NOT NULL DEFAULT '',
       logged_at timestamptz NOT NULL DEFAULT now(),
+      logged_by text NOT NULL DEFAULT '',
+      updated_by text NOT NULL DEFAULT '',
+      updated_at timestamptz,
       seq bigserial
     )`);
     await db.query(

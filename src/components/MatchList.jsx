@@ -670,6 +670,7 @@ export default function MatchList({
           onClose={() => setEditingMatch(null)}
           photoByName={photoByName}
           videoOnly={!isSuperAdmin && !canEditScore}
+          adminName={adminName}
         />
       )}
 

@@ -201,7 +201,7 @@ export default function App() {
     addMatch: (match) =>
       withFeedback(
         api
-          .addMatch({ ...match, loggedBy: adminName || match.loggedBy || "", updatedBy: adminName || match.updatedBy || match.loggedBy || "" })
+          .addMatch({ ...match, loggedBy: match.loggedBy || adminName || "", updatedBy: match.updatedBy || match.loggedBy || adminName || "" })
           .then((matches) => setData((d) => ({ ...d, matches }))),
         "Match logged",
       ),
@@ -215,7 +215,7 @@ export default function App() {
     updateMatch: (id, updates) =>
       withFeedback(
         api
-          .updateMatch(id, { ...updates, updatedBy: adminName || updates.updatedBy || "" })
+          .updateMatch(id, { ...updates, updatedBy: updates.updatedBy || adminName || "" })
           .then((matches) => setData((d) => ({ ...d, matches }))),
         "Match updated",
       ),
@@ -329,6 +329,7 @@ export default function App() {
             canEditVideo={canManageVideosUser}
             photoByName={photoByName}
             onViewProfile={viewProfile}
+            adminName={adminName}
           />
         )}
         {page === "log" && canLog && (
@@ -338,6 +339,7 @@ export default function App() {
             actions={actions}
             onNavigate={setPage}
             photoByName={photoByName}
+            adminName={adminName}
           />
         )}
         {page === "players" && (

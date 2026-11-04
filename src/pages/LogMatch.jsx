@@ -6,6 +6,7 @@ export default function LogMatch({
   actions,
   onNavigate,
   photoByName,
+  adminName,
 }) {
   return (
     <div className="max-w-2xl mx-auto">
@@ -13,6 +14,7 @@ export default function LogMatch({
         players={players}
         matches={matches}
         photoByName={photoByName}
+        adminName={adminName}
         onCancel={() => onNavigate("dashboard")}
         onAddMatch={async (match) => {
           await actions.addMatch(match);

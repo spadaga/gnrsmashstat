@@ -1,5 +1,7 @@
 import { useState } from "react";
 import PlayerPicker from "./PlayerPicker";
+import UserAutocomplete from "./UserAutocomplete";
+import { useEffect } from "react";
 import ConfirmDialog from "./ConfirmDialog";
 import { localISODate } from "../lib/date";
 import { formatYoutubeUrl, isValidYoutubeUrl } from "../lib/ranking";
@@ -7,7 +9,7 @@ import { formatYoutubeUrl, isValidYoutubeUrl } from "../lib/ranking";
 const today = () => localISODate();
 const MAX_SCORE = 30;
 
-const empty = () => ({
+const empty = (adminName = "") => ({
   date: today(),
   p1: "",
   p2: "",
@@ -17,6 +19,7 @@ const empty = () => ({
   score2: "",
   comment: "",
   youtubeUrl: "",
+  loggedBy: adminName || "",
 });
 
 const pairKey = (t) => [...t].sort().join("|");
@@ -32,8 +35,15 @@ export default function MatchForm({
   onAddMatch,
   onCancel,
   photoByName = {},
+  adminName = "",
 }) {
-  const [form, setForm] = useState(empty());
+  const [form, setForm] = useState(() => empty(adminName));
+
+  useEffect(() => {
+    if (adminName) {
+      setForm((f) => (f.loggedBy ? f : { ...f, loggedBy: adminName }));
+    }
+  }, [adminName]);
   const [error, setError] = useState("");
   const [pendingMatch, setPendingMatch] = useState(null);
 
@@ -111,6 +121,8 @@ export default function MatchForm({
       score2: s2,
       comment: comment.trim(),
       youtubeUrl: rawYoutube ? formatYoutubeUrl(rawYoutube) : "",
+      loggedBy: (form.loggedBy || adminName || "").trim(),
+      updatedBy: (form.loggedBy || adminName || "").trim(),
     };
     const duplicate = matches.some(
       (m) => m.date === date && isSamePairing(m, [p1, p2], [p3, p4]),
@@ -125,7 +137,7 @@ export default function MatchForm({
 
   async function submitMatch(payload) {
     await onAddMatch(payload);
-    setForm(empty());
+    setForm(empty(adminName));
     setError("");
   }
 
@@ -160,17 +172,27 @@ export default function MatchForm({
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
-          Date
-        </label>
-        <input
-          type="date"
-          value={form.date}
-          max={today()}
-          onChange={(e) => set("date", e.target.value)}
-          className={inputCls}
-          required
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
+            Date
+          </label>
+          <input
+            type="date"
+            value={form.date}
+            max={today()}
+            onChange={(e) => set("date", e.target.value)}
+            className={inputCls}
+            required
+          />
+        </div>
+        <UserAutocomplete
+          value={form.loggedBy}
+          onChange={(val) => set("loggedBy", val)}
+          players={players}
+          photoByName={photoByName}
+          placeholder="Select or enter your name..."
+          label="Logged By (User Name)"
         />
       </div>
 
