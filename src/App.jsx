@@ -201,7 +201,7 @@ export default function App() {
     addMatch: (match) =>
       withFeedback(
         api
-          .addMatch(match)
+          .addMatch({ ...match, loggedBy: adminName || match.loggedBy || "", updatedBy: adminName || match.updatedBy || match.loggedBy || "" })
           .then((matches) => setData((d) => ({ ...d, matches }))),
         "Match logged",
       ),
@@ -215,7 +215,7 @@ export default function App() {
     updateMatch: (id, updates) =>
       withFeedback(
         api
-          .updateMatch(id, updates)
+          .updateMatch(id, { ...updates, updatedBy: adminName || updates.updatedBy || "" })
           .then((matches) => setData((d) => ({ ...d, matches }))),
         "Match updated",
       ),
@@ -357,6 +357,8 @@ export default function App() {
             actions={actions}
             isAdmin={canLog}
             isSuperAdmin={isSuperAdmin}
+            adminName={adminName}
+            photoByName={photoByName}
           />
         )}
         {page === "profile" && profilePlayer && (

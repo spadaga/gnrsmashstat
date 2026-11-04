@@ -227,7 +227,10 @@ export default async function handler(req, res) {
             await addMatch({
               ...match,
               id: crypto.randomUUID(),
-              loggedAt: new Date().toISOString(),
+              loggedAt: match.loggedAt || new Date().toISOString(),
+              loggedBy: match.loggedBy || "",
+              updatedBy: match.updatedBy || match.loggedBy || "",
+              updatedAt: match.updatedAt || new Date().toISOString(),
             }),
           );
       }

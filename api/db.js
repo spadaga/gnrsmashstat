@@ -62,6 +62,15 @@ export function ensureSchema() {
     await db.query(
       `ALTER TABLE matches ADD COLUMN IF NOT EXISTS youtube_url text NOT NULL DEFAULT ''`,
     );
+    await db.query(
+      `ALTER TABLE matches ADD COLUMN IF NOT EXISTS logged_by text NOT NULL DEFAULT ''`,
+    );
+    await db.query(
+      `ALTER TABLE matches ADD COLUMN IF NOT EXISTS updated_by text NOT NULL DEFAULT ''`,
+    );
+    await db.query(
+      `ALTER TABLE matches ADD COLUMN IF NOT EXISTS updated_at timestamptz`,
+    );
     await db.query(`CREATE TABLE IF NOT EXISTS videos (
       id bigserial PRIMARY KEY,
       url text NOT NULL
@@ -117,7 +126,7 @@ async function selectPlayers(client) {
 
 async function selectMatches(client) {
   const { rows } = await client.query(`
-    SELECT m.id, m.score1, m.score2, m.match_date, m.comment, m.youtube_url, m.logged_at,
+    SELECT m.id, m.score1, m.score2, m.match_date, m.comment, m.youtube_url, m.logged_at, m.logged_by, m.updated_by, m.updated_at,
            p1.name AS t1p1, p2.name AS t1p2, p3.name AS t2p1, p4.name AS t2p2
     FROM matches m
     JOIN players p1 ON p1.id = m.team1_player1_id
@@ -136,6 +145,9 @@ async function selectMatches(client) {
     comment: r.comment || "",
     youtubeUrl: r.youtube_url || "",
     loggedAt: r.logged_at.toISOString(),
+    loggedBy: r.logged_by || "",
+    updatedBy: r.updated_by || "",
+    updatedAt: r.updated_at ? r.updated_at.toISOString() : null,
   }));
 }
 
@@ -239,8 +251,8 @@ export async function writeState(state) {
       await client.query(
         `INSERT INTO matches
           (id, team1_player1_id, team1_player2_id, team2_player1_id, team2_player2_id,
-           score1, score2, match_date, comment, youtube_url, logged_at)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+           score1, score2, match_date, comment, youtube_url, logged_at, logged_by, updated_by, updated_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
         [
           m.id || crypto.randomUUID(),
           ids[0],
@@ -253,6 +265,9 @@ export async function writeState(state) {
           m.comment || "",
           m.youtubeUrl || m.youtube_url || "",
           m.loggedAt || new Date().toISOString(),
+          m.loggedBy || m.logged_by || "",
+          m.updatedBy || m.updated_by || m.loggedBy || m.logged_by || "",
+          m.updatedAt || m.updated_at || null,
         ],
       );
     }
@@ -349,8 +364,8 @@ export async function addMatch(match) {
   await pool.query(
     `INSERT INTO matches
       (id, team1_player1_id, team1_player2_id, team2_player1_id, team2_player2_id,
-       score1, score2, match_date, comment, youtube_url, logged_at)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+       score1, score2, match_date, comment, youtube_url, logged_at, logged_by, updated_by, updated_at)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
     [
       match.id,
       ids[0],
@@ -363,6 +378,9 @@ export async function addMatch(match) {
       match.comment || "",
       match.youtubeUrl || match.youtube_url || "",
       match.loggedAt,
+      match.loggedBy || match.logged_by || "",
+      match.updatedBy || match.updated_by || match.loggedBy || match.logged_by || "",
+      match.updatedAt || match.updated_at || match.loggedAt || new Date().toISOString(),
     ],
   );
   return selectMatches(pool);
@@ -410,7 +428,12 @@ export async function updateMatch(id, updates) {
     sets.push(`youtube_url = $${i++}`);
     values.push(updates.youtubeUrl ?? updates.youtube_url ?? "");
   }
+  if (updates.updatedBy !== undefined || updates.updated_by !== undefined) {
+    sets.push(`updated_by = $${i++}`);
+    values.push(updates.updatedBy ?? updates.updated_by ?? "");
+  }
   if (sets.length) {
+    sets.push(`updated_at = now()`);
     values.push(id);
     await pool.query(
       `UPDATE matches SET ${sets.join(", ")} WHERE id = $${i}`,

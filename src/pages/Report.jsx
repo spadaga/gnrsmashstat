@@ -1,4 +1,6 @@
 import { useState } from "react";
+import Avatar from "../components/Avatar";
+import { localISODate } from "../lib/date";
 import {
   AlertTriangle,
   BarChart3,
@@ -7,6 +9,9 @@ import {
   Save,
   Trash2,
   X,
+  Clock,
+  History,
+  Search,
 } from "lucide-react";
 import YoutubeIcon from "../components/YoutubeIcon";
 import {
@@ -29,6 +34,7 @@ const TABS = [
   { key: "combos", label: "Player Combos", shortLabel: "Combos" },
   { key: "individual", label: "Individual Rankings", shortLabel: "Individual" },
   { key: "pairs", label: "Pair Rankings", shortLabel: "Pairs" },
+  { key: "updates", label: "Record Updates", shortLabel: "Updates" },
   { key: "abandoned", label: "Abandoned Matches", shortLabel: "Abandoned" },
   { key: "partyDue", label: "Party Dues", shortLabel: "Dues" },
 ];
@@ -727,6 +733,405 @@ function AbandonedSection({ matches }) {
   );
 }
 
+
+function formatLogTime(ts) {
+  if (!ts) return null;
+  const d = new Date(ts);
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
+const UPDATE_PERIODS = [
+  { key: "today", label: "Today", shortLabel: "Day" },
+  { key: "week", label: "Week", shortLabel: "Week" },
+  { key: "month", label: "Month", shortLabel: "Month" },
+  { key: "year", label: "Year", shortLabel: "Year" },
+  { key: "all", label: "All Time", shortLabel: "All" },
+  { key: "custom", label: "Custom Range", shortLabel: "Custom" },
+];
+
+function RecordUpdatesSection({ matches = [], photoByName = {} }) {
+  const [period, setPeriod] = useState("week");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [dateBasis, setDateBasis] = useState("action");
+  const [selectedEditor, setSelectedEditor] = useState(null);
+  const [search, setSearch] = useState("");
+
+  const filteredByDate = matches.filter((m) => {
+    let dateStr;
+    if (dateBasis === "action") {
+      const ts = m.updatedAt || m.loggedAt;
+      dateStr = ts ? localISODate(new Date(ts)) : m.date;
+    } else {
+      dateStr = m.date;
+    }
+    const now = new Date();
+    const todayStr = localISODate(now);
+    if (period === "all") return true;
+    if (period === "today") return dateStr === todayStr;
+    if (period === "custom") {
+      return (!from || dateStr >= from) && (!to || dateStr <= to);
+    }
+    const d = new Date(`${dateStr}T00:00:00`);
+    if (period === "year") return d.getFullYear() === now.getFullYear();
+    if (period === "month")
+      return (
+        d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+      );
+    if (period === "week") {
+      const startOfWeekDate = new Date(now);
+      startOfWeekDate.setDate(now.getDate() - now.getDay());
+      startOfWeekDate.setHours(0, 0, 0, 0);
+      return d >= startOfWeekDate;
+    }
+    return true;
+  });
+
+  const editorStats = new Map();
+  for (const m of filteredByDate) {
+    const editor = m.updatedBy || m.loggedBy || "Earlier records";
+    if (!editorStats.has(editor)) {
+      editorStats.set(editor, {
+        name: editor,
+        count: 0,
+        logged: 0,
+        edited: 0,
+        matches: [],
+      });
+    }
+    const entry = editorStats.get(editor);
+    entry.count++;
+    if (m.updatedBy && m.loggedBy && m.updatedBy !== m.loggedBy) {
+      entry.edited++;
+    } else {
+      entry.logged++;
+    }
+    entry.matches.push(m);
+  }
+
+  const editorList = Array.from(editorStats.values()).sort(
+    (a, b) => b.count - a.count,
+  );
+  const topEditor = editorList[0];
+
+  const displayMatches = filteredByDate.filter((m) => {
+    const editor = m.updatedBy || m.loggedBy || "Earlier records";
+    if (selectedEditor && editor !== selectedEditor) return false;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      const inPlayers = [...m.team1, ...m.team2].some((p) =>
+        p.toLowerCase().includes(q),
+      );
+      const inEditor = editor.toLowerCase().includes(q);
+      const inComment = (m.comment || "").toLowerCase().includes(q);
+      const inDate = (m.date || "").includes(q);
+      return inPlayers || inEditor || inComment || inDate;
+    }
+    return true;
+  });
+
+  const sortedMatches = [...displayMatches].sort((a, b) => {
+    const timeA = a.updatedAt || a.loggedAt || `${a.date}T00:00:00`;
+    const timeB = b.updatedAt || b.loggedAt || `${b.date}T00:00:00`;
+    return timeB.localeCompare(timeA);
+  });
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <PeriodTabs
+          period={period}
+          onPeriod={(p) => {
+            setPeriod(p);
+            setSelectedEditor(null);
+          }}
+          from={from}
+          to={to}
+          onFrom={setFrom}
+          onTo={setTo}
+          periods={UPDATE_PERIODS}
+        />
+
+        <div className="flex items-center gap-1.5 text-xs bg-slate-100 dark:bg-slate-700/60 p-1 rounded-lg">
+          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 px-1.5">
+            Filter by:
+          </span>
+          <button
+            type="button"
+            onClick={() => setDateBasis("action")}
+            className={`px-2 py-1 rounded text-xs font-medium transition ${
+              dateBasis === "action"
+                ? "bg-white dark:bg-slate-800 text-orange-600 dark:text-orange-400 shadow-xs font-semibold"
+                : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+            }`}
+          >
+            Update/Log Date
+          </button>
+          <button
+            type="button"
+            onClick={() => setDateBasis("match")}
+            className={`px-2 py-1 rounded text-xs font-medium transition ${
+              dateBasis === "match"
+                ? "bg-white dark:bg-slate-800 text-orange-600 dark:text-orange-400 shadow-xs font-semibold"
+                : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+            }`}
+          >
+            Match Date
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-3 mb-5">
+        <StatTile
+          value={filteredByDate.length}
+          label="Total records"
+          onClick={() => setSelectedEditor(null)}
+          active={selectedEditor === null}
+        />
+        <StatTile
+          value={editorList.length}
+          label="Active updaters"
+          color="text-emerald-600 dark:text-emerald-400"
+        />
+        <StatTile
+          value={
+            topEditor ? (
+              <span className="truncate max-w-[9rem] block text-xs sm:text-sm md:text-base font-bold text-orange-600 dark:text-orange-400">
+                {topEditor.name} ({topEditor.count})
+              </span>
+            ) : (
+              "None"
+            )
+          }
+          label="Top updater"
+          onClick={() => topEditor && setSelectedEditor(topEditor.name)}
+          active={topEditor && selectedEditor === topEditor.name}
+        />
+      </div>
+
+      {filteredByDate.length === 0 ? (
+        <p className="text-slate-400 text-sm py-4 text-center">
+          No records found in this date range.
+        </p>
+      ) : (
+        <>
+          {editorList.length > 0 && (
+            <div className="mb-5 bg-slate-50 dark:bg-slate-700/40 rounded-xl p-3 border border-slate-200/80 dark:border-slate-700">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Who Updated The Records
+                </span>
+                {selectedEditor && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedEditor(null)}
+                    className="text-xs text-orange-600 dark:text-orange-400 hover:underline font-medium"
+                  >
+                    Show all ({filteredByDate.length})
+                  </button>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                {editorList.map((e) => {
+                  const isSelected = selectedEditor === e.name;
+                  const isRealPlayer = e.name !== "Earlier records";
+                  return (
+                    <button
+                      key={e.name}
+                      type="button"
+                      onClick={() =>
+                        setSelectedEditor(isSelected ? null : e.name)
+                      }
+                      className={`w-full flex items-center justify-between text-xs px-3 py-2 rounded-lg border transition ${
+                        isSelected
+                          ? "border-orange-400 bg-orange-50 dark:bg-orange-900/20 shadow-xs"
+                          : "border-slate-200 dark:border-slate-700 hover:border-orange-200 dark:hover:border-orange-800 bg-white dark:bg-slate-800"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        {isRealPlayer ? (
+                          <Avatar
+                            name={e.name}
+                            photo={photoByName[e.name]}
+                            size="xs"
+                          />
+                        ) : (
+                          <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[9px] font-bold text-slate-500">
+                            ?
+                          </span>
+                        )}
+                        <span className="font-semibold text-slate-800 dark:text-slate-100 truncate">
+                          {e.name}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="text-slate-500 dark:text-slate-400 text-[11px]">
+                          {e.logged > 0 && <span>{e.logged} logged</span>}
+                          {e.logged > 0 && e.edited > 0 && <span> · </span>}
+                          {e.edited > 0 && <span>{e.edited} edited</span>}
+                        </span>
+                        <span className="font-bold text-orange-600 dark:text-orange-400 text-xs w-8 text-right">
+                          {e.count}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <h4 className="text-xs font-bold uppercase tracking-wide text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                <History size={13} className="text-orange-600" />
+                {selectedEditor ? `${selectedEditor}'s Updates` : "Updated Records"}{" "}
+                ({sortedMatches.length})
+              </h4>
+              <div className="relative w-full sm:w-64">
+                <Search
+                  size={13}
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search player, editor, comment…"
+                  className={`${dateCls} w-full pl-7 py-1`}
+                />
+              </div>
+            </div>
+
+            {sortedMatches.length === 0 ? (
+              <p className="text-slate-400 text-xs py-4 text-center">
+                No matching records found.
+              </p>
+            ) : (
+              <div className="space-y-2 max-h-[32rem] overflow-y-auto pr-1">
+                {sortedMatches.map((m) => {
+                  const team1Won = m.score1 > m.score2;
+                  const logTime = formatLogTime(m.updatedAt || m.loggedAt);
+                  const editorName = m.updatedBy || m.loggedBy;
+                  const isEdit = m.updatedBy && m.loggedBy && m.updatedBy !== m.loggedBy;
+
+                  return (
+                    <div
+                      key={m.id}
+                      className="p-2.5 sm:p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 shadow-xs text-xs space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {editorName ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-800 dark:bg-orange-950/60 dark:text-orange-300 border border-orange-200/50 dark:border-orange-800/50">
+                              <Avatar
+                                name={editorName}
+                                photo={photoByName[editorName]}
+                                size="xs"
+                                className="!w-3.5 !h-3.5 !text-[7px]"
+                              />
+                              {isEdit ? `Updated by ${m.updatedBy}` : `Logged by ${editorName}`}
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                              Earlier Record
+                            </span>
+                          )}
+                          {isEdit && m.loggedBy && (
+                            <span className="text-[10px] text-slate-400">
+                              (logged by {m.loggedBy})
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-slate-500">
+                          {logTime && (
+                            <span title="Update / Log timestamp" className="flex items-center gap-1">
+                              <Clock size={11} /> {logTime}
+                            </span>
+                          )}
+                          <span>· Match: {m.date}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-0.5">
+                        <span
+                          className={`flex-1 text-right truncate ${
+                            team1Won
+                              ? "font-bold text-slate-800 dark:text-slate-100"
+                              : "text-slate-500 dark:text-slate-400"
+                          }`}
+                        >
+                          {m.team1.join(" & ")}
+                        </span>
+                        <span className="font-bold shrink-0 bg-slate-100 dark:bg-slate-700 rounded px-2 py-0.5 text-xs">
+                          <span
+                            className={
+                              team1Won
+                                ? "text-orange-600 dark:text-orange-400"
+                                : "text-slate-500 dark:text-slate-400"
+                            }
+                          >
+                            {m.score1}
+                          </span>
+                          {" - "}
+                          <span
+                            className={
+                              !team1Won
+                                ? "text-orange-600 dark:text-orange-400"
+                                : "text-slate-500 dark:text-slate-400"
+                            }
+                          >
+                            {m.score2}
+                          </span>
+                        </span>
+                        <span
+                          className={`flex-1 truncate ${
+                            !team1Won
+                              ? "font-bold text-slate-800 dark:text-slate-100"
+                              : "text-slate-500 dark:text-slate-400"
+                          }`}
+                        >
+                          {m.team2.join(" & ")}
+                        </span>
+                        {m.youtubeUrl && (
+                          <a
+                            href={formatYoutubeUrl(m.youtubeUrl)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="shrink-0 text-red-500 hover:text-red-600 transition p-0.5"
+                            title="Watch match video"
+                          >
+                            <YoutubeIcon size={14} />
+                          </a>
+                        )}
+                      </div>
+
+                      {m.comment && (
+                        <p className="text-slate-600 dark:text-slate-300 italic text-[11px] mt-0.5">
+                          "{m.comment}"
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function DueEditForm({ due, onSave, onCancel }) {
   const [count, setCount] = useState(String(due.count));
   const [comment, setComment] = useState(due.comment || "");
@@ -901,7 +1306,7 @@ function PartyDueSection({
   );
 }
 
-export default function Report({ data, actions, isSuperAdmin }) {
+export default function Report({ data, actions, isSuperAdmin, photoByName = {} }) {
   const [tab, setTab] = useState("duo");
   const players = data.players;
   const matches = data.matches;
@@ -945,6 +1350,12 @@ export default function Report({ data, actions, isSuperAdmin }) {
             <IndividualSection matches={matches} players={players} />
           )}
           {tab === "pairs" && <PairsSection matches={matches} />}
+          {tab === "updates" && (
+            <RecordUpdatesSection
+              matches={matches}
+              photoByName={photoByName}
+            />
+          )}
           {tab === "abandoned" && <AbandonedSection matches={matches} />}
         </>
       )}

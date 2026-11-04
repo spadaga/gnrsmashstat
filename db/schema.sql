@@ -21,7 +21,11 @@ CREATE TABLE IF NOT EXISTS matches (
   score2 integer NOT NULL,
   match_date date NOT NULL,
   comment text NOT NULL DEFAULT '',
+  youtube_url text NOT NULL DEFAULT '',
   logged_at timestamptz NOT NULL DEFAULT now(),
+  logged_by text NOT NULL DEFAULT '',
+  updated_by text NOT NULL DEFAULT '',
+  updated_at timestamptz,
   seq bigserial
 );
 

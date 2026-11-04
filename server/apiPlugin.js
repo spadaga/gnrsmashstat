@@ -252,14 +252,22 @@ async function handleApi(req, res) {
         const match = await readBody(req)
         snapshotState()
         const matches = readJSON('matches.json', [])
-        matches.push({ ...match, id: crypto.randomUUID(), loggedAt: new Date().toISOString() })
+        const now = new Date().toISOString()
+        matches.push({
+          ...match,
+          id: crypto.randomUUID(),
+          loggedAt: match.loggedAt || now,
+          loggedBy: match.loggedBy || '',
+          updatedBy: match.updatedBy || match.loggedBy || '',
+          updatedAt: match.updatedAt || now,
+        })
         writeJSON('matches.json', matches)
         return sendJSON(res, 200, matches)
       }
       if (req.method === 'PUT') {
         const updates = await readBody(req)
         const matches = readJSON('matches.json', []).map((m) =>
-          m.id === param ? { ...m, ...updates, id: m.id } : m
+          m.id === param ? { ...m, ...updates, id: m.id, updatedAt: updates.updatedAt || new Date().toISOString() } : m
         )
         writeJSON('matches.json', matches)
         return sendJSON(res, 200, matches)
