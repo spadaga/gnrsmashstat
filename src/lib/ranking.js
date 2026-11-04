@@ -52,7 +52,7 @@ export function filterByWeekDay(matches, dateStr) {
 // session rather than a real member — excluded from every ranking/leaderboard
 // display. There's no DB-level flag for this, just the naming convention.
 export function isGuestName(name) {
-  return /^guest\s*\d*$/i.test(String(name).trim());
+  return /^guest(\s*[-–—:]|\s*\d*|\s+.*)?$/i.test(String(name).trim());
 }
 
 // Tier-based priority: Main/Regular first, Other players middle, Guest players last, Inactive at the bottom

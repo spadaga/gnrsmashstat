@@ -354,6 +354,19 @@ async function resolvePlayerIds(client, names) {
     [names],
   );
   const idByName = new Map(rows.map((r) => [r.name, r.id]));
+  for (const name of names) {
+    if (!idByName.has(name)) {
+      const { rows: inserted } = await client.query(
+        `INSERT INTO players (name) VALUES ($1)
+         ON CONFLICT (name) WHERE deleted_at IS NULL DO UPDATE SET name = EXCLUDED.name
+         RETURNING id`,
+        [name],
+      );
+      if (inserted && inserted[0]) {
+        idByName.set(name, inserted[0].id);
+      }
+    }
+  }
   const ids = names.map((n) => idByName.get(n));
   if (ids.some((id) => id === undefined))
     throw new Error("Unknown player in match");

@@ -251,6 +251,18 @@ async function handleApi(req, res) {
       if (req.method === 'POST') {
         const match = await readBody(req)
         snapshotState()
+        const playerNames = [...(match.team1 || []), ...(match.team2 || [])].filter(Boolean)
+        const players = getPlayers()
+        let playersChanged = false
+        for (const pName of playerNames) {
+          if (!players.some((p) => p.name === pName)) {
+            players.push({ name: pName })
+            playersChanged = true
+          }
+        }
+        if (playersChanged) {
+          writeJSON('players.json', players)
+        }
         const matches = readJSON('matches.json', [])
         const now = new Date().toISOString()
         matches.push({
