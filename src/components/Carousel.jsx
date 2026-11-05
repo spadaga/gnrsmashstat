@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 export default function Carousel({ items, interval = 4000 }) {
   const [index, setIndex] = useState(0)
+  const currentIndex = Math.max(0, Math.min(index, items.length - 1))
 
   useEffect(() => {
     setIndex(0)
@@ -17,7 +18,7 @@ export default function Carousel({ items, interval = 4000 }) {
     <div className="relative overflow-hidden rounded-xl">
       <div
         className="flex transition-transform duration-700 ease-in-out"
-        style={{ transform: `translateX(-${index * 100}%)` }}
+        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
       >
         {items.map((item, i) => (
           <div key={i} className="w-full shrink-0">
@@ -28,7 +29,7 @@ export default function Carousel({ items, interval = 4000 }) {
       {items.length > 1 && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
           {items.map((_, i) => (
-            <span key={i} className={`w-1.5 h-1.5 rounded-full ${i === index ? 'bg-orange-600' : 'bg-white/70'}`} />
+            <span key={i} className={`w-1.5 h-1.5 rounded-full ${i === currentIndex ? 'bg-orange-600' : 'bg-white/70'}`} />
           ))}
         </div>
       )}

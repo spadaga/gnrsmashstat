@@ -4,7 +4,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
 
-const server = await createServer({ server: { middlewareMode: true } });
+const server = await createServer({ server: { middlewareMode: true, hmr: false } });
 after(() => server.close());
 const {
   applyTodayRanking, computeStats, computeTopPairs, computeRanks,
@@ -124,4 +124,17 @@ test('Top Seeds breaks equal wins by fewer losses, without regular priority', ()
 test('Overall retains Sunday matches', () => {
   const sunday = { ...games(1)[0], date: '2026-11-01' };
   assert.equal(filterByPeriod([sunday], 'all').length, 1);
+});
+
+test('Top Seeds renders three carousel slides and manual navigation', () => {
+  const matches = [...games(3), ...games(1, ['Third One', 'Third Two'], ['Fourth One', 'Fourth Two'])];
+  const html = renderToStaticMarkup(React.createElement(TopSeeds, { matches, players }));
+  assert.equal((html.match(/aria-roledescription="slide"/g) || []).length, 3);
+  assert.ok(html.includes('Top Seed #3'));
+  assert.ok(!html.includes('Next top seed'));
+  assert.ok(html.includes('bottom-1'));
+  assert.ok(html.includes('Pause automatic slides'));
+  assert.ok(html.includes('Show top seed 3'));
+  const empty = renderToStaticMarkup(React.createElement(TopSeeds, { matches: [], players }));
+  assert.ok(!empty.includes('aria-roledescription="carousel"'));
 });

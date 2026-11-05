@@ -158,7 +158,7 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                       qualified players with <strong>NA</strong> instead of a rank.
                     </li>
                     <li>
-                      <strong>Top Seeds:</strong> Top 2 singles & top 2 doubles
+                      <strong>Top Seeds:</strong> Top 3 singles & top 3 doubles
                       from today&apos;s players and pairs by <strong>most wins</strong>.
                       No regular-player priority or minimum-match requirement.
                     </li>
@@ -244,7 +244,7 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                     <li>Lists all participants with at least one match in this view.</li>
                     <li>Regular players ranked first by Wilson score.</li>
                     <li>
-                      <strong>Top Seeds:</strong> Top 2 individuals and top 2
+                      <strong>Top Seeds:</strong> Top 3 individuals and top 3
                       pairs in this view by most wins, with no regular-player priority.
                     </li>
                   </ul>
@@ -310,7 +310,7 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                   <li>Names starting with the legacy Guest naming convention are excluded from individual and pair rankings. A free-text name without that convention can qualify normally.</li>
                   <li>Today enforces the 3/4-match eligibility rule for leaderboard rank badges only. Other leaderboard tabs list and rank everyone who played in that view.</li>
                   <li><strong>Top Seeds, in every tab:</strong> Most wins first, then fewer losses, then alphabetical order for equal records. No regular-player priority, match minimum, provisional status or Wilson-score sorting.</li>
-                  <li>Top Seeds shows up to 2 individuals or exact pairs for the selected view. A single match is enough to appear. Overall includes Sundays there too.</li>
+                  <li>Top Seeds shows up to 3 individuals or exact pairs in a carousel, changing every 4.5 seconds. Swipe or use the dots on the card to browse; pause automatic slides with the pause button. A single match is enough to appear. Overall includes Sundays there too.</li>
                 </ul>
               </div>
             </div>

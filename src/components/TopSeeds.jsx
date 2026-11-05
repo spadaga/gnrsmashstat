@@ -13,6 +13,7 @@ import Avatar from "./Avatar";
 import { photoMap } from "../lib/admins";
 import Info from "./Info";
 import WeekRibbon from "./WeekRibbon";
+import SeedCarousel from "./SeedCarousel";
 
 const PERIODS = [
   { key: "today", label: "Today", shortLabel: "Day" },
@@ -168,7 +169,7 @@ export default function TopSeeds({
   }
 
   const items = computeTopSeeds(filtered, players, mode);
-  const top2 = items.slice(0, 2);
+  const top3 = items.slice(0, 3);
 
   const periodObj = PERIODS.find((p) => p.key === period);
   const periodLabel = periodObj ? periodObj.label : period;
@@ -177,7 +178,7 @@ export default function TopSeeds({
   return (
     <div>
       {/* Row 1: Heading on left, Singles/Doubles toggle on right */}
-      <div className="flex items-center justify-between mb-2.5 gap-2">
+      <div className="flex items-center justify-between mb-1 gap-2">
         <div className="flex items-center gap-2">
           <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">
             <Trophy size={16} className="text-orange-600" /> Top Seeds
@@ -208,7 +209,7 @@ export default function TopSeeds({
       </div>
 
       {/* Row 2: Period pills on left, View All on right */}
-      <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+      <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
         <div className="flex gap-1 bg-slate-100 dark:bg-slate-700 rounded-full p-1 flex-wrap">
           {PERIODS.map((p) => (
             <button
@@ -229,7 +230,7 @@ export default function TopSeeds({
             </button>
           ))}
         </div>
-        {items.length > 2 && (
+        {items.length > 3 && (
           <button
             onClick={() => setShowAll(true)}
             className="text-xs font-bold uppercase tracking-wide text-orange-600 hover:text-orange-700 transition"
@@ -250,14 +251,14 @@ export default function TopSeeds({
         </div>
       )}
 
-      {top2.length === 0 && (
+      {top3.length === 0 && (
         <p className="text-slate-400 text-sm text-center py-6 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl">
           No matches {period === "all" ? "yet" : `for ${periodLabel.toLowerCase()} yet`}.
         </p>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {top2.map((p, i) => {
+      {top3.length > 0 && <SeedCarousel key={`${period}-${weekDay}-${mode}-${top3.length}`}>
+        {top3.map((p, i) => {
           const displayName =
             mode === "doubles" ? p.players.join(" & ") : p.name;
           const key = mode === "doubles" ? p.players.join("&") : p.name;
@@ -276,53 +277,30 @@ export default function TopSeeds({
                 })
               }
               className={
-                "text-left rounded-2xl p-3.5 sm:p-4 relative overflow-hidden transition hover:opacity-95 shadow-sm " +
-                (i === 1 ? "hidden sm:block " : "") +
-                (i === 0
-                  ? "bg-orange-600 text-white"
-                  : "bg-white dark:bg-slate-800 border dark:border-slate-700")
+                "seed-card w-full min-h-36 text-left text-white rounded-2xl px-5 pt-5 pb-14 sm:px-6 sm:pt-6 relative overflow-hidden transition shadow-sm focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white " +
+                ["seed-card-first", "seed-card-second", "seed-card-third"][i]
               }
             >
               <Trophy
                 size={64}
-                className={
-                  "absolute -bottom-3 -right-3 pointer-events-none " +
-                  (i === 0
-                    ? "text-white/10"
-                    : "text-slate-100 dark:text-slate-700/40")
-                }
+                className="absolute -bottom-3 -right-3 pointer-events-none text-white/15"
               />
               <div className="relative z-10 flex items-start justify-between gap-3">
                 {/* Left Column: Pill + Name + Record */}
                 <div className="flex-1 min-w-0 pr-1">
                   <span
-                    className={
-                      "inline-block text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full mb-1.5 " +
-                      (i === 0
-                        ? "bg-white/20 text-white"
-                        : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400")
-                    }
+                    className="inline-block text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full mb-1.5 bg-white/20 text-white"
                   >
                     Top Seed #{i + 1}
                   </span>
                   <p
-                    className={
-                      "font-bold text-sm sm:text-base leading-snug truncate " +
-                      (i === 0
-                        ? "text-white"
-                        : "text-slate-900 dark:text-white")
-                    }
+                    className="font-bold text-sm sm:text-base leading-snug truncate text-white"
                     title={displayName}
                   >
                     {displayName}
                   </p>
                   <p
-                    className={
-                      "text-xs mt-1 leading-tight " +
-                      (i === 0
-                        ? "text-orange-100"
-                        : "text-slate-500 dark:text-slate-400")
-                    }
+                    className="text-xs mt-1 leading-tight text-white/90"
                   >
                     {p.wins}W – {p.losses}L · {p.played} played · {p.winRate}%
                     win rate
@@ -336,12 +314,7 @@ export default function TopSeeds({
                       {p.wins}
                     </span>
                     <span
-                      className={
-                        "text-[9px] font-bold uppercase tracking-wide block mt-0.5 " +
-                        (i === 0
-                          ? "text-orange-100"
-                          : "text-slate-400 dark:text-slate-500")
-                      }
+                      className="text-[9px] font-bold uppercase tracking-wide block mt-0.5 text-white/90"
                     >
                       Wins
                     </span>
@@ -355,13 +328,13 @@ export default function TopSeeds({
                           name={p.players[0]}
                           photo={photos[p.players[0]]}
                           size="sm"
-                          className={`ring-2 ${i === 0 ? "ring-white/40" : "ring-slate-200 dark:ring-slate-700"}`}
+                          className="ring-2 ring-white/40"
                         />
                         <Avatar
                           name={p.players[1]}
                           photo={photos[p.players[1]]}
                           size="sm"
-                          className={`ring-2 ${i === 0 ? "ring-white/40" : "ring-slate-200 dark:ring-slate-700"}`}
+                          className="ring-2 ring-white/40"
                         />
                       </>
                     ) : (
@@ -369,7 +342,7 @@ export default function TopSeeds({
                         name={p.name}
                         photo={photos[p.name]}
                         size="md"
-                        className={`ring-2 ${i === 0 ? "ring-white/40" : "ring-slate-200 dark:ring-slate-700"}`}
+                        className="ring-2 ring-white/40"
                       />
                     )}
                   </div>
@@ -378,7 +351,7 @@ export default function TopSeeds({
             </button>
           );
         })}
-      </div>
+      </SeedCarousel>}
 
       {showAll && (
         <TopSeedsAllModal
