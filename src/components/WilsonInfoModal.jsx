@@ -112,7 +112,7 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
               <div className="bg-orange-50/70 dark:bg-orange-950/30 p-3 rounded-xl border border-orange-100 dark:border-orange-900/40 text-orange-900 dark:text-orange-200">
                 <p className="font-semibold text-xs mb-1 flex items-center gap-1.5">
                   <Sparkles size={14} className="text-orange-600" />
-                  Core Regular Players Priority
+                  Leaderboard Regular Players Priority
                 </p>
                 <p className="text-[11px] leading-relaxed">
                   In <strong>Weekly, Monthly, Yearly, and Overall</strong>{" "}
@@ -121,8 +121,9 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                     Suresh Padaga, Srinivas Padaga, Sanjeev Kumar, Abdhulla, HR,
                     Narender, Manikyam
                   </strong>
-                  ) who meet the 10-match threshold appear first in the rankings
-                  based on their Wilson score, followed by other players.
+                  ) appear first, sorted by Wilson score, followed by other
+                  players sorted by the same score. Today has no regular-player
+                  priority once players qualify.
                 </p>
               </div>
 
@@ -135,21 +136,31 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                       Tab
                     </span>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300">
-                      Min 3 Matches
+                      Regular: 3 · Others: 4
                     </span>
                   </div>
                   <ul className="text-[11px] text-slate-600 dark:text-slate-300 space-y-1 list-disc pl-4">
                     <li>
                       Filters matches played on <strong>today only</strong>.
                     </li>
-                    <li>Requires 3 matches to qualify.</li>
                     <li>
-                      <strong>Regular players ranked first</strong> (on
-                      Mon–Sat), followed by guest/other players by Wilson score.
+                      Regular players qualify after <strong>3 matches today</strong>.
+                      Non-regular players must play <strong>more than 3 matches
+                      (at least 4) today</strong>.
+                    </li>
+                    <li>
+                      All qualified players compete together by Wilson score.
+                      A non-regular player can take rank 1. This applies every
+                      day, including Sunday.
+                    </li>
+                    <li>
+                      Players below their threshold remain visible below
+                      qualified players with <strong>NA</strong> instead of a rank.
                     </li>
                     <li>
                       <strong>Top Seeds:</strong> Top 2 singles & top 2 doubles
-                      from today's games.
+                      from today&apos;s players and pairs by <strong>most wins</strong>.
+                      No regular-player priority or minimum-match requirement.
                     </li>
                   </ul>
                 </div>
@@ -162,7 +173,7 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                       Tab
                     </span>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300">
-                      Min 3 Matches
+                      All Sundays
                     </span>
                   </div>
                   <ul className="text-[11px] text-slate-600 dark:text-slate-300 space-y-1 list-disc pl-4">
@@ -170,8 +181,7 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                       Considers <strong>all historical Sunday matches</strong>.
                     </li>
                     <li>
-                      Players with ≥ 3 Sunday matches qualify for official
-                      ranking.
+                      Lists all participants with at least one Sunday match.
                     </li>
                     <li>
                       Open to all players (regular & non-regular) ranked
@@ -197,13 +207,16 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                   </div>
                   <ul className="text-[11px] text-slate-600 dark:text-slate-300 space-y-1 list-disc pl-4">
                     <li>
-                      <strong>All Week:</strong> Aggregates week matches (min 10
-                      matches, regular players ranked first).
+                      <strong>All Week:</strong> Current week&apos;s Monday–Saturday
+                      matches. Regular players ranked first; all participants
+                      with a match are listed.
                     </li>
                     <li>
                       <strong>Day Breakdown (Sun–Sat):</strong> Tap any day to
-                      see that day's rankings (min 3 matches, regular players
-                      ranked first on Mon–Sat).
+                      see that day&apos;s matches. Regular players rank first on
+                      Mon–Sat; Sunday ranks everyone together by Wilson score.
+                      These day views list all participants; Today&apos;s 3/4-match
+                      eligibility rule applies only to the Today tab.
                     </li>
                     <li>
                       <strong>Top Seeds:</strong> Shows leading performers for
@@ -220,7 +233,7 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                       Tab
                     </span>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
-                      Min 10 Matches
+                      Current Month
                     </span>
                   </div>
                   <ul className="text-[11px] text-slate-600 dark:text-slate-300 space-y-1 list-disc pl-4">
@@ -228,11 +241,11 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                       Considers <strong>Monday–Saturday matches</strong> of
                       current month.
                     </li>
-                    <li>Requires 10 matches to qualify.</li>
+                    <li>Lists all participants with at least one match in this view.</li>
                     <li>Regular players ranked first by Wilson score.</li>
                     <li>
-                      <strong>Top Seeds:</strong> Month's top regular player &
-                      top duo.
+                      <strong>Top Seeds:</strong> Top 2 individuals and top 2
+                      pairs in this view by most wins, with no regular-player priority.
                     </li>
                   </ul>
                 </div>
@@ -245,7 +258,7 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                       Tab
                     </span>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
-                      Min 10 Matches
+                      Current Year
                     </span>
                   </div>
                   <ul className="text-[11px] text-slate-600 dark:text-slate-300 space-y-1 list-disc pl-4">
@@ -253,7 +266,7 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                       Considers <strong>Monday–Saturday matches</strong> of
                       current year.
                     </li>
-                    <li>Requires 10 matches to qualify.</li>
+                    <li>Lists all participants with at least one match in this view.</li>
                     <li>Regular players ranked first by Wilson score.</li>
                     <li>
                       <strong>Top Seeds:</strong> Annual top seeds and champion
@@ -270,15 +283,15 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                       Tab
                     </span>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
-                      Min 10 Matches
+                      All Days
                     </span>
                   </div>
                   <ul className="text-[11px] text-slate-600 dark:text-slate-300 space-y-1 list-disc pl-4">
                     <li>
                       Considers{" "}
-                      <strong>all historical Monday–Saturday matches</strong>.
+                      <strong>all historical matches, including Sundays</strong>.
                     </li>
-                    <li>Requires 10 matches to qualify.</li>
+                    <li>Includes Sunday-only players and lists all participants with a match.</li>
                     <li>Regular players ranked first by Wilson score.</li>
                     <li>
                       <strong>Top Seeds:</strong> All-time top player & doubles
@@ -286,6 +299,19 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                     </li>
                   </ul>
                 </div>
+              </div>
+              <div className="bg-slate-50 dark:bg-slate-700/40 p-3 rounded-xl border dark:border-slate-700 space-y-1.5">
+                <p className="font-bold text-slate-900 dark:text-white">How positions are decided</p>
+                <ul className="text-[11px] space-y-1 list-disc pl-4">
+                  <li>Singles measures each individual&apos;s results in doubles matches; Doubles measures each exact pair&apos;s games together.</li>
+                  <li>Higher Wilson score comes first, then more wins, then fewer losses. Individuals use total point difference as the final tie-breaker.</li>
+                  <li>Equal Wilson scores share a rank within the same priority group (1, 2, 2, 4). Today&apos;s qualified regular and non-regular players share one group.</li>
+                  <li>Scores display to 3 decimal places; ranking uses the full score, so identical displayed scores can have different ranks.</li>
+                  <li>Names starting with the legacy Guest naming convention are excluded from individual and pair rankings. A free-text name without that convention can qualify normally.</li>
+                  <li>Today enforces the 3/4-match eligibility rule for leaderboard rank badges only. Other leaderboard tabs list and rank everyone who played in that view.</li>
+                  <li><strong>Top Seeds, in every tab:</strong> Most wins first, then fewer losses, then alphabetical order for equal records. No regular-player priority, match minimum, provisional status or Wilson-score sorting.</li>
+                  <li>Top Seeds shows up to 2 individuals or exact pairs for the selected view. A single match is enough to appear. Overall includes Sundays there too.</li>
+                </ul>
               </div>
             </div>
           )}
@@ -319,6 +345,15 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                   </p>
                 </div>
 
+                <div className="p-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/50">
+                  <p className="font-bold text-slate-900 dark:text-white mb-1.5">Score & Video Editor</p>
+                  <p className="text-[11px]">
+                    Can log matches, update existing match players, scores and
+                    comments, and add or update YouTube links. Cannot delete matches.
+                    Roles can be changed by the super admin in Players.
+                  </p>
+                </div>
+
                 {/* Video Editor */}
                 <div className="p-3 rounded-xl bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50">
                   <div className="flex items-center justify-between mb-1.5">
@@ -327,7 +362,7 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                         <Video size={11} /> Video Editor
                       </span>
                       <span className="font-bold text-slate-900 dark:text-white text-xs">
-                        Srinivas Padaga, Sanjeev Kumar, Abdhulla
+                        Members assigned the Video Editor role
                       </span>
                     </div>
                   </div>
@@ -382,11 +417,11 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
           {activeTab === "formula" && (
             <div className="space-y-3.5">
               <p className="leading-relaxed">
-                Rankings and Top Seeds are computed using the{" "}
+                Leaderboard rankings are computed using the{" "}
                 <strong>Wilson Score Interval</strong> (lower bound of the 95%
                 confidence interval for a Bernoulli parameter). It measures
                 statistical confidence in a player's true win rate rather than
-                simple win percentage.
+                simple win percentage. Top Seeds is separate and uses total wins.
               </p>
 
               {/* Mathematical Formula Display */}

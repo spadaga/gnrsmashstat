@@ -22,6 +22,7 @@ import {
   filterByPeriod,
   applyPeriod,
   getRankingConfig,
+  applyTodayRanking,
   isAbandoned,
   matchesForPlayer,
   matchesForPair,
@@ -598,13 +599,17 @@ export default function PlayerProfile({
   const rankPeriodMatches = applyPeriod(matches, rankPeriod, rankFrom, rankTo);
   const { minMatches: rankMinMatches, prioritizeRegular } =
     getRankingConfig(rankPeriod);
-  const rankStats = computeStats(
+  let rankStats = computeStats(
     rankPeriodMatches,
     players,
     rankMinMatches,
     prioritizeRegular,
   );
-  const ranks = computeRanks(rankStats);
+  if (rankPeriod === "today") rankStats = applyTodayRanking(rankStats);
+  const ranks = computeRanks(rankStats, {
+    qualifiedOnly: rankPeriod === "today",
+    prioritizeRegular,
+  });
   const myStatIdx = rankStats.findIndex((s) => s.name === playerName);
   const myStat = myStatIdx === -1 ? null : rankStats[myStatIdx];
   const myRank = myStatIdx === -1 ? null : ranks[myStatIdx];

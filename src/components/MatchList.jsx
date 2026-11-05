@@ -84,6 +84,7 @@ function PlayerSelect({ value, onChange, options, placeholder, players = [] }) {
 
   return (
     <select
+      aria-label={placeholder}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className="flex-1 min-w-0 border dark:border-slate-600 rounded-lg px-2 py-1 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:border-orange-400 focus:outline-none cursor-pointer"
@@ -120,11 +121,13 @@ export default function MatchList({
   canEditScore,
   canEditVideo,
   photoByName,
+  adminName = "",
 }) {
   const [mode, setMode] = useState("today");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [selectedPlayer, setSelectedPlayer] = useState("");
+  const [selectedPartner, setSelectedPartner] = useState("");
   const [search, setSearch] = useState("");
   const [confirm, setConfirm] = useState(null);
   const [editingMatch, setEditingMatch] = useState(null);
@@ -142,9 +145,10 @@ export default function MatchList({
   }, [matches.length]);
   const [h2h, setH2h] = useState(["", "", "", ""]);
 
-  const playerNames = (players || []).map((p) =>
-    typeof p === "string" ? p : p.name,
-  );
+  const playerNames = [...new Set([
+    ...(players || []).map((p) => typeof p === "string" ? p : p.name),
+    ...matches.flatMap((match) => [...match.team1, ...match.team2]),
+  ])];
 
   // Sequence number per match, derived from the full (unfiltered) list so the
   // same match shows the same number regardless of which of the 3 mode tabs
@@ -193,13 +197,12 @@ export default function MatchList({
       } else if (!from && to) {
         if (m.date !== to) return false;
       }
-    }
-    if (selectedPlayer) {
-      if (
-        !m.team1.includes(selectedPlayer) &&
-        !m.team2.includes(selectedPlayer)
-      ) {
-        return false;
+      const combo = [selectedPlayer, selectedPartner].filter(Boolean);
+      if (combo.length > 0) {
+        const together = [m.team1, m.team2].some((team) =>
+          combo.every((name) => team.includes(name)),
+        );
+        if (!together) return false;
       }
     }
     if (search) {
@@ -397,41 +400,30 @@ export default function MatchList({
                 title="To date"
               />
             </div>
-            <select
-              value={selectedPlayer}
-              onChange={(e) => setSelectedPlayer(e.target.value)}
-              className={inputCls + " cursor-pointer"}
-              title="Filter by player"
-            >
-              <option value="">All Players</option>
-              {sortPlayersByTier(
-                playerNames,
-                new Set(
-                  players
-                    .filter((p) => typeof p === "object" && p.inactive)
-                    .map((p) => p.name.toLowerCase()),
-                ),
-              ).map((p) => {
-                const isInactive = players.some(
-                  (pl) =>
-                    typeof pl === "object" &&
-                    pl.inactive &&
-                    pl.name.toLowerCase() === p.toLowerCase(),
-                );
-                return (
-                  <option key={p} value={p}>
-                    {p}
-                    {isInactive ? " (Inactive)" : ""}
-                  </option>
-                );
-              })}
-            </select>
-            {(from || to || selectedPlayer) && (
+            <div className="flex items-center gap-2 w-full sm:w-auto min-w-0">
+              <PlayerSelect
+                value={selectedPlayer}
+                onChange={setSelectedPlayer}
+                options={playerNames.filter((name) => name !== selectedPartner)}
+                placeholder="Player 1 (optional)"
+                players={players}
+              />
+              <span className="text-xs text-slate-400">&</span>
+              <PlayerSelect
+                value={selectedPartner}
+                onChange={setSelectedPartner}
+                options={playerNames.filter((name) => name !== selectedPlayer)}
+                placeholder="Player 2 (optional)"
+                players={players}
+              />
+            </div>
+            {(from || to || selectedPlayer || selectedPartner) && (
               <button
                 onClick={() => {
                   setFrom("");
                   setTo("");
                   setSelectedPlayer("");
+                  setSelectedPartner("");
                 }}
                 className="text-xs font-medium text-slate-400 hover:text-orange-500"
               >
@@ -665,7 +657,7 @@ export default function MatchList({
       {editingMatch && (
         <MatchEditModal
           match={editingMatch}
-          players={playerNames}
+          players={players}
           onSave={handleSaveScore}
           onClose={() => setEditingMatch(null)}
           photoByName={photoByName}

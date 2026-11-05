@@ -2,10 +2,8 @@ import { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { Trophy, Users, User, X } from "lucide-react";
 import {
-  computeStats,
-  computeTopPairs,
+  computeTopSeeds,
   filterByPeriod,
-  getRankingConfig,
   matchesForPair,
   matchesForPlayer,
 } from "../lib/ranking";
@@ -110,11 +108,7 @@ function TopSeedsAllModal({ items, mode, title, onClose, photoByName = {} }) {
                       </p>
                       <p className="text-xs text-slate-400 dark:text-slate-500">
                         {p.wins}W – {p.losses}L · {p.played} played ·{" "}
-                        {p.winRate}% ·{" "}
-                        <span className="font-bold text-slate-500 dark:text-slate-300">
-                          {(p.score || 0).toFixed(3)}
-                        </span>{" "}
-                        score
+                        {p.winRate}%
                       </p>
                     </div>
                   </div>
@@ -126,7 +120,7 @@ function TopSeedsAllModal({ items, mode, title, onClose, photoByName = {} }) {
                         : "text-slate-700 dark:text-slate-300")
                     }
                   >
-                    {(p.score || 0).toFixed(3)}
+                    {p.wins} wins
                   </span>
                 </div>
               );
@@ -166,30 +160,14 @@ export default function TopSeeds({
         (m) => new Date(`${m.date}T00:00:00`).getDay() !== 0,
       );
     }
-  } else if (["month", "year", "all"].includes(period)) {
+  } else if (["month", "year"].includes(period)) {
     // For regular Monday-to-Saturday leaderboards, exclude Sunday matches from stats
     filtered = filtered.filter(
       (m) => new Date(`${m.date}T00:00:00`).getDay() !== 0,
     );
   }
 
-  const { minMatches, prioritizeRegular } = getRankingConfig(period, weekDay);
-
-  // Calculate top seeds using Wilson score logic
-  let items = [];
-  if (mode === "singles") {
-    items = computeStats(
-      filtered,
-      players,
-      minMatches,
-      prioritizeRegular,
-    ).filter((p) => p.played > 0);
-  } else {
-    items = computeTopPairs(filtered, minMatches, prioritizeRegular).filter(
-      (p) => p.played > 0,
-    );
-  }
-
+  const items = computeTopSeeds(filtered, players, mode);
   const top2 = items.slice(0, 2);
 
   const periodObj = PERIODS.find((p) => p.key === period);
@@ -274,8 +252,7 @@ export default function TopSeeds({
 
       {top2.length === 0 && (
         <p className="text-slate-400 text-sm text-center py-6 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl">
-          No matches{" "}
-          {period === "all" ? "yet" : `for ${periodLabel.toLowerCase()} yet`}.
+          No matches {period === "all" ? "yet" : `for ${periodLabel.toLowerCase()} yet`}.
         </p>
       )}
 
@@ -356,7 +333,7 @@ export default function TopSeeds({
                 <div className="flex flex-col items-end shrink-0 gap-1.5">
                   <div className="text-right">
                     <span className="text-lg sm:text-xl font-black block leading-none">
-                      {(p.score || 0).toFixed(3)}
+                      {p.wins}
                     </span>
                     <span
                       className={
@@ -366,7 +343,7 @@ export default function TopSeeds({
                           : "text-slate-400 dark:text-slate-500")
                       }
                     >
-                      Wilson Score
+                      Wins
                     </span>
                   </div>
 

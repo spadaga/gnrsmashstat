@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { Medal } from "lucide-react";
 import {
   computeStats,
+  applyTodayRanking,
   computeTopPairs,
   computeRanks,
   filterByPeriod,
@@ -69,7 +70,7 @@ export default function Leaderboard({
         weekdayPlayerNames.has(typeof p === "string" ? p : p.name),
       );
     }
-  } else if (["month", "year", "all"].includes(period)) {
+  } else if (["month", "year"].includes(period)) {
     filtered = filtered.filter(
       (m) => new Date(`${m.date}T00:00:00`).getDay() !== 0,
     );
@@ -94,7 +95,11 @@ export default function Leaderboard({
       : computeTopPairs(filtered, minMatches, prioritizeRegular);
 
   rows = rows.filter((r) => r.played > 0);
-  const ranks = computeRanks(rows);
+  if (period === "today") rows = applyTodayRanking(rows);
+  const ranks = computeRanks(rows, {
+    qualifiedOnly: period === "today",
+    prioritizeRegular,
+  });
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-4">

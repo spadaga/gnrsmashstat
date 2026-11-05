@@ -26,9 +26,13 @@ export function isRegularPlayer(name) {
 
 // Period-specific ranking configuration:
 // - Sunday (or Week ribbon on Sunday): anyone who played is ranked by Wilson score without prioritizing regular players.
-// - All other tabs (Today on Mon-Sat, Weekday tabs Mon-Sat, Weekly All, Monthly, Yearly, Overall):
+// - Today: regular players qualify at 3 matches, others at 4; score decides position.
+// - Other tabs (Weekday tabs Mon-Sat, Weekly All, Monthly, Yearly, Overall):
 //   Regular players ALWAYS come first (sorted among themselves by Wilson score), followed by other players.
 export function getRankingConfig(period, weekDay = "all") {
+  if (period === "today") {
+    return { minMatches: 3, prioritizeRegular: false };
+  }
   const isSunday =
     period === "sunday" ||
     (period === "week" && weekDay === "sun") ||
@@ -256,22 +260,51 @@ export function computeTopPairs(
     .map((p) => ({ ...p, qualified: p.played >= minMatches }));
 }
 
+// Top Seeds uses total wins, independent of leaderboard eligibility and tiers.
+export function computeTopSeeds(matches, players, mode = "singles") {
+  const rows = mode === "doubles"
+    ? computePairStats(matches)
+    : computeStats(matches, players, 1, false);
+  const label = (row) => row.name || row.players.join(" & ");
+  return rows.filter((row) => row.played > 0).sort((a, b) =>
+    b.wins - a.wins || a.losses - b.losses || label(a).localeCompare(label(b)),
+  );
+}
+
+// Today's eligibility applies to individuals and pairs (a regular pair has
+// two regular players). Keep participants below the threshold visible last.
+export function applyTodayRanking(rows) {
+  return rows
+    .map((row) => ({
+      ...row,
+      qualified: row.played >= (row.isRegular ? 3 : 4),
+    }))
+    .sort((a, b) =>
+      Number(b.qualified) - Number(a.qualified) ||
+      b.score - a.score || b.wins - a.wins || a.losses - b.losses ||
+      (b.pointDiff || 0) - (a.pointDiff || 0),
+    );
+}
+
 // Standard competition ranking (1-2-2-4): rows tied on Wilson score share a rank.
-export function computeRanks(rows) {
+export function computeRanks(rows, { qualifiedOnly = false, prioritizeRegular = true } = {}) {
   const ranks = [];
-  rows.forEach((s, i) => {
-    if (i === 0) {
-      ranks.push(1);
-    } else {
-      const prev = rows[i - 1];
-      const sameScore = prev.score === s.score;
-      const sameTier = Boolean(prev.isRegular) === Boolean(s.isRegular);
-      if (sameScore && sameTier) {
-        ranks.push(ranks[i - 1]);
-      } else {
-        ranks.push(i + 1);
-      }
+  let rankedCount = 0;
+  let previousRanked = null;
+  let previousRank = null;
+  rows.forEach((s) => {
+    if (qualifiedOnly && !s.qualified) {
+      ranks.push(null);
+      return;
     }
+    rankedCount++;
+    const sameScore = previousRanked?.score === s.score;
+    const sameTier = !prioritizeRegular ||
+      Boolean(previousRanked?.isRegular) === Boolean(s.isRegular);
+    const rank = previousRanked && sameScore && sameTier ? previousRank : rankedCount;
+    ranks.push(rank);
+    previousRanked = s;
+    previousRank = rank;
   });
   return ranks;
 }

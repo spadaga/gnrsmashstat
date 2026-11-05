@@ -26,6 +26,7 @@ import {
   computeAbandonedMatches,
   applyPeriod,
   getRankingConfig,
+  applyTodayRanking,
   matchesForPlayer,
   matchesForPair,
   formatYoutubeUrl,
@@ -870,9 +871,10 @@ function IndividualSection({ matches, players }) {
   const [selected, setSelected] = useState(null);
   const filtered = applyPeriod(matches, period, from, to);
   const { minMatches, prioritizeRegular } = getRankingConfig(period);
-  const stats = computeStats(filtered, players, minMatches, prioritizeRegular)
-    .filter((s) => s.played > 0)
-    .slice(0, 10);
+  let stats = computeStats(filtered, players, minMatches, prioritizeRegular)
+    .filter((s) => s.played > 0);
+  if (period === "today") stats = applyTodayRanking(stats);
+  stats = stats.slice(0, 10);
   const max = Math.max(1, ...stats.map((s) => s.wins));
 
   function pick(name, e) {
