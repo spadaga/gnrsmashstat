@@ -28,12 +28,12 @@
   background-image: linear-gradient(125deg, #c2410c, #ea580c 55%, #9a3412);
 }
 .seed-card-second {
-  background-color: #1d4ed8;
-  background-image: linear-gradient(125deg, #1d4ed8, #2563eb 55%, #1e3a8a);
+  background-color: #b45309;
+  background-image: linear-gradient(125deg, #b45309, #c75b0b 55%, #92400e);
 }
 .seed-card-third {
-  background-color: #7e22ce;
-  background-image: linear-gradient(125deg, #7e22ce, #9333ea 55%, #581c87);
+  background-color: #9a3412;
+  background-image: linear-gradient(125deg, #9a3412, #b94316 55%, #7c2d12);
 }
 .seed-carousel-slide .seed-card {
   opacity: .55;
