@@ -143,7 +143,7 @@ test('Top Seeds renders three carousel slides and manual navigation', () => {
   assert.ok(!empty.includes('aria-roledescription="carousel"'));
 });
 
-test('match attribution labels are visible only to the Admin role', () => {
+test('match attribution details are available to every role and signed-out visitors', () => {
   const matches = [{ ...games(1)[0], loggedBy: 'Logger Name', updatedBy: 'Editor Name', youtubeUrl: 'https://youtu.be/test' }];
   for (const role of ['admin', 'score_editor', 'video_editor', 'match_logger', 'contributor']) {
     const html = renderToStaticMarkup(React.createElement(MatchList, {
@@ -152,17 +152,20 @@ test('match attribution labels are visible only to the Admin role', () => {
       adminName: 'Signed In',
       isAdmin: true,
     }));
-    assert.equal(html.includes('Logger Name'), role === 'admin');
-    assert.equal(html.includes('Editor Name'), role === 'admin');
-    assert.equal(html.includes('<details'), role === 'admin');
+    assert.equal(html.includes('Logger Name'), true);
+    assert.equal(html.includes('Editor Name'), true);
+    assert.equal(html.includes('<details'), true);
     assert.ok(!html.includes('<details open'));
     assert.equal((html.match(/title="Watch match on YouTube"/g) || []).length, 1);
   }
   const anonymous = renderToStaticMarkup(React.createElement(MatchList, {
     matches, players: [], isAdmin: false,
   }));
-  assert.ok(!anonymous.includes('Logger Name'));
-  assert.ok(!anonymous.includes('Editor Name'));
+  assert.ok(anonymous.includes('Logger Name'));
+  assert.ok(anonymous.includes('Editor Name'));
+  assert.ok(anonymous.includes('<details'));
+  assert.ok(anonymous.includes('Click for details'));
+  assert.ok(!anonymous.includes('<details open'));
 });
 
 test('signed-out navigation hides Players, Report and Rankings Info', () => {

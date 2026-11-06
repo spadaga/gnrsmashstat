@@ -15,7 +15,6 @@ import {
   sortPlayersByTier,
 } from "../lib/ranking";
 import { localISODate } from "../lib/date";
-import { getPlayerRole } from "../lib/admins";
 import MatchEditModal from "./MatchEditModal";
 import YoutubeIcon from "./YoutubeIcon";
 
@@ -135,13 +134,6 @@ export default function MatchList({
   const [deleting, setDeleting] = useState(false);
   const listContainerRef = useRef(null);
   const rootRef = useRef(null);
-  const signedInPlayer = adminName && players.find((player) =>
-    String(typeof player === "string" ? player : player.name).trim().toLowerCase() ===
-    adminName.trim().toLowerCase(),
-  );
-  const canViewAttribution = isSuperAdmin ||
-    (Boolean(adminName) && getPlayerRole(signedInPlayer || adminName) === "admin");
-
   const prevCountRef = useRef(matches.length);
   useEffect(() => {
     if (matches.length > prevCountRef.current) {
@@ -544,7 +536,6 @@ export default function MatchList({
                     <div className="flex items-center gap-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-0.5">
-                          {canViewAttribution ? (
                             <details className="relative">
                               <summary
                                 className="list-none cursor-pointer text-[10px] font-bold text-slate-400 dark:text-slate-500 hover:text-orange-500 [&::-webkit-details-marker]:hidden"
@@ -559,9 +550,6 @@ export default function MatchList({
                                 <p className="mt-1"><span className="font-semibold">Updated by:</span> {m.updatedBy || "Not recorded"}</p>
                               </div>
                             </details>
-                          ) : (
-                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500">{matchLabel}</p>
-                          )}
                           <div className="flex items-center gap-2">
                             {m.youtubeUrl && (
                               <a
