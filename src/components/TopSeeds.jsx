@@ -280,20 +280,6 @@ export default function TopSeeds({
               }
               className="seed-card w-full min-h-36 text-left text-white rounded-2xl px-5 pt-5 pb-14 sm:px-6 sm:pt-6 relative overflow-hidden transition shadow-sm focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white"
             >
-              {portraitNames.length > 0 && (
-                <div className="seed-card-faces" aria-hidden="true">
-                  {portraitNames.map((name) => (
-                    <span key={name} className="seed-card-portrait">
-                      <img
-                        src={photos[name]}
-                        alt=""
-                        draggable={false}
-                        onError={(event) => { event.currentTarget.parentElement.style.visibility = "hidden"; }}
-                      />
-                    </span>
-                  ))}
-                </div>
-              )}
               <div className="seed-card-content flex items-start justify-between gap-3">
                 {/* Left Column: Pill + Name + Record */}
                 <div className="flex-1 min-w-0 pr-1">
@@ -303,7 +289,7 @@ export default function TopSeeds({
                     Top Seed #{i + 1}
                   </span>
                   <p
-                    className="font-bold text-sm sm:text-base leading-snug truncate text-white"
+                    className="font-bold text-sm sm:text-base leading-snug break-words text-white"
                     title={displayName}
                   >
                     {displayName}
@@ -316,19 +302,24 @@ export default function TopSeeds({
                   </p>
                 </div>
 
-                {/* Right Column: Wins */}
-                <div className="flex flex-col items-end shrink-0 gap-1.5">
-                  <div className="text-right">
-                    <span className="text-lg sm:text-xl font-black block leading-none">
-                      {p.wins}
-                    </span>
-                    <span
-                      className="text-[9px] font-bold uppercase tracking-wide block mt-0.5 text-white/90"
-                    >
-                      Wins
-                    </span>
-                  </div>
-
+                <div className="flex flex-col items-center shrink-0 gap-2">
+                  {portraitNames.length > 0 && (
+                    <div className="seed-card-faces" aria-hidden="true">
+                      {portraitNames.map((name) => (
+                        <span key={name} className="seed-card-portrait">
+                          <img
+                            src={photos[name]}
+                            alt=""
+                            draggable={false}
+                            onError={(event) => { event.currentTarget.parentElement.style.visibility = "hidden"; }}
+                          />
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <span className="text-sm sm:text-base font-extrabold whitespace-nowrap text-white">
+                    {p.wins} {p.wins === 1 ? "Win" : "Wins"}
+                  </span>
                 </div>
               </div>
             </button>

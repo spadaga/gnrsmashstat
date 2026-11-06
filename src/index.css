@@ -54,10 +54,7 @@
 }
 .seed-card { isolation: isolate; background: #ff4d00; }
 .seed-card-faces {
-  position: absolute;
-  z-index: 0;
   opacity: .6;
-  inset: 8px 60px 44px 20%;
   display: flex;
   justify-content: flex-end;
   align-items: center;
