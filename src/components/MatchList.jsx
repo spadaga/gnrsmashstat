@@ -1,7 +1,6 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import {
   AlertTriangle,
-  Info,
   Loader2,
   Pencil,
   Search,
@@ -531,6 +530,7 @@ export default function MatchList({
                 const canDelete = isSuperAdmin;
                 const abandoned = isAbandoned(m);
                 const dayNo = items.length - idx;
+                const matchLabel = mode === "today" ? `Match #${dayNo}` : `Match #${dayNo} · Overall #${seqById.get(m.id)}`;
                 return (
                   <div
                     key={m.id}
@@ -544,30 +544,25 @@ export default function MatchList({
                     <div className="flex items-center gap-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-0.5">
-                          <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
-                            {mode === "today"
-                              ? "Match #" + dayNo
-                              : "Match #" +
-                                dayNo +
-                                " · Overall #" +
-                                seqById.get(m.id)}
-                          </p>
+                          {canViewAttribution ? (
+                            <details className="relative">
+                              <summary
+                                className="list-none cursor-pointer text-[10px] font-bold text-slate-400 dark:text-slate-500 hover:text-orange-500 [&::-webkit-details-marker]:hidden"
+                                aria-label={`${matchLabel}: click to view logged by and updated by`}
+                                title="Click Match # to view logged by and updated by"
+                              >
+                                <span className="underline decoration-dotted underline-offset-2">{matchLabel}</span>
+                                <span className="ml-1.5 font-normal text-[9px]">· Click for details</span>
+                              </summary>
+                              <div className="absolute left-0 top-full z-20 mt-1 w-56 rounded-xl border border-orange-100 dark:border-slate-600 bg-white dark:bg-slate-800 p-3 shadow-lg text-xs text-slate-600 dark:text-slate-300">
+                                <p><span className="font-semibold">Logged by:</span> {m.loggedBy || "Not recorded"}</p>
+                                <p className="mt-1"><span className="font-semibold">Updated by:</span> {m.updatedBy || "Not recorded"}</p>
+                              </div>
+                            </details>
+                          ) : (
+                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500">{matchLabel}</p>
+                          )}
                           <div className="flex items-center gap-2">
-                            {canViewAttribution && (
-                              <details className="relative">
-                                <summary
-                                  className="list-none cursor-pointer p-1 rounded-full text-slate-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/30 [&::-webkit-details-marker]:hidden"
-                                  aria-label={`Show details for match #${dayNo}`}
-                                  title="Logged by and updated by"
-                                >
-                                  <Info size={14} />
-                                </summary>
-                                <div className="absolute left-0 top-full z-20 mt-1 w-56 rounded-xl border border-orange-100 dark:border-slate-600 bg-white dark:bg-slate-800 p-3 shadow-lg text-xs text-slate-600 dark:text-slate-300">
-                                  <p><span className="font-semibold">Logged by:</span> {m.loggedBy || "Not recorded"}</p>
-                                  <p className="mt-1"><span className="font-semibold">Updated by:</span> {m.updatedBy || "Not recorded"}</p>
-                                </div>
-                              </details>
-                            )}
                             {m.youtubeUrl && (
                               <a
                                 href={formatYoutubeUrl(m.youtubeUrl)}
