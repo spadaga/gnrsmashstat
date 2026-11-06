@@ -4,7 +4,8 @@ export default function GnrLoader({ message = "Getting the court ready…" }) {
   const patternId = useId();
   return (
     <div role="status" aria-live="polite" className="gnr-loader">
-      <div aria-hidden="true" className="gnr-loader-art">
+      <div aria-hidden="true" className="gnr-loader-art bg-white dark:bg-slate-900">
+        <div className="gnr-loader-scene">
         <div className="gnr-loader-hanger" />
         <div className="gnr-loader-letters">
           {["G", "N", "R"].map((letter, index) => (
@@ -42,10 +43,9 @@ export default function GnrLoader({ message = "Getting the court ready…" }) {
             <path d="M100 23V32M96 27H104M228 78V85M224 82H232" />
           </g>
         </svg>
+        </div>
       </div>
-      <p className="text-[10px] font-extrabold tracking-[.32em] uppercase text-orange-600 dark:text-orange-400">Smash. Play. Repeat.</p>
-      <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{message}</p>
-      <div aria-hidden="true" className="gnr-loader-progress"><span /></div>
+      <p className="mt-3 text-xs text-slate-600 dark:text-slate-300">{message}</p>
     </div>
   );
 }

@@ -306,9 +306,7 @@ export default function App() {
 
       {showSavingLoader && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/35 backdrop-blur-sm p-5">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl px-8 py-7 border border-orange-100 dark:border-slate-700">
-            <GnrLoader message="Saving your changes…" />
-          </div>
+          <GnrLoader message="Saving your changes…" />
         </div>
       )}
       {toast && (
