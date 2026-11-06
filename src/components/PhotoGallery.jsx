@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { ExternalLink, Image as ImageIcon, Settings2, Upload, X } from 'lucide-react'
+import { Image as ImageIcon, Settings2, Upload, X } from 'lucide-react'
 import Carousel from './Carousel'
 import ConfirmDialog from './ConfirmDialog'
 import { availableGalleryPhotos } from '../lib/photos'
+import googleAlbum from '../data/google-album.json'
 
 const MAX_PHOTOS = 50
-const GOOGLE_PHOTOS_ALBUM = 'https://photos.google.com/share/AF1QipOQnv9eda6OZ2l_1Q4mvhCIkoU75IZVHB8cujV0meU3pyG0iETzQLo8tQP2Iu9QhQ?key=VGpQWTlOSU9pUzBLWTlVNDd4amNReWd3TEhWbExB'
 const MAX_DIMENSION = 1600 // px, longest side
 // Vercel Serverless Functions hard-cap the request body at 4.5MB — mobile
 // camera photos (often 3-8MB) blow past that once base64-encoded (+33%).
@@ -56,7 +56,7 @@ export default function PhotoGallery({ photos = [], onAdd, onDelete, isAdmin }) 
   const [uploadError, setUploadError] = useState('')
   const [uploading, setUploading] = useState(false)
   const atLimit = photos.length >= MAX_PHOTOS
-  const galleryPhotos = availableGalleryPhotos(photos, failedSources)
+  const galleryPhotos = availableGalleryPhotos([...googleAlbum.images, ...photos], failedSources)
   const unavailableCount = photos.filter((photo) => !photo.dataUrl || failedSources.has(photo.dataUrl)).length
   const showingArchive = galleryPhotos.some((photo) => photo.archived)
 
@@ -98,19 +98,9 @@ export default function PhotoGallery({ photos = [], onAdd, onDelete, isAdmin }) 
           </div>
         )}
       </div>
-      <a
-        href={GOOGLE_PHOTOS_ALBUM}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center justify-between gap-3 min-h-11 px-3 py-2 mb-3 rounded-xl border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/40 transition focus-visible:outline-2 focus-visible:outline-orange-500"
-      >
-        <span className="flex items-center gap-2 text-sm font-semibold">
-          <ImageIcon size={18} className="shrink-0" /> Open Google Photos Album
-        </span>
-        <ExternalLink size={16} className="shrink-0" aria-hidden="true" />
-        <span className="sr-only">(opens in a new tab)</span>
-      </a>
-      <p className="text-xs text-slate-400 dark:text-slate-500 mb-3">{photos.length}/{MAX_PHOTOS} photos</p>
+      <p className="text-xs text-slate-400 dark:text-slate-500 mb-3">
+        {googleAlbum.images.length} album photos · {photos.length}/{MAX_PHOTOS} uploads
+      </p>
       {uploadError && <p role="alert" className="text-sm text-red-600 dark:text-red-400 mb-3">{uploadError}</p>}
       {unavailableCount > 0 && (
         <p role="status" className="text-xs text-amber-700 dark:text-amber-300 mb-3">
@@ -122,7 +112,7 @@ export default function PhotoGallery({ photos = [], onAdd, onDelete, isAdmin }) 
           </button>
         </p>
       )}
-      {photos.length === 0 ? (
+      {googleAlbum.images.length === 0 && photos.length === 0 ? (
         <div className="aspect-video rounded-xl bg-slate-50 dark:bg-slate-700 border border-dashed dark:border-slate-600 flex items-center justify-center">
           <div className="text-center text-slate-400">
             <ImageIcon size={32} className="mx-auto mb-1 text-slate-300" />
@@ -148,7 +138,7 @@ export default function PhotoGallery({ photos = [], onAdd, onDelete, isAdmin }) 
       ) : galleryPhotos.length > 0 ? (
         <Carousel items={galleryPhotos.map((p, index) => (
           <div key={p.id} className="aspect-video bg-slate-100 dark:bg-slate-700">
-            <img src={p.dataUrl} alt={`${p.archived ? 'Archived gallery' : 'Gallery'} photo ${index + 1}`} onError={() => markUnavailable(p.dataUrl)} className="w-full h-full object-cover" />
+            <img src={p.dataUrl} alt={`${p.archived ? 'Archived gallery' : 'Gallery'} photo ${index + 1}`} decoding="async" onError={() => markUnavailable(p.dataUrl)} className="w-full h-full object-contain" />
           </div>
         ))} />
       ) : (
