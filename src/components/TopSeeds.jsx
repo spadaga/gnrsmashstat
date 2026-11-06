@@ -278,7 +278,7 @@ export default function TopSeeds({
                       : matchesForPlayer(filtered, p.name),
                 })
               }
-              className="seed-card w-full min-h-36 text-left text-white rounded-2xl px-5 pt-5 pb-14 sm:px-6 sm:pt-6 relative overflow-hidden transition shadow-sm focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white"
+              className="seed-card w-full min-h-28 text-left text-white rounded-2xl px-5 py-3 sm:px-6 sm:py-4 relative overflow-hidden transition shadow-sm focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white"
             >
               <div className="seed-card-content flex items-start justify-between gap-3">
                 {/* Left Column: Pill + Name + Record */}

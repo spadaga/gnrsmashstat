@@ -310,7 +310,7 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                   <li>Names starting with the legacy Guest naming convention are excluded from individual and pair rankings. A free-text name without that convention can qualify normally.</li>
                   <li>Today enforces the 3/4-match eligibility rule for leaderboard rank badges only. Other leaderboard tabs list and rank everyone who played in that view.</li>
                   <li><strong>Top Seeds, in every tab:</strong> Most wins first, then fewer losses, then alphabetical order for equal records. No regular-player priority, match minimum, provisional status or Wilson-score sorting.</li>
-                  <li>Top Seeds shows up to 3 individuals or exact pairs in a carousel, changing every 4.5 seconds. Swipe or use the dots on the card to browse; pause automatic slides with the pause button. A single match is enough to appear. Overall includes Sundays there too.</li>
+                  <li>Top Seeds shows up to 3 individuals or exact pairs in a carousel, changing every 4.5 seconds. Swipe or use the keyboard arrow keys to browse. Automatic slides pause on hover or focus and respect reduced-motion settings. A single match is enough to appear. Overall includes Sundays there too.</li>
                 </ul>
               </div>
             </div>

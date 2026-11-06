@@ -1,20 +1,17 @@
-import { useEffect, useId, useRef, useState } from "react";
-import { Pause, Play } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 const DELAY = 4500;
 
 export default function SeedCarousel({ children }) {
   const [active, setActive] = useState(0);
-  const [paused, setPaused] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [touching, setTouching] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [visible, setVisible] = useState(true);
   const gesture = useRef(null);
-  const trackId = useId();
   const count = children.length;
-  const playing = count > 1 && !paused && !hovered && !focused && !touching && !reducedMotion && visible;
+  const playing = count > 1 && !hovered && !focused && !touching && !reducedMotion && visible;
 
   useEffect(() => {
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -79,7 +76,7 @@ export default function SeedCarousel({ children }) {
           setTouching(false);
         }}
       >
-        <div id={trackId} className="seed-carousel-track flex" style={{ transform: `translateX(-${active * 100}%)` }}>
+        <div className="seed-carousel-track flex" style={{ transform: `translateX(-${active * 100}%)` }}>
           {children.map((card, index) => (
             <div
               key={card.key || index}
@@ -95,33 +92,6 @@ export default function SeedCarousel({ children }) {
           ))}
         </div>
       </div>
-      {count > 1 && (
-        <div className="absolute inset-x-4 bottom-1 z-10 flex items-center justify-between gap-3 pointer-events-none">
-          <span className="text-[10px] font-bold tracking-widest text-white/90">{active + 1}/{count}</span>
-          <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1 pointer-events-auto" aria-label="Choose a top seed">
-            {children.map((card, index) => (
-              <button
-                key={card.key || index}
-                type="button"
-                aria-label={`Show top seed ${index + 1}`}
-                aria-current={index === active ? "true" : undefined}
-                aria-controls={trackId}
-                onClick={() => setActive(index)}
-                className="flex items-center justify-center min-w-8 min-h-11 rounded-lg focus-visible:outline-2 focus-visible:outline-white"
-              >
-                <span className={`seed-carousel-dot ${index === active ? "is-active" : ""}`} />
-              </button>
-            ))}
-          </div>
-          <div className="pointer-events-auto">
-            {!reducedMotion && (
-              <button type="button" onClick={() => setPaused((value) => !value)} aria-label={paused ? "Start automatic slides" : "Pause automatic slides"} aria-pressed={paused} className="seed-carousel-control">
-                {paused ? <Play size={14} /> : <Pause size={14} />}
-              </button>
-            )}
-          </div>
-        </div>
-      )}
     </section>
   );
 }

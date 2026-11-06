@@ -136,9 +136,9 @@ test('Top Seeds renders three carousel slides and manual navigation', () => {
   assert.equal((html.match(/aria-roledescription="slide"/g) || []).length, 3);
   assert.ok(html.includes('Top Seed #3'));
   assert.ok(!html.includes('Next top seed'));
-  assert.ok(html.includes('bottom-1'));
-  assert.ok(html.includes('Pause automatic slides'));
-  assert.ok(html.includes('Show top seed 3'));
+  assert.ok(!html.includes('Pause automatic slides'));
+  assert.ok(!html.includes('Show top seed 3'));
+  assert.ok(html.includes('min-h-28'));
   const empty = renderToStaticMarkup(React.createElement(TopSeeds, { matches: [], players }));
   assert.ok(!empty.includes('aria-roledescription="carousel"'));
 });
