@@ -10,13 +10,13 @@ import {
   Moon,
   Phone,
   Plus,
-  ShieldCheck,
   Sun,
   Trophy,
   Users,
   X,
 } from "lucide-react";
 import WilsonInfoModal from "./WilsonInfoModal";
+import Avatar from "./Avatar";
 
 const NAV_DESKTOP = [
   { key: "dashboard", label: "Dashboard" },
@@ -57,6 +57,7 @@ export default function Header({
   onNavigate,
   isAdmin,
   adminName,
+  adminPhoto,
   canViewHistory,
   onLoginClick,
   onLogout,
@@ -140,10 +141,10 @@ export default function Header({
           >
             {dark ? <Sun size={15} /> : <Moon size={15} />}
           </button>
-          {isAdmin ? (
+          {signedIn ? (
             <div className="flex items-center gap-2 ml-1">
-              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 text-xs font-semibold text-orange-700 dark:text-orange-400">
-                <ShieldCheck size={13} /> {adminName}
+              <span title={`Signed in as ${adminName}`} className="rounded-full p-0.5 ring-1 ring-orange-300 dark:ring-orange-700">
+                <Avatar name={adminName} photo={adminPhoto} size="md" />
               </span>
               <button
                 onClick={onLogout}
@@ -183,12 +184,14 @@ export default function Header({
               >
                 <Plus size={12} /> Log
               </button>
-              <span className="text-xs font-semibold text-orange-700 dark:text-orange-400 max-w-[80px] truncate">
-                {adminName}
-              </span>
             </>
           )}
-          {!isAdmin && (
+          {signedIn && (
+            <span title={`Signed in as ${adminName}`} className="rounded-full p-0.5 ring-1 ring-orange-300 dark:ring-orange-700">
+              <Avatar name={adminName} photo={adminPhoto} size="md" />
+            </span>
+          )}
+          {!signedIn && (
             <button
               onClick={onLoginClick}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold text-orange-600 border border-orange-200 dark:border-orange-800 hover:bg-orange-50 transition"
@@ -270,7 +273,7 @@ export default function Header({
               {dark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
           </div>
-          {isAdmin && (
+          {signedIn && (
             <button
               onClick={() => {
                 onLogout();

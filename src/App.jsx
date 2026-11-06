@@ -292,6 +292,7 @@ export default function App() {
         onNavigate={setPage}
         isAdmin={canLog}
         adminName={adminName}
+        adminPhoto={photoByName[adminName]}
         canViewHistory={isSuperAdmin}
         onLoginClick={() => setLoginOpen(true)}
         onLogout={handleLogout}
