@@ -46,7 +46,7 @@ function Logo() {
       <img
         src="/logo.jpeg"
         alt=""
-        className="pointer-events-none absolute left-0 top-full mt-2 w-40 h-40 rounded-xl object-cover shadow-2xl ring-1 ring-black/10 opacity-0 scale-95 origin-top-left transition duration-150 group-hover:opacity-100 group-hover:scale-100 z-50"
+        className="pointer-events-none absolute left-0 top-full mt-2 w-[min(24rem,calc(100vw-2rem))] h-auto max-h-[calc(100dvh-6rem)] rounded-xl object-contain bg-white dark:bg-slate-800 p-1.5 shadow-2xl ring-1 ring-black/10 opacity-0 scale-95 origin-top-left transition duration-150 group-hover:opacity-100 group-hover:scale-100 z-50"
       />
     </span>
   );
