@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { Image as ImageIcon, Settings2, Upload, X } from 'lucide-react'
+import { ExternalLink, Image as ImageIcon, Settings2, Upload, X } from 'lucide-react'
 import Carousel from './Carousel'
 import ConfirmDialog from './ConfirmDialog'
 import { availableGalleryPhotos } from '../lib/photos'
 
 const MAX_PHOTOS = 50
+const GOOGLE_PHOTOS_ALBUM = 'https://photos.google.com/share/AF1QipOQnv9eda6OZ2l_1Q4mvhCIkoU75IZVHB8cujV0meU3pyG0iETzQLo8tQP2Iu9QhQ?key=VGpQWTlOSU9pUzBLWTlVNDd4amNReWd3TEhWbExB'
 const MAX_DIMENSION = 1600 // px, longest side
 // Vercel Serverless Functions hard-cap the request body at 4.5MB — mobile
 // camera photos (often 3-8MB) blow past that once base64-encoded (+33%).
@@ -97,6 +98,18 @@ export default function PhotoGallery({ photos = [], onAdd, onDelete, isAdmin }) 
           </div>
         )}
       </div>
+      <a
+        href={GOOGLE_PHOTOS_ALBUM}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center justify-between gap-3 min-h-11 px-3 py-2 mb-3 rounded-xl border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/40 transition focus-visible:outline-2 focus-visible:outline-orange-500"
+      >
+        <span className="flex items-center gap-2 text-sm font-semibold">
+          <ImageIcon size={18} className="shrink-0" /> Open Google Photos Album
+        </span>
+        <ExternalLink size={16} className="shrink-0" aria-hidden="true" />
+        <span className="sr-only">(opens in a new tab)</span>
+      </a>
       <p className="text-xs text-slate-400 dark:text-slate-500 mb-3">{photos.length}/{MAX_PHOTOS} photos</p>
       {uploadError && <p role="alert" className="text-sm text-red-600 dark:text-red-400 mb-3">{uploadError}</p>}
       {unavailableCount > 0 && (
