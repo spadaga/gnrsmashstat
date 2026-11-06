@@ -55,12 +55,19 @@
 .seed-card { isolation: isolate; background: #ff4d00; }
 .seed-card-faces {
   position: absolute;
+  z-index: 0;
+  opacity: .6;
   inset: 8px 60px 44px 20%;
   display: flex;
   justify-content: flex-end;
   align-items: center;
   gap: 10px;
   pointer-events: none;
+}
+.seed-card-content {
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 1px 3px rgb(120 35 0 / .4);
 }
 .seed-card-portrait {
   position: relative;

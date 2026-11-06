@@ -294,7 +294,7 @@ export default function TopSeeds({
                   ))}
                 </div>
               )}
-              <div className="relative z-10 flex items-start justify-between gap-3">
+              <div className="seed-card-content flex items-start justify-between gap-3">
                 {/* Left Column: Pill + Name + Record */}
                 <div className="flex-1 min-w-0 pr-1">
                   <span
