@@ -262,6 +262,8 @@ export default function TopSeeds({
           const displayName =
             mode === "doubles" ? p.players.join(" & ") : p.name;
           const key = mode === "doubles" ? p.players.join("&") : p.name;
+          const portraitNames = (mode === "doubles" ? p.players : [p.name])
+            .filter((name) => photos[name]);
 
           return (
             <button
@@ -278,6 +280,19 @@ export default function TopSeeds({
               }
               className="seed-card w-full min-h-36 text-left text-white rounded-2xl px-5 pt-5 pb-14 sm:px-6 sm:pt-6 relative overflow-hidden transition shadow-sm focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white"
             >
+              {portraitNames.length > 0 && (
+                <div className="seed-card-faces" aria-hidden="true">
+                  {portraitNames.map((name) => (
+                    <img
+                      key={name}
+                      src={photos[name]}
+                      alt=""
+                      draggable={false}
+                      onError={(event) => { event.currentTarget.style.visibility = "hidden"; }}
+                    />
+                  ))}
+                </div>
+              )}
               <div className="relative z-10 flex items-start justify-between gap-3">
                 {/* Left Column: Pill + Name + Record */}
                 <div className="flex-1 min-w-0 pr-1">
