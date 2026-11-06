@@ -280,7 +280,7 @@ export default function TopSeeds({
               }
               className="seed-card w-full min-h-28 text-left text-white rounded-2xl px-5 py-3 sm:px-6 sm:py-4 relative overflow-hidden transition shadow-sm focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white"
             >
-              <div className="seed-card-content flex items-start justify-between gap-3">
+              <div className="seed-card-content flex items-start justify-between gap-3 lg:grid lg:grid-cols-3 lg:items-center">
                 {/* Left Column: Pill + Name + Record */}
                 <div className="flex-1 min-w-0 pr-1">
                   <span
@@ -302,7 +302,11 @@ export default function TopSeeds({
                   </p>
                 </div>
 
-                <div className="flex flex-col items-center shrink-0 gap-2">
+                <span className="hidden lg:block text-center text-2xl font-extrabold whitespace-nowrap text-white">
+                  {p.wins} {p.wins === 1 ? "Win" : "Wins"}
+                </span>
+
+                <div className="flex flex-col items-center shrink-0 gap-2 lg:justify-self-end">
                   {portraitNames.length > 0 && (
                     <div className="seed-card-faces" aria-hidden="true">
                       {portraitNames.map((name) => (
@@ -317,7 +321,7 @@ export default function TopSeeds({
                       ))}
                     </div>
                   )}
-                  <span className="text-sm sm:text-base font-extrabold whitespace-nowrap text-white">
+                  <span className="text-sm sm:text-base font-extrabold whitespace-nowrap text-white lg:hidden">
                     {p.wins} {p.wins === 1 ? "Win" : "Wins"}
                   </span>
                 </div>
