@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 dark:text-slate-500">
         <span>© {year} <span className="font-semibold text-orange-600">GNR SmashStats</span>. All rights reserved.</span>
         <span className="flex items-center gap-1">
-          🏸 GNR Team &nbsp;·&nbsp; {today}
+          🏸 GNR Team &nbsp;·&nbsp; 1 Mar 2026 – {today}
         </span>
       </div>
     </footer>
