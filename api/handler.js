@@ -1,11 +1,10 @@
 // Vercel serverless backend. Structured application data and snapshots live
-// in Neon Postgres; Vercel Blob is used only for uploaded photo binaries. Mirrors
+// in Neon Postgres; uploads use Blob when configured, otherwise Neon. Mirrors
 // the route contract of server/apiPlugin.js (the local dev/preview backend)
 // so src/lib/api.js works unchanged against either one.
 //
-// Requires DATABASE_URL (Neon pooled connection string) and a Blob store
-// connected to this project (BLOB_READ_WRITE_TOKEN).
-import { put, del } from "@vercel/blob";
+// Requires DATABASE_URL. Blob credentials are optional for uploads.
+import { del } from "@vercel/blob";
 import crypto from "node:crypto";
 import {
   addDue,
@@ -21,6 +20,7 @@ import {
   deleteSlotById,
   deleteVideoAt,
   getSnapshot,
+  getPhotoById,
   listSnapshots,
   readState as readDatabaseState,
   snapshotState,
@@ -30,6 +30,8 @@ import {
   updateSlotById,
   writeState,
 } from "./db.js";
+
+import { savePhoto as savePhotoBlob, decodePhoto, publicPhotos, publicState } from "./photo-storage.js";
 
 const MAX_PHOTOS = 50;
 const MAX_VIDEOS = 20;
@@ -74,27 +76,6 @@ async function readState() {
 
 const MAX_VERSIONS = 3;
 
-function parseDataUrl(dataUrl) {
-  const match = /^data:image\/(\w+);base64,(.+)$/.exec(dataUrl);
-  if (!match) throw new Error("Invalid image data");
-  return {
-    ext: match[1] === "jpeg" ? "jpg" : match[1],
-    mime: match[1],
-    buffer: Buffer.from(match[2], "base64"),
-  };
-}
-
-async function savePhotoBlob(dataUrl) {
-  const { ext, mime, buffer } = parseDataUrl(dataUrl);
-  const id = crypto.randomUUID();
-  const blob = await put(`photos/${id}.${ext}`, buffer, {
-    access: "public",
-    contentType: `image/${mime}`,
-    addRandomSuffix: false,
-  });
-  return { id, dataUrl: blob.url };
-}
-
 export default async function handler(req, res) {
   const { pathname } = new URL(req.url, "http://localhost");
   const parts = pathname.split("/").filter(Boolean); // ['api', 'state'] or ['api', 'players', 'Name']
@@ -103,6 +84,16 @@ export default async function handler(req, res) {
     parts[2] !== undefined ? decodeURIComponent(parts[2]) : undefined;
 
   try {
+    if (resource === "photos" && req.method === "GET" && parts[3] === "image") {
+      if (!/^[0-9a-f-]{36}$/i.test(param || "")) return res.status(404).end();
+      const photo = await getPhotoById(param);
+      if (!photo?.dataUrl?.startsWith("data:image/")) return res.status(404).end();
+      const { buffer, contentType } = decodePhoto(photo.dataUrl);
+      res.setHeader("Content-Type", contentType);
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("Cache-Control", "public, max-age=3600");
+      return res.status(200).send(buffer);
+    }
     const state = await readState();
 
     if (resource === "versions" && req.method === "GET") {
@@ -123,11 +114,11 @@ export default async function handler(req, res) {
       if (!restored)
         return res.status(404).json({ error: "Version not found" });
       await writeState(restored);
-      return res.status(200).json(restored);
+      return res.status(200).json(publicState(restored));
     }
 
     if (resource === "state" && req.method === "GET") {
-      return res.status(200).json(state);
+      return res.status(200).json(publicState(state));
     }
 
     if (resource === "export" && req.method === "GET") {
@@ -169,7 +160,7 @@ export default async function handler(req, res) {
         next.photos = index;
       }
       await writeState(next);
-      return res.status(200).json(next);
+      return res.status(200).json(publicState(next));
     }
 
     if (resource === "players") {
@@ -305,19 +296,19 @@ export default async function handler(req, res) {
         await snapshotState(state);
         return res
           .status(200)
-          .json(await addPhoto(await savePhotoBlob(dataUrl)));
+          .json(publicPhotos(await addPhoto(await savePhotoBlob(dataUrl))));
       }
       if (req.method === "DELETE") {
         const entry = state.photos.find((p) => p.id === param);
-        if (entry) await del(entry.dataUrl).catch(() => {});
+        if (entry?.dataUrl?.startsWith("https://")) await del(entry.dataUrl).catch(() => {});
         await snapshotState(state);
-        return res.status(200).json(await deletePhotoById(param));
+        return res.status(200).json(publicPhotos(await deletePhotoById(param)));
       }
     }
 
     return res.status(404).json({ error: "Not found" });
   } catch (err) {
-    const status = err.code === "DATABASE_NOT_CONFIGURED" ? 503 : 500;
+    const status = err.status || (err.code === "DATABASE_NOT_CONFIGURED" ? 503 : 500);
     return res
       .status(status)
       .json({

@@ -813,3 +813,7 @@ Deployment prerequisites/checks:
 ---
 
 _CLAUDE.md is updated with every code change to stay in sync._
+
+### Photo upload credential fallback
+
+Photo uploads use Vercel Blob when its token or OIDC store is configured. Missing Blob credentials fall back to inline image data in Neon (3 MB compressed limit, 50 uploads). Public state responses expose `/api/photos/:id/image` URLs; exports and daily snapshots retain the original bytes. These fallback uploads consume Neon database space. Other Blob failures remain visible rather than silently changing storage.

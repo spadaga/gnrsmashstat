@@ -480,6 +480,12 @@ export async function deleteVideoAt(index) {
   return selectVideos(getPool());
 }
 
+export async function getPhotoById(id) {
+  await ensureSchema();
+  const { rows } = await getPool().query('SELECT id, data_url FROM photos WHERE id = $1', [id]);
+  return rows[0] ? { id: rows[0].id, dataUrl: rows[0].data_url } : null;
+}
+
 export async function addPhoto({ id, dataUrl }) {
   await ensureSchema();
   await getPool().query(`INSERT INTO photos (id, data_url) VALUES ($1,$2)`, [

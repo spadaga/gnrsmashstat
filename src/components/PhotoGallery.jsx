@@ -10,7 +10,7 @@ const MAX_DIMENSION = 1600 // px, longest side
 // Vercel Serverless Functions hard-cap the request body at 4.5MB — mobile
 // camera photos (often 3-8MB) blow past that once base64-encoded (+33%).
 // Downscale + recompress client-side so uploads stay well under the limit.
-const MAX_UPLOAD_BYTES = 3.5 * 1024 * 1024
+const MAX_UPLOAD_BYTES = 3 * 1024 * 1024
 
 function readAsDataURL(file) {
   return new Promise((resolve, reject) => {
@@ -33,7 +33,9 @@ async function prepareUpload(file) {
   try {
     bitmap = await createImageBitmap(file)
   } catch {
-    return readAsDataURL(file)
+    const original = await readAsDataURL(file)
+    if (dataUrlBytes(original) > MAX_UPLOAD_BYTES) throw new Error('Please choose a smaller photo (under 3 MB).')
+    return original
   }
   const scale = Math.min(1, MAX_DIMENSION / Math.max(bitmap.width, bitmap.height))
   const canvas = document.createElement('canvas')
@@ -46,7 +48,7 @@ async function prepareUpload(file) {
     const dataUrl = canvas.toDataURL('image/jpeg', quality)
     if (dataUrlBytes(dataUrl) <= MAX_UPLOAD_BYTES) return dataUrl
   }
-  return canvas.toDataURL('image/jpeg', 0.4)
+  throw new Error('Please choose a smaller photo (under 3 MB).')
 }
 
 export default function PhotoGallery({ photos = [], onAdd, onDelete, isAdmin }) {

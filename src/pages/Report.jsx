@@ -1356,7 +1356,6 @@ function RecordUpdatesSection({ matches = [], photoByName = {} }) {
                   const team1Won = m.score1 > m.score2;
                   const logTime = formatLogTime(m.updatedAt || m.loggedAt);
                   const editorName = m.updatedBy || m.loggedBy;
-                  const isEdit = m.updatedBy && m.loggedBy && m.updatedBy !== m.loggedBy;
 
                   return (
                     <div
@@ -1373,16 +1372,16 @@ function RecordUpdatesSection({ matches = [], photoByName = {} }) {
                                 size="xs"
                                 className="!w-3.5 !h-3.5 !text-[7px]"
                               />
-                              {isEdit ? `Updated by ${m.updatedBy}` : `Logged by ${editorName}`}
+                              {m.updatedBy ? `Updated by ${m.updatedBy}` : `Logged by ${editorName}`}
                             </span>
                           ) : (
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
                               Earlier Record
                             </span>
                           )}
-                          {isEdit && m.loggedBy && (
+                          {m.updatedBy && m.loggedBy && (
                             <span className="text-[10px] text-slate-400">
-                              (logged by {m.loggedBy})
+                              Logged by {m.loggedBy}
                             </span>
                           )}
                         </div>

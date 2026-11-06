@@ -553,9 +553,8 @@ export default function MatchList({
                           </p>
                           {canViewAttribution && (m.updatedBy || m.loggedBy) && (
                             <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 truncate max-w-[14rem]">
-                              {m.updatedBy && m.loggedBy && m.updatedBy !== m.loggedBy
-                                ? `Updated by ${m.updatedBy}`
-                                : `Logged by ${m.loggedBy || m.updatedBy}`}
+                              {m.loggedBy && <span className="block">Logged by {m.loggedBy}</span>}
+                              {m.updatedBy && <span className="block">Updated by {m.updatedBy}</span>}
                             </span>
                           )}
                         </div>
