@@ -20,6 +20,35 @@
 .animate-ticker { animation: ticker 30s linear infinite; }
 .animate-ticker:hover { animation-play-state: paused; }
 
+.gnr-loader { width: min(280px, 100%); text-align: center; animation: gnr-loader-enter 450ms ease-out both; }
+.gnr-loader-art { position: relative; width: 260px; max-width: 100%; margin: 0 auto; color: #ea580c; }
+.gnr-loader-hanger { height: 4px; margin: 0 30px; border-radius: 10px; background: linear-gradient(90deg, transparent, #ea580c 20%, #ea580c 80%, transparent); }
+.gnr-loader-letters { display: flex; justify-content: center; gap: 12px; height: 112px; }
+.gnr-loader-letter { position: relative; padding-top: 32px; transform-origin: center top; animation: gnr-loader-swing 2400ms cubic-bezier(.45, 0, .55, 1) infinite; animation-delay: calc(var(--letter-index) * -250ms); }
+.gnr-loader-letter::before { content: ""; position: absolute; left: calc(50% - 1px); top: 0; width: 2px; height: 36px; background: linear-gradient(#fb923c, #c2410c); }
+.gnr-loader-letter span { position: relative; display: grid; place-items: center; width: 56px; height: 64px; border-radius: 12px; background: linear-gradient(145deg, #f97316, #c2410c); box-shadow: 0 7px 18px #ea580c26, inset 0 1px 0 #ffffff60; font-size: 35px; font-weight: 950; color: white; }
+.gnr-loader-letter span::before { content: ""; position: absolute; top: 7px; width: 5px; height: 5px; border-radius: 50%; background: #7c2d12; box-shadow: 0 1px 0 #ffffff50; }
+.gnr-loader-court { display: block; width: 100%; height: auto; margin-top: -3px; }
+.gnr-loader-racket { transform-origin: 104px 130px; animation: gnr-loader-smash 2400ms ease-in-out infinite; }
+.gnr-loader-shuttle { animation: gnr-loader-shuttle 2400ms cubic-bezier(.45, 0, .55, 1) infinite; }
+.gnr-loader-flight { animation: gnr-loader-trail 2400ms ease-in-out infinite; }
+.gnr-loader-spark { animation: gnr-loader-spark 2400ms ease-in-out infinite; }
+.gnr-loader-shadow { transform-origin: center; animation: gnr-loader-shadow 2400ms ease-in-out infinite; }
+.gnr-loader-progress { height: 3px; width: 100px; margin: 20px auto 0; overflow: hidden; border-radius: 8px; background: #f9731620; }
+.gnr-loader-progress span { display: block; width: 45%; height: 100%; border-radius: inherit; background: #ea580c; animation: gnr-loader-progress 1600ms ease-in-out infinite; }
+@keyframes gnr-loader-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes gnr-loader-swing { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+@keyframes gnr-loader-smash { 0%, 100% { transform: rotate(-10deg); } 35% { transform: rotate(13deg); } 55% { transform: rotate(-15deg); } }
+@keyframes gnr-loader-shuttle { 0%, 100% { transform: translate(-35px, 13px); } 50% { transform: translate(35px, -9px); } }
+@keyframes gnr-loader-trail { 0%, 100% { stroke-dashoffset: 0; opacity: .15; } 50% { stroke-dashoffset: -25; opacity: .4; } }
+@keyframes gnr-loader-spark { 0%, 40%, 100% { opacity: .1; } 50%, 65% { opacity: .8; } }
+@keyframes gnr-loader-shadow { 0%, 100% { transform: scaleX(.9); } 50% { transform: scaleX(1.05); } }
+@keyframes gnr-loader-progress { 0% { transform: translateX(-110%); } 100% { transform: translateX(330%); } }
+@media (prefers-reduced-motion: reduce) {
+  .gnr-loader, .gnr-loader *, .gnr-loader *::before { animation: none !important; }
+  .gnr-loader-progress span { width: 100%; opacity: .6; }
+}
+
 .seed-carousel-track {
   transition: transform 750ms cubic-bezier(0.22, 1, 0.36, 1);
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import GnrLoader from "./components/GnrLoader";
 import * as api from "./lib/api";
 import {
   playerNames,
@@ -160,8 +160,8 @@ export default function App() {
 
   if (!data) {
     return (
-      <div className="min-h-screen flex items-center justify-center gap-2 text-slate-400 dark:bg-slate-900 dark:text-slate-500">
-        <Loader2 size={20} className="animate-spin" /> Loading…
+      <div className="min-h-screen flex items-center justify-center bg-orange-50/40 dark:bg-slate-950 p-6">
+        <GnrLoader />
       </div>
     );
   }
@@ -297,12 +297,9 @@ export default function App() {
       />
 
       {busy && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-[2px]">
-          <div className="flex items-center gap-3 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl px-6 py-4">
-            <Loader2 size={22} className="animate-spin text-orange-600" />
-            <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-              Saving…
-            </span>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/35 backdrop-blur-sm p-5">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl px-8 py-7 border border-orange-100 dark:border-slate-700">
+            <GnrLoader message="Saving your changes…" />
           </div>
         </div>
       )}
