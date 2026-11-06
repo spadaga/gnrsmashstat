@@ -283,13 +283,14 @@ export default function TopSeeds({
               {portraitNames.length > 0 && (
                 <div className="seed-card-faces" aria-hidden="true">
                   {portraitNames.map((name) => (
-                    <img
-                      key={name}
-                      src={photos[name]}
-                      alt=""
-                      draggable={false}
-                      onError={(event) => { event.currentTarget.style.visibility = "hidden"; }}
-                    />
+                    <span key={name} className="seed-card-portrait">
+                      <img
+                        src={photos[name]}
+                        alt=""
+                        draggable={false}
+                        onError={(event) => { event.currentTarget.parentElement.style.visibility = "hidden"; }}
+                      />
+                    </span>
                   ))}
                 </div>
               )}
@@ -315,7 +316,7 @@ export default function TopSeeds({
                   </p>
                 </div>
 
-                {/* Right Column: Score & Photos */}
+                {/* Right Column: Wins */}
                 <div className="flex flex-col items-end shrink-0 gap-1.5">
                   <div className="text-right">
                     <span className="text-lg sm:text-xl font-black block leading-none">
@@ -328,32 +329,6 @@ export default function TopSeeds({
                     </span>
                   </div>
 
-                  {/* Top Seed Photos */}
-                  <div className="flex items-center gap-1.5 pt-0.5">
-                    {mode === "doubles" ? (
-                      <>
-                        <Avatar
-                          name={p.players[0]}
-                          photo={photos[p.players[0]]}
-                          size="sm"
-                          className="ring-2 ring-white/40"
-                        />
-                        <Avatar
-                          name={p.players[1]}
-                          photo={photos[p.players[1]]}
-                          size="sm"
-                          className="ring-2 ring-white/40"
-                        />
-                      </>
-                    ) : (
-                      <Avatar
-                        name={p.name}
-                        photo={photos[p.name]}
-                        size="md"
-                        className="ring-2 ring-white/40"
-                      />
-                    )}
-                  </div>
                 </div>
               </div>
             </button>
