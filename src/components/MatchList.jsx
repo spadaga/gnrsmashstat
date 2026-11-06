@@ -134,6 +134,22 @@ export default function MatchList({
   const [deleting, setDeleting] = useState(false);
   const listContainerRef = useRef(null);
   const rootRef = useRef(null);
+  useEffect(() => {
+    const closeDetails = (event) => {
+      rootRef.current?.querySelectorAll('details[data-match-details][open]').forEach((details) => {
+        if (event.type === 'keydown' ? event.key === 'Escape' : !details.contains(event.target)) {
+          details.open = false;
+        }
+      });
+    };
+    document.addEventListener('pointerdown', closeDetails);
+    document.addEventListener('keydown', closeDetails);
+    return () => {
+      document.removeEventListener('pointerdown', closeDetails);
+      document.removeEventListener('keydown', closeDetails);
+    };
+  }, []);
+
   const prevCountRef = useRef(matches.length);
   useEffect(() => {
     if (matches.length > prevCountRef.current) {
@@ -536,14 +552,13 @@ export default function MatchList({
                     <div className="flex items-center gap-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-0.5">
-                            <details className="relative">
+                            <details className="relative" data-match-details>
                               <summary
                                 className="list-none cursor-pointer text-[10px] font-bold text-slate-400 dark:text-slate-500 hover:text-orange-500 [&::-webkit-details-marker]:hidden"
                                 aria-label={`${matchLabel}: click to view logged by and updated by`}
                                 title="Click Match # to view logged by and updated by"
                               >
                                 <span className="underline decoration-dotted underline-offset-2">{matchLabel}</span>
-                                <span className="ml-1.5 font-normal text-[9px]">· Click for details</span>
                               </summary>
                               <div className="absolute left-0 top-full z-20 mt-1 w-56 rounded-xl border border-orange-100 dark:border-slate-600 bg-white dark:bg-slate-800 p-3 shadow-lg text-xs text-slate-600 dark:text-slate-300">
                                 <p><span className="font-semibold">Logged by:</span> {m.loggedBy || "Not recorded"}</p>

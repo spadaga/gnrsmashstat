@@ -164,7 +164,7 @@ test('match attribution details are available to every role and signed-out visit
   assert.ok(anonymous.includes('Logger Name'));
   assert.ok(anonymous.includes('Editor Name'));
   assert.ok(anonymous.includes('<details'));
-  assert.ok(anonymous.includes('Click for details'));
+  assert.ok(!anonymous.includes('Click for details'));
   assert.ok(!anonymous.includes('<details open'));
 });
 
