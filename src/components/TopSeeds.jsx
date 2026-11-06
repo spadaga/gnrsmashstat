@@ -262,6 +262,8 @@ export default function TopSeeds({
           const displayName =
             mode === "doubles" ? p.players.join(" & ") : p.name;
           const key = mode === "doubles" ? p.players.join("&") : p.name;
+          const portraitNames = (mode === "doubles" ? p.players : [p.name])
+            .filter((name) => photos[name]);
 
           return (
             <button
@@ -281,6 +283,19 @@ export default function TopSeeds({
                 ["seed-card-first", "seed-card-second", "seed-card-third"][i]
               }
             >
+              {portraitNames.length > 0 && (
+                <div className="seed-card-portraits" aria-hidden="true">
+                  {portraitNames.map((name) => (
+                    <img
+                      key={name}
+                      src={photos[name]}
+                      alt=""
+                      draggable={false}
+                      onError={(event) => { event.currentTarget.style.visibility = "hidden"; }}
+                    />
+                  ))}
+                </div>
+              )}
               <Trophy
                 size={64}
                 className="absolute -bottom-3 -right-3 pointer-events-none text-white/15"
