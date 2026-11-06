@@ -14,6 +14,7 @@ const {
 const { localISODate } = await server.ssrLoadModule('/src/lib/date.js');
 const { default: Leaderboard } = await server.ssrLoadModule('/src/components/Leaderboard.jsx');
 const { default: TopSeeds } = await server.ssrLoadModule('/src/components/TopSeeds.jsx');
+const { default: MatchList } = await server.ssrLoadModule('/src/components/MatchList.jsx');
 const players = ['Visitor', 'Partner', 'Suresh Padaga', 'HR'];
 const rankOptions = { qualifiedOnly: true, prioritizeRegular: false };
 const games = (count, team1 = players.slice(0, 2), team2 = players.slice(2)) =>
@@ -137,4 +138,21 @@ test('Top Seeds renders three carousel slides and manual navigation', () => {
   assert.ok(html.includes('Show top seed 3'));
   const empty = renderToStaticMarkup(React.createElement(TopSeeds, { matches: [], players }));
   assert.ok(!empty.includes('aria-roledescription="carousel"'));
+});
+
+test('match attribution labels are visible only to the Admin role', () => {
+  const matches = [{ ...games(1)[0], loggedBy: 'Logger Name' }];
+  for (const role of ['admin', 'score_editor', 'video_editor', 'match_logger', 'contributor']) {
+    const html = renderToStaticMarkup(React.createElement(MatchList, {
+      matches,
+      players: [{ name: 'Signed In', role }],
+      adminName: 'Signed In',
+      isAdmin: true,
+    }));
+    assert.equal(html.includes('Logged by Logger Name'), role === 'admin');
+  }
+  const anonymous = renderToStaticMarkup(React.createElement(MatchList, {
+    matches, players: [], isAdmin: false,
+  }));
+  assert.ok(!anonymous.includes('Logged by Logger Name'));
 });

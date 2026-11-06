@@ -15,6 +15,7 @@ import {
   sortPlayersByTier,
 } from "../lib/ranking";
 import { localISODate } from "../lib/date";
+import { getPlayerRole } from "../lib/admins";
 import MatchEditModal from "./MatchEditModal";
 import YoutubeIcon from "./YoutubeIcon";
 
@@ -134,6 +135,12 @@ export default function MatchList({
   const [deleting, setDeleting] = useState(false);
   const listContainerRef = useRef(null);
   const rootRef = useRef(null);
+  const signedInPlayer = adminName && players.find((player) =>
+    String(typeof player === "string" ? player : player.name).trim().toLowerCase() ===
+    adminName.trim().toLowerCase(),
+  );
+  const canViewAttribution = isSuperAdmin ||
+    (Boolean(adminName) && getPlayerRole(signedInPlayer || adminName) === "admin");
 
   const prevCountRef = useRef(matches.length);
   useEffect(() => {
@@ -544,7 +551,7 @@ export default function MatchList({
                                 " · Overall #" +
                                 seqById.get(m.id)}
                           </p>
-                          {(m.updatedBy || m.loggedBy) && (
+                          {canViewAttribution && (m.updatedBy || m.loggedBy) && (
                             <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 truncate max-w-[14rem]">
                               {m.updatedBy && m.loggedBy && m.updatedBy !== m.loggedBy
                                 ? `Updated by ${m.updatedBy}`
