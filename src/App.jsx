@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import GnrLoader from "./components/GnrLoader";
 import { SignedInContext } from "./lib/session";
+import useMinimumLoading from "./lib/useMinimumLoading";
 import * as api from "./lib/api";
 import {
   playerNames,
@@ -33,6 +34,8 @@ export default function App() {
   const [data, setData] = useState(null);
   const [loadError, setLoadError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const showStartupLoader = useMinimumLoading(!data);
+  const showSavingLoader = useMinimumLoading(busy);
   const [toast, setToast] = useState(null);
   const [adminName, setAdminName] = useState(
     () => localStorage.getItem("adminName") || null,
@@ -161,7 +164,7 @@ export default function App() {
     );
   }
 
-  if (!data) {
+  if (showStartupLoader || !data) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-orange-50/40 dark:bg-slate-950 p-6">
         <GnrLoader />
@@ -301,7 +304,7 @@ export default function App() {
         onVersionsClick={() => setVersionsOpen(true)}
       />
 
-      {busy && (
+      {showSavingLoader && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/35 backdrop-blur-sm p-5">
           <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl px-8 py-7 border border-orange-100 dark:border-slate-700">
             <GnrLoader message="Saving your changes…" />
