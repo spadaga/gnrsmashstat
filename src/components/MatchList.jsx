@@ -1,6 +1,7 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import {
   AlertTriangle,
+  Info,
   Loader2,
   Pencil,
   Search,
@@ -542,7 +543,7 @@ export default function MatchList({
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex-1">
-                        <div className="flex items-center justify-between gap-2 mb-0.5">
+                        <div className="flex items-center gap-2 mb-0.5">
                           <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
                             {mode === "today"
                               ? "Match #" + dayNo
@@ -551,12 +552,35 @@ export default function MatchList({
                                 " · Overall #" +
                                 seqById.get(m.id)}
                           </p>
-                          {canViewAttribution && (m.updatedBy || m.loggedBy) && (
-                            <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 truncate max-w-[14rem]">
-                              {m.loggedBy && <span className="block">Logged by {m.loggedBy}</span>}
-                              {m.updatedBy && <span className="block">Updated by {m.updatedBy}</span>}
-                            </span>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {canViewAttribution && (
+                              <details className="relative">
+                                <summary
+                                  className="list-none cursor-pointer p-1 rounded-full text-slate-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/30 [&::-webkit-details-marker]:hidden"
+                                  aria-label={`Show details for match #${dayNo}`}
+                                  title="Logged by and updated by"
+                                >
+                                  <Info size={14} />
+                                </summary>
+                                <div className="absolute left-0 top-full z-20 mt-1 w-56 rounded-xl border border-orange-100 dark:border-slate-600 bg-white dark:bg-slate-800 p-3 shadow-lg text-xs text-slate-600 dark:text-slate-300">
+                                  <p><span className="font-semibold">Logged by:</span> {m.loggedBy || "Not recorded"}</p>
+                                  <p className="mt-1"><span className="font-semibold">Updated by:</span> {m.updatedBy || "Not recorded"}</p>
+                                </div>
+                              </details>
+                            )}
+                            {m.youtubeUrl && (
+                              <a
+                                href={formatYoutubeUrl(m.youtubeUrl)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition hover:scale-110 shrink-0"
+                                aria-label={`Watch match #${dayNo} on YouTube`}
+                                title="Watch match on YouTube"
+                              >
+                                <YoutubeIcon size={17} />
+                              </a>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center gap-3 text-sm">
                           {/* Left side: Always winning team in green */}
@@ -601,19 +625,8 @@ export default function MatchList({
                           </p>
                         )}
                       </div>
-                      {/* Action buttons & YouTube video link */}
+                      {/* Edit and delete actions */}
                       <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 shrink-0">
-                        {m.youtubeUrl && (
-                          <a
-                            href={formatYoutubeUrl(m.youtubeUrl)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition hover:scale-110 shrink-0"
-                            title="Watch match on YouTube"
-                          >
-                            <YoutubeIcon size={17} />
-                          </a>
-                        )}
                         {canEdit && (
                           <button
                             onClick={() => setEditingMatch(m)}

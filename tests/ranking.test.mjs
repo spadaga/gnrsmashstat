@@ -144,7 +144,7 @@ test('Top Seeds renders three carousel slides and manual navigation', () => {
 });
 
 test('match attribution labels are visible only to the Admin role', () => {
-  const matches = [{ ...games(1)[0], loggedBy: 'Logger Name' }];
+  const matches = [{ ...games(1)[0], loggedBy: 'Logger Name', updatedBy: 'Editor Name', youtubeUrl: 'https://youtu.be/test' }];
   for (const role of ['admin', 'score_editor', 'video_editor', 'match_logger', 'contributor']) {
     const html = renderToStaticMarkup(React.createElement(MatchList, {
       matches,
@@ -152,12 +152,17 @@ test('match attribution labels are visible only to the Admin role', () => {
       adminName: 'Signed In',
       isAdmin: true,
     }));
-    assert.equal(html.includes('Logged by Logger Name'), role === 'admin');
+    assert.equal(html.includes('Logger Name'), role === 'admin');
+    assert.equal(html.includes('Editor Name'), role === 'admin');
+    assert.equal(html.includes('<details'), role === 'admin');
+    assert.ok(!html.includes('<details open'));
+    assert.equal((html.match(/title="Watch match on YouTube"/g) || []).length, 1);
   }
   const anonymous = renderToStaticMarkup(React.createElement(MatchList, {
     matches, players: [], isAdmin: false,
   }));
-  assert.ok(!anonymous.includes('Logged by Logger Name'));
+  assert.ok(!anonymous.includes('Logger Name'));
+  assert.ok(!anonymous.includes('Editor Name'));
 });
 
 test('signed-out navigation hides Players, Report and Rankings Info', () => {
