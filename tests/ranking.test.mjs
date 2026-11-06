@@ -15,6 +15,9 @@ const { localISODate } = await server.ssrLoadModule('/src/lib/date.js');
 const { default: Leaderboard } = await server.ssrLoadModule('/src/components/Leaderboard.jsx');
 const { default: TopSeeds } = await server.ssrLoadModule('/src/components/TopSeeds.jsx');
 const { default: MatchList } = await server.ssrLoadModule('/src/components/MatchList.jsx');
+const { default: Header } = await server.ssrLoadModule('/src/components/Header.jsx');
+const { default: Info } = await server.ssrLoadModule('/src/components/Info.jsx');
+const { SignedInContext } = await server.ssrLoadModule('/src/lib/session.jsx');
 const players = ['Visitor', 'Partner', 'Suresh Padaga', 'HR'];
 const rankOptions = { qualifiedOnly: true, prioritizeRegular: false };
 const games = (count, team1 = players.slice(0, 2), team2 = players.slice(2)) =>
@@ -155,4 +158,23 @@ test('match attribution labels are visible only to the Admin role', () => {
     matches, players: [], isAdmin: false,
   }));
   assert.ok(!anonymous.includes('Logged by Logger Name'));
+});
+
+test('signed-out navigation hides Players, Report and Rankings Info', () => {
+  const publicHeader = renderToStaticMarkup(React.createElement(Header, { page: 'dashboard' }));
+  for (const label of ['Players', 'Report', 'Rankings Info']) assert.ok(!publicHeader.includes(label));
+  assert.ok(publicHeader.includes('Dashboard'));
+  assert.ok(publicHeader.includes('Court Slots'));
+  const privateHeader = renderToStaticMarkup(React.createElement(Header, {
+    page: 'dashboard', adminName: 'Signed In', isAdmin: true,
+  }));
+  for (const label of ['Players', 'Report', 'Rankings Info']) assert.ok(privateHeader.includes(label));
+});
+
+test('inline ranking Info buttons require a signed-in session', () => {
+  assert.equal(renderToStaticMarkup(React.createElement(Info)), '');
+  const signedIn = renderToStaticMarkup(React.createElement(SignedInContext, {
+    value: true,
+  }, React.createElement(Info)));
+  assert.ok(signedIn.includes('Wilson Score Formula'));
 });

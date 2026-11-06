@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { SignedInContext } from "../lib/session";
 import { Info as InfoIcon } from "lucide-react";
 import { WilsonInfoModal } from "./WilsonInfoModal";
 
 export default function Info() {
   const [open, setOpen] = useState(false);
+  const signedIn = useContext(SignedInContext);
+  if (!signedIn) return null;
 
   return (
     <>

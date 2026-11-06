@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import GnrLoader from "./components/GnrLoader";
+import { SignedInContext } from "./lib/session";
 import * as api from "./lib/api";
 import {
   playerNames,
@@ -133,6 +134,8 @@ export default function App() {
 
   function handleLogout() {
     setAdminName(null);
+    setPage("dashboard");
+    setVersionsOpen(false);
     localStorage.removeItem("adminName");
     setToast({ type: "success", message: "Logged out" });
   }
@@ -282,6 +285,7 @@ export default function App() {
   };
 
   return (
+    <SignedInContext value={Boolean(adminName)}>
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
       <Header
         page={page}
@@ -339,7 +343,7 @@ export default function App() {
             adminName={adminName}
           />
         )}
-        {page === "players" && (
+        {page === "players" && adminName && (
           <Players
             players={data.players}
             actions={actions}
@@ -350,7 +354,7 @@ export default function App() {
         {page === "slots" && (
           <Slots slots={data.slots} actions={actions} isAdmin={isSuperAdmin} />
         )}
-        {page === "report" && (
+        {page === "report" && adminName && (
           <Report
             data={{ matches: data.matches, players: names, dues: data.dues }}
             actions={actions}
@@ -390,5 +394,6 @@ export default function App() {
         }}
       />
     </div>
+    </SignedInContext>
   );
 }

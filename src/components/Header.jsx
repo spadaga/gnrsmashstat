@@ -21,9 +21,9 @@ import WilsonInfoModal from "./WilsonInfoModal";
 const NAV_DESKTOP = [
   { key: "dashboard", label: "Dashboard" },
   { key: "log", label: "Log Match", icon: Plus, adminOnly: true },
-  { key: "players", label: "Players", icon: Users },
+  { key: "players", label: "Players", icon: Users, loginOnly: true },
   { key: "slots", label: "Court Slots", icon: CalendarClock },
-  { key: "report", label: "Report", icon: BarChart3 },
+  { key: "report", label: "Report", icon: BarChart3, loginOnly: true },
 ];
 
 function Logo() {
@@ -66,6 +66,7 @@ export default function Header({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+  const signedIn = Boolean(adminName);
 
   function nav(key) {
     onNavigate(key);
@@ -96,7 +97,7 @@ export default function Header({
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1 flex-wrap flex-1 justify-end">
-          {NAV_DESKTOP.filter(({ adminOnly }) => !adminOnly || isAdmin).map(
+          {NAV_DESKTOP.filter(({ adminOnly, loginOnly }) => (!adminOnly || isAdmin) && (!loginOnly || signedIn)).map(
             ({ key, label, icon: Icon }) => (
               <button
                 key={key}
@@ -120,13 +121,13 @@ export default function Header({
               <Clock size={14} /> History
             </button>
           )}
-          <button
+          {signedIn && <button
             onClick={() => setInfoOpen(true)}
             title="Rankings, Top Seeds & Roles Guidelines"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-orange-50 dark:hover:bg-orange-950/40 hover:text-orange-600 dark:hover:text-orange-400 transition"
           >
             <Trophy size={14} className="text-orange-500" /> Rankings Info
-          </button>
+          </button>}
           <a
             href="tel:7569475439"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
@@ -163,13 +164,13 @@ export default function Header({
 
         {/* Mobile right-side controls */}
         <div className="md:hidden flex items-center gap-1.5">
-          <button
+          {signedIn && <button
             onClick={() => setInfoOpen(true)}
             title="Rankings, Top Seeds & Roles Guidelines"
             className="p-1.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-orange-950/40 hover:text-orange-600 dark:hover:text-orange-400 transition"
           >
             <Trophy size={16} className="text-orange-500" />
-          </button>
+          </button>}
           {isAdmin && (
             <>
               <button
@@ -213,25 +214,25 @@ export default function Header({
           >
             Dashboard
           </button>
-          <button
+          {signedIn && <button
             onClick={() => nav("players")}
             className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition ${page === "players" ? "bg-orange-600 text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"}`}
           >
             <Users size={15} /> Players
-          </button>
+          </button>}
           <button
             onClick={() => nav("slots")}
             className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition ${page === "slots" ? "bg-orange-600 text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"}`}
           >
             <CalendarClock size={15} /> Court Slots
           </button>
-          <button
+          {signedIn && <button
             onClick={() => nav("report")}
             className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition ${page === "report" ? "bg-orange-600 text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"}`}
           >
             <BarChart3 size={15} /> Report
-          </button>
-          <button
+          </button>}
+          {signedIn && <button
             onClick={() => {
               setInfoOpen(true);
               setMenuOpen(false);
@@ -240,7 +241,7 @@ export default function Header({
           >
             <Trophy size={15} className="text-orange-500" /> Rankings & Roles
             Info
-          </button>
+          </button>}
           {canViewHistory && (
             <button
               onClick={() => {
@@ -283,7 +284,7 @@ export default function Header({
         </div>
       )}
 
-      <WilsonInfoModal open={infoOpen} onClose={() => setInfoOpen(false)} />
+      {signedIn && <WilsonInfoModal open={infoOpen} onClose={() => setInfoOpen(false)} />}
     </header>
   );
 }
