@@ -169,7 +169,7 @@ export default function PlayerActivity({
           return (
             <div
               key={p.name}
-              className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-slate-50/70 dark:bg-slate-750 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition cursor-pointer border border-slate-100 dark:border-slate-700/50"
+              className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-slate-50/70 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer border border-slate-100 dark:border-slate-700"
               onClick={() =>
                 setDrilldown({
                   title: `${p.name} matches`,
@@ -259,8 +259,8 @@ export default function PlayerActivity({
                 </span>
                 {/* Mobile-only win/loss summary */}
                 <div className="block xs:hidden sm:hidden text-[10px] text-slate-400">
-                  <span className="text-emerald-600 font-bold">{p.wins}W</span>{" "}
-                  <span className="text-red-500 font-bold">{p.losses}L</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">{p.wins}W</span>{" "}
+                  <span className="text-red-500 dark:text-red-400 font-bold">{p.losses}L</span>
                 </div>
               </div>
             </div>
