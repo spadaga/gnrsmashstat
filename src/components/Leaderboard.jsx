@@ -199,13 +199,13 @@ export default function Leaderboard({
                 <div className="min-w-0 flex-1">
                   <p
                     title={label}
-                    className={`truncate text-sm font-semibold text-slate-800 dark:text-slate-100 ${mode === "singles" ? "hover:text-orange-600 dark:hover:text-orange-400" : ""}`}
+                    className={`truncate text-sm font-bold text-slate-800 dark:text-slate-100 ${mode === "singles" ? "hover:text-orange-600 dark:hover:text-orange-400" : ""}`}
                   >
                     {label}
                   </p>
-                  <p className="text-xs leading-5 tabular-nums text-slate-600 dark:text-slate-300">
-                    <span className="font-semibold text-emerald-700 dark:text-emerald-400">{s.wins}W</span>{" - "}
-                    <span className="font-semibold text-red-600 dark:text-red-400">{s.losses}L</span>{" · "}
+                  <p className="text-xs font-semibold leading-5 tabular-nums text-slate-700 dark:text-slate-200">
+                    <span className="font-extrabold text-emerald-700 dark:text-emerald-400">{s.wins}W</span>{" - "}
+                    <span className="font-extrabold text-red-600 dark:text-red-400">{s.losses}L</span>{" · "}
                     {s.played} played · {s.winRate}% ·{" "}
                     <span className="font-bold text-slate-800 dark:text-slate-100">
                       {(s.score || 0).toFixed(3)}
@@ -226,7 +226,8 @@ export default function Leaderboard({
                 className="hover:opacity-75 transition shrink-0"
               >
                 <span
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${rank === 1 ? "bg-amber-300 text-amber-950 ring-1 ring-amber-500/40" : rank === 2 ? "bg-slate-300 text-slate-900 ring-1 ring-slate-400/50" : rank === 3 ? "bg-orange-300 text-orange-950 ring-1 ring-orange-600/40" : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200"}`}
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black tabular-nums text-slate-950 ring-1 ring-black/10 shrink-0"
+                  style={{ backgroundColor: rank == null ? "#e2e8f0" : rank === 1 ? "#fcd34d" : rank === 2 ? "#cbd5e1" : rank === 3 ? "#fdba74" : `hsl(${((rank - 4) * 137.508 + 160) % 360} 65% 80%)` }}
                 >
                   {rank ?? "NA"}
                 </span>
