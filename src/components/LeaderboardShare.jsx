@@ -64,7 +64,7 @@ export default function LeaderboardShare({ leaderboardRef, captureRef = leaderbo
               <h3 className="font-bold text-slate-800 dark:text-slate-100">{shareLabel}</h3>
               <button type="button" autoFocus onClick={() => setPreview(null)} aria-label="Close share options" className="p-2 text-slate-500"><X size={18} /></button>
             </div>
-            <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">Tap Share image to choose WhatsApp or another app, or download the image to attach it yourself.</p>
+            <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">High-resolution PNG. Tap Share image or download it. For full quality in WhatsApp, send the downloaded image as a document.</p>
             <div className="flex flex-wrap gap-2 mb-3">
               {preview.images.map((image, index) => (
                 <a key={image.filename} href={image.dataUrl} download={image.filename}
