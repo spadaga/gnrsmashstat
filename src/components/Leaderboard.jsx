@@ -102,6 +102,7 @@ export default function Leaderboard({
     qualifiedOnly: period === "today",
     prioritizeRegular,
   });
+  const maxPlayed = Math.max(1, ...rows.map((row) => row.played));
 
   return (
     <div ref={leaderboardRef} className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-4">
@@ -173,18 +174,18 @@ export default function Leaderboard({
             <div
               key={key}
               data-leaderboard-row
-              className="flex items-center justify-between px-2 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+              className="flex items-center justify-between gap-2 px-2 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition"
             >
               {/* Left: avatar/circle always first, then name — same order on mobile and desktop. */}
               <button
                 type="button"
                 onClick={() => mode === "singles" && onViewProfile?.(s.name)}
-                className={`flex items-center gap-3 text-left ${mode === "singles" ? "cursor-pointer" : "cursor-default"}`}
+                className={`flex min-w-0 flex-1 items-center gap-2 sm:gap-3 text-left ${mode === "singles" ? "cursor-pointer" : "cursor-default"}`}
               >
                 {mode === "singles" ? (
                   <Avatar name={s.name} photo={photoByName[s.name]} size="sm" />
                 ) : (
-                  <span className="flex items-center gap-1.5 shrink-0">
+                  <span className="flex items-center -space-x-3 shrink-0">
                     {s.players.map((n) => (
                       <Avatar
                         key={n}
@@ -196,24 +197,40 @@ export default function Leaderboard({
                     ))}
                   </span>
                 )}
-                <div>
+                <div className="min-w-0 flex-1">
                   <p
-                    className={`text-sm font-semibold text-slate-800 dark:text-slate-100 ${mode === "singles" ? "hover:text-orange-600 dark:hover:text-orange-400" : ""}`}
+                    title={label}
+                    className={`truncate text-sm font-semibold text-slate-800 dark:text-slate-100 ${mode === "singles" ? "hover:text-orange-600 dark:hover:text-orange-400" : ""}`}
                   >
                     {label}
                   </p>
-                  <p className="text-xs text-slate-400 dark:text-slate-500">
-                    {s.wins}W - {s.losses}L · {s.played} played · {s.winRate}% ·{" "}
-                    <span className="font-bold text-slate-500 dark:text-slate-300">
-                      {(s.score || 0).toFixed(3)}
-                    </span>{" "}
-                    score
-                  </p>
+                  <div
+                    className="relative h-4 overflow-hidden rounded-md bg-slate-100 dark:bg-slate-900"
+                    role="img"
+                    aria-label={`${label}: rank ${rank ?? "not qualified"}, ${s.wins} wins, ${s.losses} losses, ${s.played} played, ${s.winRate}% win rate, ${(s.score || 0).toFixed(3)} ranking score`}
+                  >
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-y-0 left-0 flex overflow-hidden rounded-md"
+                      style={{ width: `${(s.played / maxPlayed) * 100}%` }}
+                    >
+                      <span className="bg-emerald-500/25 dark:bg-emerald-500/30" style={{ width: `${(s.wins / s.played) * 100}%` }} />
+                      <span className="bg-red-500/20 dark:bg-red-500/25" style={{ width: `${(s.losses / s.played) * 100}%` }} />
+                    </div>
+                    <span aria-hidden="true" className="relative flex h-full items-center justify-between gap-1 px-1.5 text-[9px] sm:text-[11px] font-semibold tabular-nums whitespace-nowrap">
+                      <span className="text-emerald-800 dark:text-emerald-300">{s.wins}W</span>
+                      <span className="text-red-800 dark:text-red-300">{s.losses}L</span>
+                      <span className="text-slate-700 dark:text-slate-200" title="Matches played">{s.played}<span className="hidden sm:inline"> played</span><span className="sm:hidden">P</span></span>
+                      <span className="text-slate-700 dark:text-slate-200" title="Win rate">{s.winRate}%</span>
+                      <span className="text-slate-700 dark:text-slate-200" title="Ranking score">{(s.score || 0).toFixed(3)}</span>
+                    </span>
+                  </div>
                 </div>
               </button>
               {/* Right: rank circle badge only — win % now lives under the name on the left. */}
               <button
                 type="button"
+                aria-label={`Rank ${rank ?? "not qualified"}: view ${label}'s matches`}
                 onClick={() =>
                   setDrilldown({
                     title: `${label}'s matches`,
