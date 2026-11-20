@@ -46,32 +46,32 @@ export default function StatCards({ matches, players }) {
   const names = players.map((p) => (typeof p === "string" ? p : p.name));
 
   return (
-    <div className="rounded-2xl bg-orange-600 text-white p-5 flex items-center justify-between gap-4 flex-wrap">
+    <div className="rounded-2xl bg-orange-600 text-white p-3 sm:p-5 grid grid-cols-[minmax(0,1fr)_1px_minmax(0,1fr)] items-center gap-2 sm:gap-4">
       <button
         type="button"
         onClick={() => setShowMatches(true)}
-        className="flex items-center gap-3 text-left hover:opacity-90 transition"
+        className="min-w-0 flex items-center gap-1.5 sm:gap-3 text-left hover:opacity-90 transition"
       >
-        <Activity size={32} className="text-orange-200 shrink-0" />
+        <Activity size={32} className="size-5 sm:size-8 text-orange-200 shrink-0" />
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-orange-100">
+          <p className="text-[9px] min-[360px]:text-[10px] sm:text-xs font-bold uppercase tracking-wide text-orange-100 whitespace-nowrap">
             Total Matches
           </p>
-          <p className="text-4xl font-extrabold mt-1">{matches.length}</p>
+          <p className="text-3xl sm:text-4xl font-extrabold mt-1">{matches.length}</p>
         </div>
       </button>
       <div className="w-px self-stretch bg-orange-400/40" />
       <button
         type="button"
         onClick={() => setShowPlayers(true)}
-        className="flex items-center gap-3 text-left hover:opacity-90 transition"
+        className="justify-self-end min-w-0 flex items-center gap-1.5 sm:gap-3 text-left hover:opacity-90 transition"
       >
-        <Trophy size={32} className="text-orange-200 shrink-0" />
+        <Trophy size={32} className="size-5 sm:size-8 text-orange-200 shrink-0" />
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-orange-100">
+          <p className="text-[9px] min-[360px]:text-[10px] sm:text-xs font-bold uppercase tracking-wide text-orange-100 whitespace-nowrap">
             Total Players
           </p>
-          <p className="text-4xl font-extrabold mt-1">{players.length}</p>
+          <p className="text-3xl sm:text-4xl font-extrabold mt-1">{players.length}</p>
         </div>
       </button>
       {showMatches && (
