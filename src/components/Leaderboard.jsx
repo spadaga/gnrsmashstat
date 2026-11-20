@@ -104,20 +104,20 @@ export default function Leaderboard({
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-4">
-      <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+      <div className="flex items-center justify-between mb-3 gap-1 sm:gap-2 flex-nowrap">
         <div className="flex items-center gap-2">
-          <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">
+          <h2 className="flex items-center gap-1 sm:gap-2 text-[11px] min-[380px]:text-xs sm:text-sm font-bold uppercase tracking-normal sm:tracking-wide whitespace-nowrap text-slate-700 dark:text-slate-300">
             <Medal size={16} className="text-orange-600" /> Leaderboard
           </h2>
           <Info />
           <LeaderboardShare rows={rows} ranks={ranks} mode={mode} periodLabel={`${PERIODS.find((p) => p.key === period)?.label}${period === "week" && weekDay !== "all" && selectedDayObj ? ` · ${selectedDayObj.dayName} ${selectedDayObj.dateStr}` : ""}`} />
         </div>
-        <div className="flex gap-1 bg-slate-100 dark:bg-slate-700 rounded-full p-1">
+        <div className="flex shrink-0 gap-0.5 sm:gap-1 bg-slate-100 dark:bg-slate-700 rounded-full p-0.5 sm:p-1">
           {MODES.map((m) => (
             <button
               key={m.key}
               onClick={() => setMode(m.key)}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide transition ${
+              className={`px-1.5 sm:px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wide transition ${
                 mode === m.key
                   ? "bg-slate-900 dark:bg-orange-600 text-white"
                   : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
