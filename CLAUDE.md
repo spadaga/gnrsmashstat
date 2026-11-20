@@ -775,8 +775,8 @@ overrides this base rule as before; only the previously-undefined light-mode def
   TopSeeds, Report's Individual/Pair Rankings) but still appears normally in raw match lists/history
   (`MatchList`, `MatchesModal`) — only the ranking computation filters them out, nothing hides the matches
 - **Ranking & 2-Tier Week Ribbon**:
-  - **Regular Players Always First (Except Sunday)**: On `Today` (Mon–Sat), all weekday ribbon tabs (`Mon`, `Tue`, `Wed`, `Thu`, `Fri`, `Sat`), `Weekly All`, `Monthly`, `Yearly`, and `Overall`, regular players are prioritized first and ranked among themselves by Wilson score. Other players come after all regular players.
-  - `Today`: minimum 3 matches, regular players ranked first (unless Today is Sunday).
+  - **Regular Players Always First (Except Sunday)**: On all weekday ribbon tabs (`Mon`, `Tue`, `Wed`, `Thu`, `Fri`, `Sat`), `Weekly All`, `Monthly`, `Yearly`, and `Overall`, regular players are prioritized first and ranked among themselves by Wilson score. Other players come after all regular players.
+  - `Today`: regular players (and pairs of two regular players) qualify after 1 match; non-regular players/pairs require at least 4. Qualified entries compete together by Wilson score every day, including Sunday.
   - `Sunday`: minimum 3 matches across all historical Sunday matches, open to all players ranked strictly by Wilson score.
   - `Weekly` (with 2-Tier Smart Week Ribbon):
     - **All Week**: minimum 10 matches (Mon–Sat regular play), regular players prioritized first.

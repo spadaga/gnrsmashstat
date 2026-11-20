@@ -136,7 +136,7 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                       Tab
                     </span>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300">
-                      Regular: 3 · Others: 4
+                      Regular: 1 · Others: 4
                     </span>
                   </div>
                   <ul className="text-[11px] text-slate-600 dark:text-slate-300 space-y-1 list-disc pl-4">
@@ -144,7 +144,7 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                       Filters matches played on <strong>today only</strong>.
                     </li>
                     <li>
-                      Regular players qualify after <strong>3 matches today</strong>.
+                      Regular players qualify after <strong>1 match today</strong>.
                       Non-regular players must play <strong>more than 3 matches
                       (at least 4) today</strong>.
                     </li>
@@ -215,7 +215,7 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                       <strong>Day Breakdown (Sun–Sat):</strong> Tap any day to
                       see that day&apos;s matches. Regular players rank first on
                       Mon–Sat; Sunday ranks everyone together by Wilson score.
-                      These day views list all participants; Today&apos;s 3/4-match
+                      These day views list all participants; Today&apos;s 1/4-match
                       eligibility rule applies only to the Today tab.
                     </li>
                     <li>
@@ -308,7 +308,7 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                   <li>Equal Wilson scores share a rank within the same priority group (1, 2, 2, 4). Today&apos;s qualified regular and non-regular players share one group.</li>
                   <li>Scores display to 3 decimal places; ranking uses the full score, so identical displayed scores can have different ranks.</li>
                   <li>Names starting with the legacy Guest naming convention are excluded from individual and pair rankings. A free-text name without that convention can qualify normally.</li>
-                  <li>Today enforces the 3/4-match eligibility rule for leaderboard rank badges only. Other leaderboard tabs list and rank everyone who played in that view.</li>
+                  <li>Today enforces the 1/4-match eligibility rule for leaderboard rank badges only. Other leaderboard tabs list and rank everyone who played in that view.</li>
                   <li><strong>Top Seeds, in every tab:</strong> Most wins first, then fewer losses, then alphabetical order for equal records. No regular-player priority, match minimum, provisional status or Wilson-score sorting.</li>
                   <li>Top Seeds shows up to 3 individuals or exact pairs in a carousel, changing every 4.5 seconds. Swipe or use the keyboard arrow keys to browse. Automatic slides pause on hover or focus and respect reduced-motion settings. A single match is enough to appear. Overall includes Sundays there too.</li>
                 </ul>

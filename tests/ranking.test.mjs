@@ -40,9 +40,17 @@ test('non-regular players are unranked at 3 matches and can lead at 4', () => {
   assert.equal(computeRanks(four, rankOptions)[0], 1);
 });
 
-test('regular players need 3 matches, not 2', () => {
-  assert.ok(todayStats(games(2)).every((row) => !row.qualified));
-  assert.ok(todayStats(games(3)).filter((row) => row.isRegular).every((row) => row.qualified));
+test('regular players are ranked after their first match today', () => {
+  const rows = todayStats(games(1));
+  const ranks = computeRanks(rows, rankOptions);
+  for (const [index, row] of rows.entries()) {
+    assert.equal(row.qualified, row.isRegular);
+    assert.equal(ranks[index] !== null, row.isRegular);
+  }
+  assert.equal(applyTodayRanking([{ isRegular: true, played: 0 }])[0].qualified, false);
+  const pairs = applyTodayRanking(computeTopPairs(games(1), 1));
+  assert.equal(pairs.find(row => row.isRegular).qualified, true);
+  assert.equal(pairs.find(row => !row.isRegular).qualified, false);
 });
 
 test('qualified regular and non-regular players share equal-score ranks', () => {
@@ -64,7 +72,7 @@ test('doubles eligibility counts games together and requires 4 for a non-regular
 });
 
 test('Today has no regular priority; other period settings stay intact', () => {
-  assert.equal(getRankingConfig('today').prioritizeRegular, false);
+  assert.deepEqual(getRankingConfig('today'), { minMatches: 1, prioritizeRegular: false });
   assert.deepEqual(getRankingConfig('sunday'), { minMatches: 3, prioritizeRegular: false });
   for (const period of ['week', 'month', 'year', 'all']) {
     assert.deepEqual(getRankingConfig(period), { minMatches: 10, prioritizeRegular: true });

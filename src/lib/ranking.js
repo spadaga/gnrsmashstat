@@ -26,12 +26,12 @@ export function isRegularPlayer(name) {
 
 // Period-specific ranking configuration:
 // - Sunday (or Week ribbon on Sunday): anyone who played is ranked by Wilson score without prioritizing regular players.
-// - Today: regular players qualify at 3 matches, others at 4; score decides position.
+// - Today: regular players qualify after 1 match, others at 4; score decides position.
 // - Other tabs (Weekday tabs Mon-Sat, Weekly All, Monthly, Yearly, Overall):
 //   Regular players ALWAYS come first (sorted among themselves by Wilson score), followed by other players.
 export function getRankingConfig(period, weekDay = "all") {
   if (period === "today") {
-    return { minMatches: 3, prioritizeRegular: false };
+    return { minMatches: 1, prioritizeRegular: false };
   }
   const isSunday =
     period === "sunday" ||
@@ -277,7 +277,7 @@ export function applyTodayRanking(rows) {
   return rows
     .map((row) => ({
       ...row,
-      qualified: row.played >= (row.isRegular ? 3 : 4),
+      qualified: row.played >= (row.isRegular ? 1 : 4),
     }))
     .sort((a, b) =>
       Number(b.qualified) - Number(a.qualified) ||
