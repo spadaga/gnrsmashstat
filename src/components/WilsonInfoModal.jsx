@@ -181,10 +181,10 @@ export function WilsonInfoModal({ open, onClose, defaultTab = "ranking" }) {
                       Considers <strong>all historical Sunday matches</strong>.
                     </li>
                     <li>
-                      Lists all participants with at least one Sunday match.
+                      Every player or pair qualifies after just one Sunday match.
                     </li>
                     <li>
-                      Open to all players (regular & non-regular) ranked
+                      No regular-player distinction or priority. Everyone is ranked
                       strictly by Wilson score.
                     </li>
                     <li>

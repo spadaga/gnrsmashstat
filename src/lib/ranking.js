@@ -39,7 +39,7 @@ export function getRankingConfig(period, weekDay = "all") {
     (period === "today" && new Date().getDay() === 0);
 
   if (isSunday) {
-    return { minMatches: 3, prioritizeRegular: false };
+    return { minMatches: 1, prioritizeRegular: false };
   }
 
   const isDaily =

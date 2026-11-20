@@ -301,8 +301,8 @@ Blob objects during a full import, preventing damage to the original store.
 
 - `REGULAR_PLAYER_NAMES` / `isRegularPlayer(name)` — identifies core regular players (`Suresh Padaga`, `Srinivas Padaga`, `Sanjeev Kumar`, `Abdhulla`/`Abdhullah`/`Nayeem Abdhullah`, `HR`/`Pradeep Raghav`, `Narender`/`Narendra`, `Manikyam`). In Week, Month, Year, and Overall views, regular players are prioritized first in the rankings.
 - `getRankingConfig(period)` — returns `{ minMatches, prioritizeRegular }`:
-  - `today`: min 3 matches on that day only, `prioritizeRegular: false`.
-  - `sunday`: min 3 matches across all Sunday matches, `prioritizeRegular: false`.
+  - `today`: regular players qualify after 1 match, others after 4, `prioritizeRegular: false`.
+  - `sunday`: min 1 match across all Sunday matches, `prioritizeRegular: false`.
   - `week` / `month` / `year` / `all`: min 10 matches (excludes Sundays), `prioritizeRegular: true`.
 - `isGuestName(name)` — `true` for a one-off player name like `Guest1`/`Guest 2` (regex
   `/^guest\s*\d*$/i`). Excluded from ranking and leaderboard displays.
@@ -777,11 +777,11 @@ overrides this base rule as before; only the previously-undefined light-mode def
 - **Ranking & 2-Tier Week Ribbon**:
   - **Regular Players Always First (Except Sunday)**: On all weekday ribbon tabs (`Mon`, `Tue`, `Wed`, `Thu`, `Fri`, `Sat`), `Weekly All`, `Monthly`, `Yearly`, and `Overall`, regular players are prioritized first and ranked among themselves by Wilson score. Other players come after all regular players.
   - `Today`: regular players (and pairs of two regular players) qualify after 1 match; non-regular players/pairs require at least 4. Qualified entries compete together by Wilson score every day, including Sunday.
-  - `Sunday`: minimum 3 matches across all historical Sunday matches, open to all players ranked strictly by Wilson score.
+  - `Sunday`: minimum 1 match across all historical Sunday matches, open to all players ranked strictly by Wilson score.
   - `Weekly` (with 2-Tier Smart Week Ribbon):
     - **All Week**: minimum 10 matches (Mon–Sat regular play), regular players prioritized first.
     - **Day Breakdown (Mon–Sat)**: minimum 3 matches on that day, regular players prioritized first.
-    - **Sunday Breakdown (`Sun`)**: minimum 3 matches, open to all players.
+    - **Sunday Breakdown (`Sun`)**: minimum 1 match, open to all players without regular-player priority.
   - `Monthly`, `Yearly`, `Overall`: minimum 10 matches (Mon–Sat regular play), regular players prioritized first.
   - Regular players list: `Suresh Padaga`, `Srinivas Padaga`, `Sanjeev Kumar`, `Abdhulla`/`Abdhullah`/`Nayeem Abdhullah`, `HR`/`Pradeep Raghav`, `Narender`/`Narendra`, `Manikyam`.
 - **Live sync is polling, not push**: `App.jsx` re-fetches `/api/state` every 10s so other open devices

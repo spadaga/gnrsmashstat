@@ -73,9 +73,23 @@ test('doubles eligibility counts games together and requires 4 for a non-regular
 
 test('Today has no regular priority; other period settings stay intact', () => {
   assert.deepEqual(getRankingConfig('today'), { minMatches: 1, prioritizeRegular: false });
-  assert.deepEqual(getRankingConfig('sunday'), { minMatches: 3, prioritizeRegular: false });
+  assert.deepEqual(getRankingConfig('sunday'), { minMatches: 1, prioritizeRegular: false });
   for (const period of ['week', 'month', 'year', 'all']) {
     assert.deepEqual(getRankingConfig(period), { minMatches: 10, prioritizeRegular: true });
+  }
+});
+
+test('Sunday ranks every player and pair after one match without regular priority', () => {
+  for (const config of [getRankingConfig('sunday'), getRankingConfig('week', 'sun')]) {
+    assert.deepEqual(config, { minMatches: 1, prioritizeRegular: false });
+    for (const rows of [
+      computeStats(games(1), players, config.minMatches, config.prioritizeRegular),
+      computeTopPairs(games(1), config.minMatches, config.prioritizeRegular),
+    ]) {
+      assert.ok(rows.every(row => row.qualified));
+      assert.equal(rows[0].isRegular, false);
+      assert.equal(computeRanks(rows, { qualifiedOnly: true, prioritizeRegular: false })[0], 1);
+    }
   }
 });
 
