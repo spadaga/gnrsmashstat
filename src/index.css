@@ -1,6 +1,44 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Shared by page scrollbars and scrollable cards, lists, and dialogs. */
+:root {
+  --gnr-scroll-track: #f1f5f9;
+  --gnr-scroll-thumb: #fb923c;
+  --gnr-scroll-hover: #ea580c;
+}
+.dark {
+  --gnr-scroll-track: #0f172a;
+  --gnr-scroll-thumb: #c2410c;
+  --gnr-scroll-hover: #f97316;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gnr-scroll-thumb) var(--gnr-scroll-track);
+}
+/* Chromium/Safari support rounded thumbs with a subtle inset gutter. */
+@supports selector(::-webkit-scrollbar) {
+  * { scrollbar-width: auto; scrollbar-color: auto; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track {
+    background: var(--gnr-scroll-track);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--gnr-scroll-thumb);
+    border: 2px solid var(--gnr-scroll-track);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--gnr-scroll-hover); }
+  ::-webkit-scrollbar-corner { background: var(--gnr-scroll-track); }
+}
+@media (forced-colors: active) {
+  * { scrollbar-color: auto; }
+  ::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: Canvas; }
+  ::-webkit-scrollbar-thumb { background: ButtonText; border-color: Canvas; }
+  ::-webkit-scrollbar-thumb:hover { background: Highlight; }
+}
+
 /* Tailwind v4 changed the default `border` color from v3's gray-200 to
    currentColor. Nearly every card here uses `border dark:border-slate-700`
    with no explicit light-mode color, so light theme fell back to
