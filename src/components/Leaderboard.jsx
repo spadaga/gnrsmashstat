@@ -205,7 +205,7 @@ export default function Leaderboard({
                     {label}
                   </p>
                   <div
-                    className="relative h-4 overflow-hidden rounded-md bg-slate-100 dark:bg-slate-900"
+                    className="relative min-h-4 overflow-hidden rounded-md bg-slate-100 dark:bg-slate-900"
                     role="img"
                     aria-label={`${label}: rank ${rank ?? "not qualified"}, ${s.wins} wins, ${s.losses} losses, ${s.played} played, ${s.winRate}% win rate, ${(s.score || 0).toFixed(3)} ranking score`}
                   >
@@ -217,12 +217,11 @@ export default function Leaderboard({
                       <span className="bg-emerald-500/25 dark:bg-emerald-500/30" style={{ width: `${(s.wins / s.played) * 100}%` }} />
                       <span className="bg-red-500/20 dark:bg-red-500/25" style={{ width: `${(s.losses / s.played) * 100}%` }} />
                     </div>
-                    <span aria-hidden="true" className="relative flex h-full items-center justify-between gap-1 px-1.5 text-[9px] sm:text-[11px] font-semibold tabular-nums whitespace-nowrap">
-                      <span className="text-emerald-800 dark:text-emerald-300">{s.wins}W</span>
-                      <span className="text-red-800 dark:text-red-300">{s.losses}L</span>
-                      <span className="text-slate-700 dark:text-slate-200" title="Matches played">{s.played}<span className="hidden sm:inline"> played</span><span className="sm:hidden">P</span></span>
-                      <span className="text-slate-700 dark:text-slate-200" title="Win rate">{s.winRate}%</span>
-                      <span className="text-slate-700 dark:text-slate-200" title="Ranking score">{(s.score || 0).toFixed(3)}</span>
+                    <span aria-hidden="true" className="relative block px-1 text-[8px] min-[380px]:text-[9px] sm:text-xs leading-4 tabular-nums text-slate-600 dark:text-slate-300">
+                      <span className="text-emerald-800 dark:text-emerald-300">{s.wins}W</span>{" - "}
+                      <span className="text-red-800 dark:text-red-300">{s.losses}L</span>{" · "}
+                      {s.played} played · {s.winRate}% ·{" "}
+                      <span className="font-bold text-slate-700 dark:text-slate-100">{(s.score || 0).toFixed(3)}</span>{" "}score
                     </span>
                   </div>
                 </div>
