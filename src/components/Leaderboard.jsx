@@ -15,6 +15,7 @@ import Avatar from "./Avatar";
 import Info from "./Info";
 import MatchesModal from "./MatchesModal";
 import WeekRibbon from "./WeekRibbon";
+import LeaderboardShare from "./LeaderboardShare";
 
 const MODES = [
   { key: "singles", label: "Singles", shortLabel: "Sgls" },
@@ -109,6 +110,7 @@ export default function Leaderboard({
             <Medal size={16} className="text-orange-600" /> Leaderboard
           </h2>
           <Info />
+          <LeaderboardShare rows={rows} ranks={ranks} mode={mode} periodLabel={`${PERIODS.find((p) => p.key === period)?.label}${period === "week" && weekDay !== "all" && selectedDayObj ? ` · ${selectedDayObj.dayName} ${selectedDayObj.dateStr}` : ""}`} />
         </div>
         <div className="flex gap-1 bg-slate-100 dark:bg-slate-700 rounded-full p-1">
           {MODES.map((m) => (
