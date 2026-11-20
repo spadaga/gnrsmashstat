@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import LeaderboardShare from "../components/LeaderboardShare";
 import Avatar from "../components/Avatar";
 import { localISODate } from "../lib/date";
 import {
@@ -248,7 +249,7 @@ function MatchResultsPanel({ title, matches }) {
       {matches.length === 0 ? (
         <p className="text-slate-400 text-sm">No matches.</p>
       ) : (
-        <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1">
+        <div data-share-expand className="space-y-1.5 max-h-72 overflow-y-auto pr-1">
           {matches.map((m) => (
             <MatchRow key={m.id} m={m} />
           ))}
@@ -568,7 +569,7 @@ function HeadToHeadSection({ matches, players, photoByName = {} }) {
             {played === 0 ? (
               <p className="text-slate-400 text-sm">No matches found.</p>
             ) : (
-              <div className="space-y-1.5 max-h-96 overflow-y-auto pr-1">
+              <div data-share-expand className="space-y-1.5 max-h-96 overflow-y-auto pr-1">
                 {directMatches.map((m) => (
                   <MatchRow key={m.id} m={m} />
                 ))}
@@ -1343,7 +1344,7 @@ function RecordUpdatesSection({ matches = [], photoByName = {} }) {
                 No matching records found.
               </p>
             ) : (
-              <div className="space-y-2 max-h-[32rem] overflow-y-auto pr-1">
+              <div data-share-expand className="space-y-2 max-h-[32rem] overflow-y-auto pr-1">
                 {sortedMatches.map((m) => {
                   const team1Won = m.score1 > m.score2;
                   const logTime = formatLogTime(m.updatedAt || m.loggedAt);
@@ -1634,14 +1635,23 @@ function PartyDueSection({
 
 export default function Report({ data, actions, isSuperAdmin, photoByName = {} }) {
   const [tab, setTab] = useState("duo");
+  const reportRef = useRef(null);
   const players = data.players;
   const matches = data.matches;
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-4">
-      <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300 mb-4">
+    <div ref={reportRef} className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-4">
+      <div className="flex items-center gap-1 mb-4">
+      <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">
         <BarChart3 size={16} className="text-orange-600" /> Reports
       </h2>
+      <LeaderboardShare
+        captureRef={reportRef}
+        shareTitle={`GNR SmashStats · Reports · ${TABS.find((item) => item.key === tab)?.label}`}
+        filenamePrefix={`gnr-report-${tab}`}
+        shareLabel="Share report image"
+      />
+      </div>
       <div className="flex gap-1 bg-slate-100 dark:bg-slate-700 rounded-full p-1 mb-5 flex-wrap">
         {TABS.map((t) => (
           <button
