@@ -53,7 +53,7 @@ export default function StatCards({ matches, players, allMatches = matches }) {
   const names = players.map((p) => (typeof p === "string" ? p : p.name));
 
   return (
-    <div className="rounded-2xl bg-orange-600 text-white p-3 sm:p-5 grid grid-cols-[minmax(0,1fr)_1px_minmax(0,1fr)] items-center gap-2 sm:gap-4">
+    <div className="rounded-2xl bg-orange-600 text-white p-3 sm:p-5 grid grid-cols-[minmax(0,1fr)_1px_minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-4">
       <button
         type="button"
         onClick={() => setShowMatches(true)}
@@ -67,11 +67,11 @@ export default function StatCards({ matches, players, allMatches = matches }) {
           <p className="text-3xl sm:text-4xl font-extrabold mt-1">{matches.length}</p>
         </div>
       </button>
-      <div className="w-px self-stretch bg-orange-400/40" />
+      <div className="w-px self-stretch bg-orange-400/40 lg:hidden" />
       <button
         type="button"
         onClick={() => setShowPlayers(true)}
-        className="justify-self-end min-w-0 flex items-center gap-1.5 sm:gap-3 text-left hover:opacity-90 transition"
+        className="lg:col-start-3 lg:row-start-1 justify-self-end min-w-0 flex items-center gap-1.5 sm:gap-3 text-left hover:opacity-90 transition"
       >
         <Trophy size={32} className="size-5 sm:size-8 text-orange-200 shrink-0" />
         <div>
@@ -81,7 +81,7 @@ export default function StatCards({ matches, players, allMatches = matches }) {
           <p className="text-3xl sm:text-4xl font-extrabold mt-1">{players.length}</p>
         </div>
       </button>
-      <p className="col-span-3 border-t border-orange-400/30 pt-2 text-center text-[10px] sm:text-xs text-orange-100 leading-relaxed">
+      <p className="col-span-3 lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:max-w-sm lg:border-t-0 lg:pt-0 lg:px-4 border-t border-orange-400/30 pt-2 text-center text-[10px] sm:text-xs text-orange-100 leading-relaxed">
         {totalDays} days since 1 Mar 2026 <span className="mx-1" aria-hidden="true">·</span> {sundaysPlayed} Sundays played
       </p>
       {showMatches && (

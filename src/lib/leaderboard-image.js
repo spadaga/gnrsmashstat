@@ -8,6 +8,7 @@ export async function createLeaderboardImages({ element, mode, filenamePrefix = 
   const canvas = await toCanvas(element, {
     pixelRatio: 2,
     skipFonts: true,
+    style: { transform: "none", opacity: "1" },
     filter: node => !(node instanceof Element && node.hasAttribute('data-share-exclude')),
   });
   const ratio = canvas.height / element.getBoundingClientRect().height;

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Trophy, Users, User, X } from "lucide-react";
 import {
@@ -14,6 +14,7 @@ import { photoMap } from "../lib/admins";
 import Info from "./Info";
 import WeekRibbon from "./WeekRibbon";
 import SeedCarousel from "./SeedCarousel";
+import LeaderboardShare from "./LeaderboardShare";
 
 const PERIODS = [
   { key: "today", label: "Today", shortLabel: "Day" },
@@ -131,6 +132,20 @@ function TopSeedsAllModal({ items, mode, title, onClose, photoByName = {} }) {
       </div>
     </div>,
     document.body,
+  );
+}
+
+function ShareableSeedCard({ children, onClick, title, filenamePrefix }) {
+  const bannerRef = useRef(null);
+  return (
+    <div ref={bannerRef} className="seed-card w-full min-h-28 text-white rounded-2xl relative overflow-hidden transition shadow-sm">
+      <button type="button" onClick={onClick} className="w-full min-h-28 text-left px-5 py-3 sm:px-6 sm:py-4 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white">
+        {children}
+      </button>
+      <div data-share-exclude className="absolute left-28 sm:left-32 top-2 sm:top-3 z-10">
+        <LeaderboardShare captureRef={bannerRef} shareTitle={title} filenamePrefix={filenamePrefix} shareLabel="Share Top Seeds banner image" inverted />
+      </div>
+    </div>
   );
 }
 
@@ -266,8 +281,9 @@ export default function TopSeeds({
             .filter((name) => photos[name]);
 
           return (
-            <button
-              type="button"
+            <ShareableSeedCard
+              title={`GNR SmashStats · ${periodLabel} Top ${modeLabel} · ${displayName}`}
+              filenamePrefix={`gnr-top-seed-${mode}-${i + 1}`}
               key={key}
               onClick={() =>
                 setDrilldown({
@@ -278,7 +294,6 @@ export default function TopSeeds({
                       : matchesForPlayer(filtered, p.name),
                 })
               }
-              className="seed-card w-full min-h-28 text-left text-white rounded-2xl px-5 py-3 sm:px-6 sm:py-4 relative overflow-hidden transition shadow-sm focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white"
             >
               <div className="seed-card-content flex items-start justify-between gap-3 lg:grid lg:grid-cols-3 lg:items-center">
                 {/* Left Column: Pill + Name + Record */}
@@ -326,7 +341,7 @@ export default function TopSeeds({
                   </span>
                 </div>
               </div>
-            </button>
+            </ShareableSeedCard>
           );
         })}
       </SeedCarousel>}

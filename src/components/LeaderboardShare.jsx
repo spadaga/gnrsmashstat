@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { Download, Share2, X } from "lucide-react";
 import { createLeaderboardImages } from "../lib/leaderboard-image";
 
-export default function LeaderboardShare({ leaderboardRef, captureRef = leaderboardRef, rows, mode, periodLabel, shareTitle, filenamePrefix, shareLabel = "Share leaderboard image" }) {
+export default function LeaderboardShare({ leaderboardRef, captureRef = leaderboardRef, rows, mode, periodLabel, shareTitle, filenamePrefix, shareLabel = "Share leaderboard image", inverted = false }) {
   const [preview, setPreview] = useState(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -48,12 +49,12 @@ export default function LeaderboardShare({ leaderboardRef, captureRef = leaderbo
   return (
     <>
       <button data-share-exclude type="button" onClick={share} disabled={busy || (rows && !rows.length)}
-        className="inline-flex shrink-0 items-center justify-center rounded-lg p-1.5 text-xs font-semibold text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/40 disabled:opacity-40"
+        className={`inline-flex shrink-0 items-center justify-center rounded-lg p-1.5 text-xs font-semibold disabled:opacity-40 ${inverted ? "text-white hover:bg-white/20" : "text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/40"}`}
         title={shareLabel} aria-label={shareLabel}>
         <Share2 size={16} />
       </button>
       {message && !preview && <span data-share-exclude role="status" className="text-xs text-orange-600">{message}</span>}
-      {preview && (
+      {preview && createPortal(
         <div data-share-exclude className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
           onClick={(event) => event.target === event.currentTarget && setPreview(null)}
           onKeyDown={(event) => event.key === "Escape" && setPreview(null)}>
@@ -78,7 +79,7 @@ export default function LeaderboardShare({ leaderboardRef, captureRef = leaderbo
             {preview.images.map(image => <img key={image.filename} src={image.dataUrl} alt={preview.title} className="w-full rounded-xl mb-3" />)}
             <p role="status" className="mt-2 text-xs text-slate-500 dark:text-slate-400">{message}</p>
           </section>
-        </div>
+        </div>, document.body
       )}
     </>
   );

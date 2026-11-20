@@ -1,10 +1,12 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Flame } from "lucide-react";
 import { filterByPeriod } from "../lib/ranking";
 import { getCurrentWeekDates, localISODate } from "../lib/date";
 import Avatar from "./Avatar";
 import MatchesModal from "./MatchesModal";
 import WeekRibbon from "./WeekRibbon";
+import LeaderboardShare from "./LeaderboardShare";
+import WinLossBar from "./WinLossBar";
 
 const PERIODS = [
   { key: "today", label: "Today", shortLabel: "Day" },
@@ -20,6 +22,7 @@ export default function PlayerActivity({
   photoByName = {},
   onViewProfile,
 }) {
+  const activityRef = useRef(null);
   const [period, setPeriod] = useState("today");
   const [weekDay, setWeekDay] = useState("all");
   const [drilldown, setDrilldown] = useState(null);
@@ -103,7 +106,7 @@ export default function PlayerActivity({
   const totalMatchesCount = filteredMatches.length;
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-4 shadow-xs">
+    <div ref={activityRef} className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-4 shadow-xs">
       {/* Header */}
       <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
         <div className="flex items-center gap-2">
@@ -113,6 +116,7 @@ export default function PlayerActivity({
           <div>
             <h3 className="text-sm font-bold uppercase tracking-wide text-slate-800 dark:text-slate-100 flex items-center gap-2">
               <span>Player Match Activity</span>
+              <LeaderboardShare captureRef={activityRef} shareTitle={`GNR SmashStats · Player Match Activity · ${PERIODS.find(p => p.key === period)?.label}${period === "week" && selectedDayObj && weekDay !== "all" ? ` · ${selectedDayObj.dayName}` : ""}`} filenamePrefix="gnr-player-match-activity" shareLabel="Share Player Match Activity image" rows={playerStats} />
               <span className="text-xs font-semibold normal-case px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
                 {totalMatchesCount} match{totalMatchesCount !== 1 ? "es" : ""}
               </span>
@@ -161,14 +165,11 @@ export default function PlayerActivity({
       <div className="space-y-2">
         {playerStats.map((p, idx) => {
           const rank = idx + 1;
-          const barWidthPct =
-            maxPlayed > 0 ? Math.max((p.played / maxPlayed) * 100, 15) : 100;
-          const winPct = p.played > 0 ? (p.wins / p.played) * 100 : 0;
-          const lossPct = 100 - winPct;
 
           return (
             <div
               key={p.name}
+              data-share-row
               className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-slate-50/70 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer border border-slate-100 dark:border-slate-700"
               onClick={() =>
                 setDrilldown({
@@ -216,28 +217,7 @@ export default function PlayerActivity({
                     {p.winRate}% win
                   </span>
                 </div>
-                {/* Horizontal Progress Bar */}
-                <div className="w-full bg-slate-200/80 dark:bg-slate-700/80 h-4 rounded-full overflow-hidden flex">
-                  <div
-                    style={{ width: `${barWidthPct}%` }}
-                    className="h-full flex rounded-full overflow-hidden transition-all duration-300"
-                  >
-                    {p.wins > 0 && (
-                      <div
-                        style={{ width: `${winPct}%` }}
-                        className="bg-emerald-500 h-full flex items-center justify-center text-[9px] font-bold text-white overflow-hidden"
-                        title={`${p.wins} Won`}
-                      >{p.wins}W</div>
-                    )}
-                    {p.losses > 0 && (
-                      <div
-                        style={{ width: `${lossPct}%` }}
-                        className="bg-red-500 h-full flex items-center justify-center text-[9px] font-bold text-white overflow-hidden"
-                        title={`${p.losses} Lost`}
-                      >{p.losses}L</div>
-                    )}
-                  </div>
-                </div>
+                <WinLossBar label={p.name} wins={p.wins} losses={p.losses} played={p.played} max={maxPlayed} showLabel={false} showTotal={false} />
               </div>
 
               {/* Right: Total Matches in a neutral color */}

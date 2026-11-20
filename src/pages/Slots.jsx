@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { CalendarClock, Plus, Trash2 } from 'lucide-react'
 import ConfirmDialog from '../components/ConfirmDialog'
+import LeaderboardShare from '../components/LeaderboardShare'
 
 function daysLeft(endDate) {
   const end = new Date(`${endDate}T00:00:00`)
@@ -11,6 +12,7 @@ function daysLeft(endDate) {
 const emptyForm = { name: '', time: '6 to 7', endDate: '' }
 
 export default function Slots({ slots, actions, isAdmin }) {
+  const slotsRef = useRef(null)
   const [form, setForm] = useState(emptyForm)
   const [confirm, setConfirm] = useState(null)
 
@@ -41,9 +43,10 @@ export default function Slots({ slots, actions, isAdmin }) {
           </button>
         </form>
       )}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-4">
+      <div ref={slotsRef} className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-4">
         <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300 mb-3">
           <CalendarClock size={16} className="text-orange-600" /> Court Slots
+          <LeaderboardShare captureRef={slotsRef} shareTitle="GNR SmashStats · Court Slots" filenamePrefix="gnr-court-slots" shareLabel="Share Court Slots image" rows={sorted} />
         </h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -63,7 +66,7 @@ export default function Slots({ slots, actions, isAdmin }) {
                 const cellCls = expiring ? 'text-red-600 dark:text-red-400' : 'text-slate-600 dark:text-slate-300'
                 const editCls = `border-0 bg-transparent px-2 py-1 rounded focus:bg-white dark:focus:bg-slate-700 focus:ring-1 focus:ring-orange-300 ${cellCls}`
                 return (
-                  <tr key={s.id} className={expiring ? 'bg-red-50 dark:bg-red-900/10' : ''}>
+                  <tr data-share-row key={s.id} className={expiring ? 'bg-red-50 dark:bg-red-900/10' : ''}>
                     <td className="py-1 pr-2">
                       {isAdmin
                         ? <input defaultValue={s.name} onBlur={(e) => commit(s, 'name', e.target.value)} className={`w-full ${editCls} ${expiring ? 'font-semibold' : ''}`} />
