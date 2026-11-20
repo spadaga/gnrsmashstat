@@ -204,7 +204,9 @@ export default function Leaderboard({
                     {label}
                   </p>
                   <p className="text-xs leading-5 tabular-nums text-slate-600 dark:text-slate-300">
-                    {s.wins}W - {s.losses}L · {s.played} played · {s.winRate}% ·{" "}
+                    <span className="font-semibold text-emerald-700 dark:text-emerald-400">{s.wins}W</span>{" - "}
+                    <span className="font-semibold text-red-600 dark:text-red-400">{s.losses}L</span>{" · "}
+                    {s.played} played · {s.winRate}% ·{" "}
                     <span className="font-bold text-slate-800 dark:text-slate-100">
                       {(s.score || 0).toFixed(3)}
                     </span>{" "}score
@@ -224,7 +226,7 @@ export default function Leaderboard({
                 className="hover:opacity-75 transition shrink-0"
               >
                 <span
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${rank === 1 ? "bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white" : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200"}`}
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${rank === 1 ? "bg-amber-300 text-amber-950 ring-1 ring-amber-500/40" : rank === 2 ? "bg-slate-300 text-slate-900 ring-1 ring-slate-400/50" : rank === 3 ? "bg-orange-300 text-orange-950 ring-1 ring-orange-600/40" : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200"}`}
                 >
                   {rank ?? "NA"}
                 </span>
