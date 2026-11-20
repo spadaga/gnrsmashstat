@@ -102,7 +102,6 @@ export default function Leaderboard({
     qualifiedOnly: period === "today",
     prioritizeRegular,
   });
-  const maxPlayed = Math.max(1, ...rows.map((row) => row.played));
 
   return (
     <div ref={leaderboardRef} className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-4">
@@ -204,26 +203,12 @@ export default function Leaderboard({
                   >
                     {label}
                   </p>
-                  <div
-                    className="relative min-h-4 overflow-hidden rounded-md bg-slate-100 dark:bg-slate-900"
-                    role="img"
-                    aria-label={`${label}: rank ${rank ?? "not qualified"}, ${s.wins} wins, ${s.losses} losses, ${s.played} played, ${s.winRate}% win rate, ${(s.score || 0).toFixed(3)} ranking score`}
-                  >
-                    <div
-                      aria-hidden="true"
-                      className="absolute inset-y-0 left-0 flex overflow-hidden rounded-md"
-                      style={{ width: `${(s.played / maxPlayed) * 100}%` }}
-                    >
-                      <span className="bg-emerald-500/25 dark:bg-emerald-500/30" style={{ width: `${(s.wins / s.played) * 100}%` }} />
-                      <span className="bg-red-500/20 dark:bg-red-500/25" style={{ width: `${(s.losses / s.played) * 100}%` }} />
-                    </div>
-                    <span aria-hidden="true" className="relative block px-1 text-[8px] min-[380px]:text-[9px] sm:text-xs leading-4 tabular-nums text-slate-600 dark:text-slate-300">
-                      <span className="text-emerald-800 dark:text-emerald-300">{s.wins}W</span>{" - "}
-                      <span className="text-red-800 dark:text-red-300">{s.losses}L</span>{" · "}
-                      {s.played} played · {s.winRate}% ·{" "}
-                      <span className="font-bold text-slate-700 dark:text-slate-100">{(s.score || 0).toFixed(3)}</span>{" "}score
-                    </span>
-                  </div>
+                  <p className="text-xs leading-5 tabular-nums text-slate-600 dark:text-slate-300">
+                    {s.wins}W - {s.losses}L · {s.played} played · {s.winRate}% ·{" "}
+                    <span className="font-bold text-slate-800 dark:text-slate-100">
+                      {(s.score || 0).toFixed(3)}
+                    </span>{" "}score
+                  </p>
                 </div>
               </button>
               {/* Right: rank circle badge only — win % now lives under the name on the left. */}
@@ -239,7 +224,7 @@ export default function Leaderboard({
                 className="hover:opacity-75 transition shrink-0"
               >
                 <span
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${rank === 1 ? "bg-orange-600 text-white" : "bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400"}`}
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${rank === 1 ? "bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white" : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200"}`}
                 >
                   {rank ?? "NA"}
                 </span>
