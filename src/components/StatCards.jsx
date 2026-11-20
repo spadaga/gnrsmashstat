@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Activity, Trophy } from "lucide-react";
 import MatchesModal from "./MatchesModal";
 import Avatar from "./Avatar";
+import { localISODate } from "../lib/date";
 
 function PlayersModal({ players, onClose }) {
   return createPortal(
@@ -40,9 +41,15 @@ function PlayersModal({ players, onClose }) {
   );
 }
 
-export default function StatCards({ matches, players }) {
+export default function StatCards({ matches, players, allMatches = matches }) {
   const [showMatches, setShowMatches] = useState(false);
   const [showPlayers, setShowPlayers] = useState(false);
+  const today = localISODate();
+  const startDate = "2026-03-01";
+  const totalDays = Math.max(0, Math.floor((Date.parse(today) - Date.parse(startDate)) / 86400000) + 1);
+  const sundaysPlayed = new Set(allMatches
+    .filter(({ date }) => date >= startDate && date <= today && new Date(date + "T00:00:00Z").getUTCDay() === 0)
+    .map(({ date }) => date)).size;
   const names = players.map((p) => (typeof p === "string" ? p : p.name));
 
   return (
@@ -74,6 +81,9 @@ export default function StatCards({ matches, players }) {
           <p className="text-3xl sm:text-4xl font-extrabold mt-1">{players.length}</p>
         </div>
       </button>
+      <p className="col-span-3 border-t border-orange-400/30 pt-2 text-center text-[10px] sm:text-xs text-orange-100 leading-relaxed">
+        {totalDays} days since 1 Mar 2026 <span className="mx-1" aria-hidden="true">·</span> {sundaysPlayed} Sundays played
+      </p>
       {showMatches && (
         <MatchesModal
           title="Matches in this period"

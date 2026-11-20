@@ -37,7 +37,7 @@ export default function Dashboard({
         onImport={onImport}
         isAdmin={isSuperAdmin}
       />
-      <StatCards matches={filtered} players={data.players} />
+      <StatCards matches={filtered} players={data.players} allMatches={data.matches} />
       <TopSeeds
         matches={data.matches}
         players={data.players}
