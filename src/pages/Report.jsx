@@ -33,6 +33,7 @@ import {
   sortPlayersByTier,
 } from "../lib/ranking";
 import ConfirmDialog from "../components/ConfirmDialog";
+import WinLossBar from "../components/WinLossBar";
 
 const TABS = [
   { key: "h2h", label: "Head-to-Head", shortLabel: "H2H" },
@@ -58,7 +59,7 @@ const selectCls =
 const dateCls =
   "border dark:border-slate-600 rounded-lg px-2 py-1 text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100";
 
-export function Bar({ label, value, max, color = "bg-orange-600" }) {
+export function Bar({ label, value, max, color = "bg-emerald-500" }) {
   const pct = max > 0 && value > 0 ? Math.max(4, (value / max) * 100) : 0;
   return (
     <div className="flex items-center gap-2">
@@ -67,13 +68,10 @@ export function Bar({ label, value, max, color = "bg-orange-600" }) {
       </span>
       <div className="flex-1 h-4 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
         <div
-          className={`h-full ${color} rounded-full`}
+          className={`h-full ${color} rounded-full flex items-center justify-center text-[10px] font-bold text-white overflow-hidden`}
           style={{ width: `${pct}%` }}
-        />
+        >{value}{color.includes("red") ? "L" : "W"}</div>
       </div>
-      <span className="w-8 text-right text-xs font-bold text-slate-700 dark:text-slate-200">
-        {value}
-      </span>
     </div>
   );
 }
@@ -155,10 +153,11 @@ export function PeriodTabs({
 function StatTile({
   value,
   label,
-  color = "text-orange-600",
+  color,
   onClick,
   active,
 }) {
+  const valueColor = /loss/i.test(label) ? "text-red-500 dark:text-red-400" : /wins?/i.test(label) ? "text-emerald-600 dark:text-emerald-400" : /total|played|combinations/i.test(label) ? "text-slate-700 dark:text-slate-200" : color || "text-slate-700 dark:text-slate-200";
   const Tag = onClick ? "button" : "div";
   return (
     <Tag
@@ -171,7 +170,7 @@ function StatTile({
       } ${onClick ? "cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/20" : ""}`}
     >
       <div
-        className={`text-sm xs:text-base sm:text-xl md:text-2xl font-extrabold ${color} whitespace-nowrap flex items-center justify-center leading-tight`}
+        className={`text-sm xs:text-base sm:text-xl md:text-2xl font-extrabold ${valueColor} whitespace-nowrap flex items-center justify-center leading-tight`}
       >
         {value}
       </div>
@@ -552,13 +551,8 @@ function HeadToHeadSection({ matches, players, photoByName = {} }) {
 
           {played > 0 && (
             <div className="mb-5 space-y-2">
-              <Bar label={labelA} value={winsA} max={Math.max(1, winsA, winsB)} color="bg-orange-600" />
-              <Bar
-                label={labelB}
-                value={winsB}
-                max={Math.max(1, winsA, winsB)}
-                color="bg-slate-400 dark:bg-slate-500"
-              />
+              <WinLossBar label={labelA} wins={winsA} losses={winsB} played={played} max={played} />
+              <WinLossBar label={labelB} wins={winsB} losses={winsA} played={played} max={played} />
               <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
                 <span>Total Points: {pointsA} pts ({played > 0 ? (pointsA / played).toFixed(1) : 0} avg)</span>
                 <span>Total Points: {pointsB} pts ({played > 0 ? (pointsB / played).toFixed(1) : 0} avg)</span>
@@ -690,7 +684,7 @@ function DuoSection({ matches, players }) {
               label={`Losses w/ ${b}`}
               value={s.togetherLosses}
               max={max}
-              color="bg-slate-400 dark:bg-slate-500"
+              color="bg-red-500"
             />
             <Bar
               label={`${a} w/o ${b} — Wins`}
@@ -820,10 +814,9 @@ function CombosSection({ matches, players }) {
           </div>
           <div className="space-y-2 mb-5">
             {pairs.map((x) => (
-              <Bar
+              <WinLossBar
                 key={x.players.join("|")}
-                label={`w/ ${partnerOf(x)}`}
-                value={x.played}
+                label={`w/ ${partnerOf(x)}`} wins={x.wins} losses={x.losses} played={x.played}
                 max={max}
               />
             ))}
@@ -848,8 +841,8 @@ function CombosSection({ matches, players }) {
                   </span>
                   <span className="text-slate-500 dark:text-slate-400">
                     {x.played} played ·{" "}
-                    <span className="text-orange-600 font-bold">{x.wins}W</span>{" "}
-                    – {x.losses}L · {x.winRate}%
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">{x.wins}W</span>{" "}
+                    – <span className="text-red-500 dark:text-red-400 font-bold">{x.losses}L</span> · {x.winRate}%
                   </span>
                 </button>
               );
@@ -875,7 +868,7 @@ function IndividualSection({ matches, players }) {
     .filter((s) => s.played > 0);
   if (period === "today") stats = applyTodayRanking(stats);
   stats = stats.slice(0, 10);
-  const max = Math.max(1, ...stats.map((s) => s.wins));
+  const max = Math.max(1, ...stats.map((s) => s.played));
 
   function pick(name, e) {
     e.target.blur();
@@ -902,7 +895,7 @@ function IndividualSection({ matches, players }) {
         <>
           <div className="space-y-2 mb-5">
             {stats.map((s) => (
-              <Bar key={s.name} label={s.name} value={s.wins} max={max} />
+              <WinLossBar key={s.name} label={s.name} wins={s.wins} losses={s.losses} played={s.played} max={max} />
             ))}
           </div>
           <div className="space-y-1.5">
@@ -922,8 +915,8 @@ function IndividualSection({ matches, players }) {
                 </span>
                 <span className="text-slate-500 dark:text-slate-400">
                   {s.played} played ·{" "}
-                  <span className="text-orange-600 font-bold">{s.wins}W</span> –{" "}
-                  {s.losses}L · {s.winRate}%
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">{s.wins}W</span> –{" "}
+                  <span className="text-red-500 dark:text-red-400 font-bold">{s.losses}L</span> · {s.winRate}%
                 </span>
               </button>
             ))}
@@ -947,7 +940,7 @@ function PairsSection({ matches }) {
   const [selected, setSelected] = useState(null);
   const filtered = applyPeriod(matches, period, from, to);
   const pairs = computePairStats(filtered).slice(0, 10);
-  const max = Math.max(1, ...pairs.map((p) => p.wins));
+  const max = Math.max(1, ...pairs.map((p) => p.played));
 
   function pick(key, e) {
     e.target.blur();
@@ -977,10 +970,9 @@ function PairsSection({ matches }) {
         <>
           <div className="space-y-2 mb-5">
             {pairs.map((p) => (
-              <Bar
+              <WinLossBar
                 key={p.players.join("|")}
-                label={p.players.join(" & ")}
-                value={p.wins}
+                label={p.players.join(" & ")} wins={p.wins} losses={p.losses} played={p.played}
                 max={max}
               />
             ))}
@@ -1004,8 +996,8 @@ function PairsSection({ matches }) {
                   </span>
                   <span className="text-slate-500 dark:text-slate-400">
                     {p.played} played ·{" "}
-                    <span className="text-orange-600 font-bold">{p.wins}W</span>{" "}
-                    – {p.losses}L · {p.winRate}%
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">{p.wins}W</span>{" "}
+                    – <span className="text-red-500 dark:text-red-400 font-bold">{p.losses}L</span> · {p.winRate}%
                   </span>
                 </button>
               );

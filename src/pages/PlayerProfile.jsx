@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -31,6 +31,8 @@ import {
   formatYoutubeUrl,
 } from "../lib/ranking";
 import Info from "../components/Info";
+import WinLossBar from "../components/WinLossBar";
+import LeaderboardShare from "../components/LeaderboardShare";
 import { PeriodTabs } from "./Report";
 
 const RANK_PERIODS = [
@@ -220,45 +222,6 @@ function MatchRow({ m, name }) {
   );
 }
 
-function WinLossBar({ label, wins = 0, losses = 0, played = 0, max = 1 }) {
-  const total = played || wins + losses;
-  const totalPct = max > 0 && total > 0 ? Math.max(3, (total / max) * 100) : 0;
-  const winShare = total > 0 ? (wins / total) * 100 : 0;
-  const lossShare = total > 0 ? (losses / total) * 100 : 0;
-
-  return (
-    <div className="flex items-center gap-2">
-      <span className="w-28 sm:w-36 shrink-0 text-xs text-slate-600 dark:text-slate-300 truncate font-medium">
-        {label}
-      </span>
-      <div className="flex-1 h-4 bg-slate-100 dark:bg-slate-700/60 rounded-full overflow-hidden flex">
-        <div
-          className="h-full flex overflow-hidden rounded-full transition-all duration-300"
-          style={{ width: `${totalPct}%` }}
-        >
-          {wins > 0 && (
-            <div
-              className="h-full bg-emerald-500 hover:bg-emerald-600 transition"
-              style={{ width: `${winShare}%` }}
-              title={`${wins} Won`}
-            />
-          )}
-          {losses > 0 && (
-            <div
-              className="h-full bg-red-500 hover:bg-red-600 transition"
-              style={{ width: `${lossShare}%` }}
-              title={`${losses} Lost`}
-            />
-          )}
-        </div>
-      </div>
-      <span className="w-8 text-right text-xs font-bold text-red-500 dark:text-red-400">
-        {total}
-      </span>
-    </div>
-  );
-}
-
 function PlayerCombosCard({ matches, playerName, onDrilldown }) {
   const [tab, setTab] = useState("with"); // "with" | "versus"
 
@@ -294,7 +257,7 @@ function PlayerCombosCard({ matches, playerName, onDrilldown }) {
   const maxVersus = Math.max(1, ...versusList.map((x) => x.played));
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-5">
+    <div data-share-row className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-5">
       <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
         <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">
           Player Combos
@@ -341,7 +304,7 @@ function PlayerCombosCard({ matches, playerName, onDrilldown }) {
               <StatTile
                 value={overallWith.played}
                 label="Total matches"
-                color="text-red-500 dark:text-red-400"
+                color="text-slate-700 dark:text-slate-200"
                 onClick={() =>
                   onDrilldown({
                     title: `${playerName} — all matches`,
@@ -416,7 +379,7 @@ function PlayerCombosCard({ matches, playerName, onDrilldown }) {
                       w/ {partner}
                     </span>
                     <span className="text-slate-500 dark:text-slate-400">
-                      <span className="text-red-500 dark:text-red-400 font-bold">
+                      <span className="text-slate-700 dark:text-slate-200 font-bold">
                         {x.played}
                       </span>{" "}
                       played ·{" "}
@@ -451,7 +414,7 @@ function PlayerCombosCard({ matches, playerName, onDrilldown }) {
             <StatTile
               value={overallVersus.played}
               label="Total matchups"
-              color="text-red-500 dark:text-red-400"
+              color="text-slate-700 dark:text-slate-200"
               onClick={() =>
                 onDrilldown({
                   title: `${playerName} — all matches`,
@@ -524,7 +487,7 @@ function PlayerCombosCard({ matches, playerName, onDrilldown }) {
                   vs {x.opponent}
                 </span>
                 <span className="text-slate-500 dark:text-slate-400">
-                  <span className="text-red-500 dark:text-red-400 font-bold">
+                  <span className="text-slate-700 dark:text-slate-200 font-bold">
                     {x.played}
                   </span>{" "}
                   played ·{" "}
@@ -557,6 +520,7 @@ export default function PlayerProfile({
   dues,
   onBack,
 }) {
+  const profileRef = useRef(null);
   const [drilldown, setDrilldown] = useState(null);
   const [rankPeriod, setRankPeriod] = useState("today");
   const [rankFrom, setRankFrom] = useState("");
@@ -615,7 +579,8 @@ export default function PlayerProfile({
   const myRank = myStatIdx === -1 ? null : ranks[myStatIdx];
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4">
+    <div ref={profileRef} className="max-w-2xl mx-auto space-y-4">
+      <div className="flex items-center justify-between" data-share-exclude>
       <button
         onClick={onBack}
         className="flex items-center gap-1.5 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition"
@@ -623,8 +588,11 @@ export default function PlayerProfile({
         <ArrowLeft size={15} /> Back
       </button>
 
+      <LeaderboardShare captureRef={profileRef} shareTitle={`GNR SmashStats · ${playerName} · Player Profile`} filenamePrefix={`gnr-player-${playerName.replace(/[^a-z0-9]+/gi, "-")}`} shareLabel="Share player profile image" />
+      </div>
+
       {/* Profile Card: Avatar, Name, Role, Court Slot & Dues */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-5">
+      <div data-share-row className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-5">
         <div className="flex items-center gap-4 flex-wrap">
           <Avatar name={playerName} photo={photo} size="xl" />
           <div className="flex-1 min-w-[10rem]">
@@ -703,7 +671,7 @@ export default function PlayerProfile({
       </div>
 
       {/* Ranking Section (Directly below the pic) */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-5">
+      <div data-share-row className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-5">
         <div className="flex items-center gap-2 mb-3">
           <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">
             Ranking
@@ -742,7 +710,7 @@ export default function PlayerProfile({
       </div>
 
       {/* Total Sections: 4 Stat Tiles */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-5">
+      <div data-share-row className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-5">
         <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300 mb-3">
           Total Record
         </h2>
@@ -793,7 +761,7 @@ export default function PlayerProfile({
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-5">
+      <div data-share-row className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-5">
         <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300 mb-3">
           Activity Breakdown
         </h2>
@@ -823,7 +791,7 @@ export default function PlayerProfile({
         onDrilldown={setDrilldown}
       />
 
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-5">
+      <div data-share-row className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-5">
         <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">

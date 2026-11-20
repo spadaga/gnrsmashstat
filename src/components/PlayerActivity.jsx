@@ -211,22 +211,13 @@ export default function PlayerActivity({
 
               {/* Middle: Visual Proportional Graph (Green won, Red lost) */}
               <div className="flex-1 min-w-0 hidden xs:block sm:block">
-                <div className="flex items-center justify-between text-[11px] mb-1">
-                  <span className="font-medium text-slate-500 dark:text-slate-400">
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                      {p.wins}W
-                    </span>{" "}
-                    ·{" "}
-                    <span className="font-bold text-red-500 dark:text-red-400">
-                      {p.losses}L
-                    </span>
-                  </span>
+                <div className="flex items-center justify-end text-[11px] mb-1">
                   <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
                     {p.winRate}% win
                   </span>
                 </div>
                 {/* Horizontal Progress Bar */}
-                <div className="w-full bg-slate-200/80 dark:bg-slate-700/80 h-2 rounded-full overflow-hidden flex">
+                <div className="w-full bg-slate-200/80 dark:bg-slate-700/80 h-4 rounded-full overflow-hidden flex">
                   <div
                     style={{ width: `${barWidthPct}%` }}
                     className="h-full flex rounded-full overflow-hidden transition-all duration-300"
@@ -234,24 +225,24 @@ export default function PlayerActivity({
                     {p.wins > 0 && (
                       <div
                         style={{ width: `${winPct}%` }}
-                        className="bg-emerald-500 h-full"
+                        className="bg-emerald-500 h-full flex items-center justify-center text-[9px] font-bold text-white overflow-hidden"
                         title={`${p.wins} Won`}
-                      />
+                      >{p.wins}W</div>
                     )}
                     {p.losses > 0 && (
                       <div
                         style={{ width: `${lossPct}%` }}
-                        className="bg-red-500 h-full"
+                        className="bg-red-500 h-full flex items-center justify-center text-[9px] font-bold text-white overflow-hidden"
                         title={`${p.losses} Lost`}
-                      />
+                      >{p.losses}L</div>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Right: Total Matches in Bold Red */}
+              {/* Right: Total Matches in a neutral color */}
               <div className="text-right shrink-0 min-w-[70px]">
-                <span className="text-base sm:text-lg font-black text-red-600 dark:text-red-400 tracking-tight">
+                <span className="text-base sm:text-lg font-black text-slate-700 dark:text-slate-200 tracking-tight">
                   {p.played}
                 </span>
                 <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 ml-1">
