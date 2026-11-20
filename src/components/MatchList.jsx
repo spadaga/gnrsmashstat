@@ -17,6 +17,7 @@ import {
 import { localISODate } from "../lib/date";
 import MatchEditModal from "./MatchEditModal";
 import YoutubeIcon from "./YoutubeIcon";
+import LeaderboardShare from "./LeaderboardShare";
 
 const MODES = [
   { key: "today", label: "Today", shortLabel: "Day" },
@@ -363,14 +364,16 @@ export default function MatchList({
         />
       </div>
 
-      <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">
-          Recent Matches
-        </h2>
+      <div className="flex items-center justify-between mb-3 gap-1 sm:gap-2 flex-nowrap">
+        <div className="flex min-w-0 items-center gap-1">
+          <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wide whitespace-nowrap text-slate-700 dark:text-slate-300">Recent Matches</h2>
+          <LeaderboardShare captureRef={rootRef} rows={visible} shareTitle={`GNR SmashStats · Recent Matches · ${MODES.find(item => item.key === mode)?.label}`} filenamePrefix={`gnr-recent-matches-${mode}`} shareLabel="Share Recent Matches image" />
+        </div>
         {onLogMatch && isAdmin && (
           <button
+            data-share-exclude
             onClick={onLogMatch}
-            className="text-xs font-bold uppercase tracking-wide text-orange-600 hover:text-orange-700"
+            className="shrink-0 text-[10px] sm:text-xs font-bold uppercase tracking-wide text-orange-600 hover:text-orange-700"
           >
             Log Match →
           </button>
@@ -502,6 +505,7 @@ export default function MatchList({
       )}
 
       <div
+        data-share-expand
         ref={listContainerRef}
         className="space-y-4 max-h-[40rem] overflow-y-auto pr-1"
       >
@@ -541,6 +545,7 @@ export default function MatchList({
                 const matchLabel = mode === "today" ? `Match #${dayNo}` : `Match #${dayNo} · Overall #${seqById.get(m.id)}`;
                 return (
                   <div
+                    data-share-row
                     key={m.id}
                     className={
                       "rounded-xl px-3 py-2.5 transition " +
@@ -624,7 +629,7 @@ export default function MatchList({
                         )}
                       </div>
                       {/* Edit and delete actions */}
-                      <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 shrink-0">
+                      <div data-share-exclude className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 shrink-0">
                         {canEdit && (
                           <button
                             onClick={() => setEditingMatch(m)}

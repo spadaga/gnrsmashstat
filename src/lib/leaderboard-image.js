@@ -17,7 +17,32 @@ function loadImage(src) {
 
 // Render vector snapshots directly at export resolution. Tile long reports before
 // rasterizing so mobile browsers never need one enormous canvas or shrink text.
-export async function createLeaderboardImages({ element, mode, filenamePrefix = `gnr-leaderboard-${mode}` }) {
+export async function createLeaderboardImages(options) {
+  const { element } = options;
+  if (!element) throw new Error('The section is unavailable.');
+  if (!element.querySelector('[data-share-expand]')) return captureImages(options);
+
+  // Expand scrollable lists in an offscreen copy, keeping the portal still.
+  const holder = document.createElement('div');
+  holder.style.cssText = 'position:fixed;left:-100000px;top:0;pointer-events:none;';
+  holder.style.width = `${element.getBoundingClientRect().width}px`;
+  const copy = element.cloneNode(true);
+  copy.querySelectorAll('[data-share-expand]').forEach(list => {
+    list.style.maxHeight = 'none';
+    list.style.height = 'auto';
+    list.style.overflow = 'visible';
+    list.scrollTop = 0;
+  });
+  holder.append(copy);
+  element.parentElement.append(holder);
+  try {
+    return await captureImages({ ...options, element: copy });
+  } finally {
+    holder.remove();
+  }
+}
+
+async function captureImages({ element, mode, filenamePrefix = `gnr-leaderboard-${mode}` }) {
   if (!element) throw new Error('The section is unavailable.');
   await Promise.all([...element.querySelectorAll('img')].map(image => image.complete ? undefined : image.decode?.().catch(() => {})));
   const svgUrl = await toSvg(element, {
