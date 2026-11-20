@@ -15,16 +15,20 @@ React + Vite + Tailwind v4 frontend with one Neon Postgres-backed API contract.
 
 ## Repository and isolation
 
-- Repository: `https://github.com/spadaga/gnrsmashstats` (plural).
-- Active deployment branch: `migration/neon-postgres`.
-- Vercel project/deployment: `gnrsmashstats` / `https://gnrsmashstat.vercel.app` (renamed from
-  `gnrsmashstats-kohl.vercel.app` once the original project below vacated the shorter name).
-- This is separate from the original `spadaga/gnrsmashstat` repository, its
-  branches, Vercel project, Blob-backed production deployment, and live site
-  (now at `https://gnrsmashstatold.vercel.app`). **The naming is easy to
-  confuse — this project's domain has no "old" suffix; the original
-  project's does.** Do not point this checkout at, push to, or deploy over
-  the original project.
+- Publish repository: `https://github.com/spadaga/gnrsmashstat` (singular), branch `main`.
+- GitHub owner: `https://github.com/spadaga`.
+- The local branch may be `migration/neon-postgres`, and origin may still point
+  to the plural repository. Use the user-designated publish repository above.
+- Vercel workspace: `https://vercel.com/adjdjd2-1259s-projects`.
+- Production project: `gnrsmashstats` (plural); project URL:
+  `https://vercel.com/adjdjd2-1259s-projects/gnrsmashstats`.
+- Live URL: `https://gnrsmashstat.vercel.app/` (singular).
+- Owning Vercel username: `adjdjd2-1259`. Verify project access before deploying;
+  a GitHub login named `spadaga` does not establish access to this workspace.
+- The singular Vercel project `gnrsmashstat` serves the older
+  `https://gnrsmashstatold.vercel.app` domain and is not the current target.
+- For future publishing, read `AGENTS.md` and use the personal
+  `gnrsmashstats-deploy` skill when available.
 - Migration implementation commits: `c1b3f0c` (Neon backend), `ac793ec`
   (portable dependencies), `c1cdc13` (safe DB configuration errors), `f4ff0f4`
   (Node/native bindings), and `dfddba5` (real-data local proxy and Blob URL import).
