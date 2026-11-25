@@ -44,6 +44,7 @@ export default function InstallApp({ iconOnly = false, className = "" }) {
           </div>
           <p className="mb-4">Open the portal directly from your home screen or desktop.</p>
           <p className="mb-4">On mobile, launch GNR SmashStats from its installed home-screen icon to use the app without the browser's address and bottom toolbar.</p>
+          <p className="mb-4">Android: the installed app requests fullscreen to hide system navigation where supported. If an older installation still shows the three navigation buttons, remove and reinstall the app. Swiping from the screen edge can bring system controls back.</p>
           <ul className="space-y-3">
             <li><strong>iPhone / iPad:</strong> Open in Safari, tap Share, then Add to Home Screen.</li>
             <li><strong>Android:</strong> Open in Chrome, tap the ⋮ menu, then Install app or Add to Home screen.</li>

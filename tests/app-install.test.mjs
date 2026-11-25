@@ -1,6 +1,22 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+test('fullscreen launches are recognized as the installed app', async () => {
+  const previousWindow = globalThis.window;
+  globalThis.window = {
+    matchMedia: (query) => ({ matches: query === '(display-mode: fullscreen)' }),
+    navigator: {},
+    addEventListener: () => {},
+  };
+  try {
+    const install = await import('../src/lib/app-install.js?fullscreen-test');
+    assert.equal(install.isAppInstalled(), true);
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+  }
+});
+
 test('install uses the browser prompt once, supports fallback, and tracks installation', async () => {
   const events = new Map();
   const previousWindow = globalThis.window;
