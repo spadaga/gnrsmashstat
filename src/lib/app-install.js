@@ -1,8 +1,7 @@
 let promptEvent = null;
 const listeners = new Set();
 const standalone = () => typeof window !== "undefined" &&
-  (window.matchMedia("(display-mode: standalone)").matches ||
-    window.matchMedia("(display-mode: fullscreen)").matches || window.navigator.standalone === true);
+  (window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true);
 let installed = standalone();
 const notify = () => listeners.forEach((listener) => listener());
 
