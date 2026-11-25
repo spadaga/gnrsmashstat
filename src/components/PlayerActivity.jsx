@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from "react";
 import { Flame } from "lucide-react";
-import { filterByPeriod } from "../lib/ranking";
+import { filterByPeriod, computeStats, applyTodayRanking, computeRanks, getRankingConfig } from "../lib/ranking";
 import { getCurrentWeekDates, localISODate } from "../lib/date";
 import Avatar from "./Avatar";
 import MatchesModal from "./MatchesModal";
@@ -102,6 +102,15 @@ export default function PlayerActivity({
     return list;
   }, [filteredMatches]);
 
+  const todayRanks = useMemo(() => {
+    const todayMatches = filterByPeriod(matches, "today");
+    const names = [...new Set(todayMatches.flatMap((match) => [...match.team1, ...match.team2]))];
+    const { minMatches, prioritizeRegular } = getRankingConfig("today");
+    const rows = applyTodayRanking(computeStats(todayMatches, names, minMatches, prioritizeRegular).filter((row) => row.played > 0));
+    const ranks = computeRanks(rows, { qualifiedOnly: true, prioritizeRegular });
+    return new Map(rows.map((row, index) => [row.name, ranks[index]]));
+  }, [matches]);
+
   const maxPlayed = playerStats.length > 0 ? playerStats[0].played : 0;
   const totalMatchesCount = filteredMatches.length;
 
@@ -122,7 +131,7 @@ export default function PlayerActivity({
               </span>
             </h3>
             <p className="text-xs text-slate-400 dark:text-slate-500">
-              Matches played in descending order
+              Matches played in descending order · circles show Today rank
             </p>
           </div>
         </div>
@@ -163,14 +172,14 @@ export default function PlayerActivity({
 
       {/* Players List in Descending Order */}
       <div className="space-y-2">
-        {playerStats.map((p, idx) => {
-          const rank = idx + 1;
+        {playerStats.map((p) => {
+          const rank = todayRanks.get(p.name);
 
           return (
             <div
               key={p.name}
               data-share-row
-              className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-slate-50/70 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer border border-slate-100 dark:border-slate-700"
+              className="flex items-center justify-between gap-2 sm:gap-3 p-2.5 rounded-xl bg-slate-50/70 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer border border-slate-100 dark:border-slate-700"
               onClick={() =>
                 setDrilldown({
                   title: `${p.name} matches`,
@@ -178,21 +187,9 @@ export default function PlayerActivity({
                 })
               }
             >
-              {/* Left: Rank, Avatar & Player Name */}
-              <div className="flex items-center gap-2.5 min-w-[130px] sm:min-w-[170px] shrink-0">
-                <span
-                  className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-extrabold shrink-0 ${
-                    rank === 1
-                      ? "bg-amber-500 text-white shadow-xs"
-                      : rank === 2
-                        ? "bg-slate-300 dark:bg-slate-600 text-slate-800 dark:text-slate-100"
-                        : rank === 3
-                          ? "bg-amber-700 text-white"
-                          : "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
-                  }`}
-                >
-                  {rank}
-                </span>
+              {/* Left: Avatar & Player Name */}
+              <div className="flex items-center gap-2.5 min-w-0 sm:min-w-[170px] flex-1 sm:flex-none">
+
 
                 <button
                   type="button"
@@ -200,7 +197,7 @@ export default function PlayerActivity({
                     e.stopPropagation();
                     onViewProfile?.(p.name);
                   }}
-                  className="flex items-center gap-2 text-left hover:opacity-80 transition"
+                  className="flex min-w-0 items-center gap-2 text-left hover:opacity-80 transition"
                   title="View Profile"
                 >
                   <Avatar name={p.name} photo={photoByName[p.name]} size="sm" />
@@ -219,6 +216,16 @@ export default function PlayerActivity({
                 </div>
                 <WinLossBar label={p.name} wins={p.wins} losses={p.losses} played={p.played} max={maxPlayed} showLabel={false} showTotal={false} />
               </div>
+
+              <span
+                data-today-rank
+                aria-label={`Today leaderboard rank ${rank ?? "NA"} for ${p.name}`}
+                title="Today leaderboard rank"
+                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black tabular-nums text-slate-950 ring-1 ring-black/10 shrink-0 order-last"
+                style={{ backgroundColor: rank == null ? "#e2e8f0" : rank === 1 ? "#fcd34d" : rank === 2 ? "#cbd5e1" : rank === 3 ? "#fdba74" : `hsl(${((rank - 4) * 137.508 + 160) % 360} 65% 80%)` }}
+              >
+                {rank ?? "NA"}
+              </span>
 
               {/* Right: Total Matches in a neutral color */}
               <div className="text-right shrink-0 min-w-[70px]">

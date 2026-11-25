@@ -208,3 +208,19 @@ test('inline ranking Info buttons require a signed-in session', () => {
   }, React.createElement(Info)));
   assert.ok(signedIn.includes('Wilson Score Formula'));
 });
+
+
+test('activity circles use Today leaderboard ranks rather than activity positions', async () => {
+  const { default: PlayerActivity } = await server.ssrLoadModule('/src/components/PlayerActivity.jsx');
+  for (const count of [1, 3, 4]) {
+    const matches = games(count);
+    const rows = todayStats(matches);
+    const ranks = computeRanks(rows, rankOptions);
+    const html = renderToStaticMarkup(React.createElement(PlayerActivity, { matches }));
+    rows.forEach((row, index) => {
+      assert.ok(html.includes('aria-label="Today leaderboard rank ' + (ranks[index] ?? 'NA') + ' for ' + row.name + '"'));
+    });
+    assert.equal((html.match(/data-today-rank/g) || []).length, rows.length);
+    assert.ok(html.includes('shrink-0 order-last'));
+  }
+});
