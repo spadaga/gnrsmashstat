@@ -1,6 +1,14 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+html, body, #root { min-height: 100%; }
+.gnr-app-shell {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+.gnr-app-shell > header { padding-top: env(safe-area-inset-top, 0px); }
+
 /* Shared by page scrollbars and scrollable cards, lists, and dialogs. */
 :root {
   --gnr-scroll-track: #f1f5f9;

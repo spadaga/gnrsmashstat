@@ -43,6 +43,7 @@ export default function InstallApp({ iconOnly = false, className = "" }) {
             <button type="button" aria-label="Close install instructions" onClick={() => setOpen(false)} className="rounded-full p-1 hover:bg-slate-100 dark:hover:bg-slate-700"><X size={20} /></button>
           </div>
           <p className="mb-4">Open the portal directly from your home screen or desktop.</p>
+          <p className="mb-4">On mobile, launch GNR SmashStats from its installed home-screen icon to use the app without the browser's address and bottom toolbar.</p>
           <ul className="space-y-3">
             <li><strong>iPhone / iPad:</strong> Open in Safari, tap Share, then Add to Home Screen.</li>
             <li><strong>Android:</strong> Open in Chrome, tap the ⋮ menu, then Install app or Add to Home screen.</li>

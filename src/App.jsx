@@ -145,7 +145,7 @@ export default function App() {
 
   if (loadError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-6 dark:bg-slate-900">
+      <div className="min-h-dvh flex items-center justify-center bg-slate-50 px-6 dark:bg-slate-900">
         <div className="max-w-md rounded-2xl bg-white p-6 text-center shadow-lg dark:bg-slate-800">
           <h1 className="text-lg font-bold text-slate-900 dark:text-white">
             Unable to load data
@@ -166,7 +166,7 @@ export default function App() {
 
   if (showStartupLoader || !data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-orange-50/40 dark:bg-slate-950 p-6">
+      <div className="min-h-dvh flex items-center justify-center bg-orange-50/40 dark:bg-slate-950 p-6">
         <GnrLoader />
       </div>
     );
@@ -289,7 +289,7 @@ export default function App() {
 
   return (
     <SignedInContext value={Boolean(adminName)}>
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
+    <div className="gnr-app-shell min-h-dvh bg-slate-50 dark:bg-slate-900 flex flex-col">
       <Header
         page={page}
         onNavigate={setPage}
