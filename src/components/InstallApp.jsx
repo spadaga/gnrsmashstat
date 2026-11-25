@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { Download, Check, X } from "lucide-react";
 import { isAppInstalled, requestAppInstall, subscribeToInstall } from "../lib/app-install";
 
-export default function InstallApp() {
+export default function InstallApp({ iconOnly = false, className = "" }) {
   const installed = useSyncExternalStore(subscribeToInstall, isAppInstalled, () => false);
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -27,11 +27,13 @@ export default function InstallApp() {
     <button
       type="button"
       disabled={installed}
+      aria-label={installed ? "App installed" : "Install app"}
+      title={installed ? "App installed" : "Install app"}
       onClick={async () => { if (await requestAppInstall() === "instructions") setOpen(true); }}
-      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-bold text-orange-700 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/40 disabled:cursor-default"
+      className={`inline-flex items-center gap-1.5 rounded-full ${iconOnly ? "p-2" : "px-3 py-1.5"} font-bold text-orange-700 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/40 disabled:cursor-default ${className}`}
     >
-      {installed ? <Check size={14} /> : <Download size={14} />}
-      {installed ? "App installed" : "Install app"}
+      {installed ? <Check size={iconOnly ? 17 : 14} /> : <Download size={iconOnly ? 17 : 14} />}
+      {!iconOnly && (installed ? "App installed" : "Install app")}
     </button>
     {open && createPortal(
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setOpen(false)}>

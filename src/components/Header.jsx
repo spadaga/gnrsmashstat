@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import WilsonInfoModal from "./WilsonInfoModal";
 import Avatar from "./Avatar";
+import InstallApp from "./InstallApp";
 
 const NAV_DESKTOP = [
   { key: "dashboard", label: "Dashboard" },
@@ -98,6 +99,7 @@ export default function Header({
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1 flex-wrap flex-1 justify-end">
+          <InstallApp iconOnly />
           {NAV_DESKTOP.filter(({ adminOnly, loginOnly }) => (!adminOnly || isAdmin) && (!loginOnly || signedIn)).map(
             ({ key, label, icon: Icon }) => (
               <button
@@ -211,6 +213,7 @@ export default function Header({
       {/* Mobile dropdown menu */}
       {menuOpen && (
         <div className="md:hidden border-t dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 space-y-1">
+          <InstallApp className="w-full justify-start text-sm" />
           <button
             onClick={() => nav("dashboard")}
             className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition ${page === "dashboard" ? "bg-orange-600 text-white" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"}`}

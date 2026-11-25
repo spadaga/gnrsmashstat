@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#ea580c"/>
+  <circle cx="256" cy="256" r="190" fill="#f97316"/>
+  <g transform="rotate(-28 205 178)" stroke="#fff" stroke-linecap="round">
+    <ellipse cx="205" cy="153" rx="48" ry="62" fill="none" stroke-width="10"/>
+    <path d="M205 215v48" stroke-width="10"/>
+    <path d="M205 250v26" stroke="#431407" stroke-width="15"/>
+    <g stroke-width="3" opacity=".85">
+      <path d="M181 104v97m24-109v122m24-110v97M162 131h86m-91 23h96m-90 23h84"/>
+    </g>
+  </g>
+  <g transform="rotate(25 324 173)" stroke="#fff" stroke-width="5" stroke-linejoin="round">
+    <path d="m293 126 13 69h36l13-69-19 13-12-18-12 18z" fill="#fff" fill-opacity=".18"/>
+    <path d="m312 139 6 56m18-56-6 56M293 126l31 69 31-69" fill="none"/>
+    <path d="M306 195h36v8a18 18 0 0 1-36 0z" fill="#fff"/>
+  </g>
+  <text x="256" y="365" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="112" font-weight="900" letter-spacing="-5" fill="#fff">GNR</text>
+</svg>
