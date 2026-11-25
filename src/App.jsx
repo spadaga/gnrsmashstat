@@ -34,8 +34,8 @@ export default function App() {
   const [data, setData] = useState(null);
   const [loadError, setLoadError] = useState(null);
   const [busy, setBusy] = useState(false);
-  const showStartupLoader = useMinimumLoading(!data);
-  const showSavingLoader = useMinimumLoading(busy);
+  const showStartupLoader = useMinimumLoading(!data, 300);
+  const showSavingLoader = busy;
   const [toast, setToast] = useState(null);
   const [adminName, setAdminName] = useState(
     () => localStorage.getItem("adminName") || null,
