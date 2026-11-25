@@ -135,6 +135,21 @@ function TopSeedsAllModal({ items, mode, title, onClose, photoByName = {} }) {
   );
 }
 
+function SeedPortrait({ photo }) {
+  const [failedPhoto, setFailedPhoto] = useState(null);
+  return (
+    <span className="seed-card-portrait">
+      {photo && failedPhoto !== photo ? (
+        <img src={photo} alt="" draggable={false} onError={() => setFailedPhoto(photo)} />
+      ) : (
+        <span className="flex h-full w-full items-center justify-center rounded-full bg-orange-50 text-orange-700" data-seed-user-fallback>
+          <User className="h-3/5 w-3/5" strokeWidth={1.75} />
+        </span>
+      )}
+    </span>
+  );
+}
+
 function ShareableSeedCard({ children, onClick, title, filenamePrefix }) {
   const bannerRef = useRef(null);
   return (
@@ -277,8 +292,7 @@ export default function TopSeeds({
           const displayName =
             mode === "doubles" ? p.players.join(" & ") : p.name;
           const key = mode === "doubles" ? p.players.join("&") : p.name;
-          const portraitNames = (mode === "doubles" ? p.players : [p.name])
-            .filter((name) => photos[name]);
+          const portraitNames = mode === "doubles" ? p.players : [p.name];
 
           return (
             <ShareableSeedCard
@@ -325,14 +339,7 @@ export default function TopSeeds({
                   {portraitNames.length > 0 && (
                     <div className="seed-card-faces" aria-hidden="true">
                       {portraitNames.map((name) => (
-                        <span key={name} className="seed-card-portrait">
-                          <img
-                            src={photos[name]}
-                            alt=""
-                            draggable={false}
-                            onError={(event) => { event.currentTarget.parentElement.style.visibility = "hidden"; }}
-                          />
-                        </span>
+                        <SeedPortrait key={name} photo={photos[name]} />
                       ))}
                     </div>
                   )}
